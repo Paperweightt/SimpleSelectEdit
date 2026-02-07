@@ -1,0 +1,38 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "SimpleSelectTool",
+    "version": [1, 0, 0],
+    "description": "$desc",
+    "uuid": "74d3c280-93c4-4605-9f22-c6199b4122da",
+    "min_engine_version": [1, 21, 121]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "4c9dfbcc-24be-453f-87b6-3959ed7a17b6",
+      "version": [1, 0, 0]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "7fbb1d75-62b4-4329-a043-d5f0f073748d",
+      "version": [1, 0, 0],
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "version": [1, 0, 0],
+      "uuid": "bef9df01-909c-420d-aaf5-92344f3e7c72"
+    },
+    {
+      "module_name": "@minecraft/server",
+      "version": "1.19.0"
+    },
+    {
+      "module_name": "@minecraft/server-ui",
+      "version": "1.1.0"
+    }
+  ]
+}
