@@ -1,0 +1,72 @@
+{
+    "format_version": "1.10.0",
+    "minecraft:client_entity": {
+        "description": {
+            "identifier": "ptb:panel",
+            "materials": {
+                "default": "entity_emissive_alpha_one_sided"
+            },
+            "textures": {
+                "default": "textures/blocks/concrete_white"
+            },
+            "geometry": {
+                "default": "geometry.panel.46",
+                "pixels_0": "geometry.panel.0",
+                "pixels_1": "geometry.panel.1",
+                "pixels_2": "geometry.panel.2",
+                "pixels_3": "geometry.panel.3",
+                "pixels_4": "geometry.panel.4",
+                "pixels_5": "geometry.panel.5",
+                "pixels_6": "geometry.panel.6",
+                "pixels_7": "geometry.panel.7",
+                "pixels_8": "geometry.panel.8",
+                "pixels_9": "geometry.panel.9",
+                "pixels_10": "geometry.panel.10",
+                "pixels_11": "geometry.panel.11",
+                "pixels_12": "geometry.panel.12",
+                "pixels_13": "geometry.panel.13",
+                "pixels_14": "geometry.panel.14",
+                "pixels_15": "geometry.panel.15",
+                "pixels_16": "geometry.panel.16",
+                "pixels_17": "geometry.panel.17",
+                "pixels_18": "geometry.panel.18",
+                "pixels_19": "geometry.panel.19",
+                "pixels_20": "geometry.panel.20",
+                "pixels_21": "geometry.panel.21",
+                "pixels_22": "geometry.panel.22",
+                "pixels_23": "geometry.panel.23",
+                "pixels_24": "geometry.panel.24",
+                "pixels_25": "geometry.panel.25",
+                "pixels_26": "geometry.panel.26",
+                "pixels_27": "geometry.panel.27",
+                "pixels_28": "geometry.panel.28",
+                "pixels_29": "geometry.panel.29",
+                "pixels_30": "geometry.panel.30",
+                "pixels_31": "geometry.panel.31",
+                "pixels_32": "geometry.panel.32",
+                "pixels_33": "geometry.panel.33",
+                "pixels_34": "geometry.panel.34",
+                "pixels_35": "geometry.panel.35",
+                "pixels_36": "geometry.panel.36",
+                "pixels_37": "geometry.panel.37",
+                "pixels_38": "geometry.panel.38",
+                "pixels_39": "geometry.panel.39",
+                "pixels_40": "geometry.panel.40",
+                "pixels_41": "geometry.panel.41",
+                "pixels_42": "geometry.panel.42",
+                "pixels_43": "geometry.panel.43",
+                "pixels_44": "geometry.panel.44",
+                "pixels_45": "geometry.panel.45",
+                "pixels_46": "geometry.panel.46"
+            },
+            "animations": {
+                "panel_rotate": "animation.panel.rotation",
+                "controller.panel": "controller.animation.rotate_head"
+            },
+            "scripts": {
+                "animate": ["controller.panel"]
+            },
+            "render_controllers": ["controller.render.panel"]
+        }
+    }
+}

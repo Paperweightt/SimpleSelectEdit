@@ -1,0 +1,22 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"animation.back_panel": {
+			"loop": "hold_on_last_frame",
+			"bones": {
+				"0_0": {
+					"scale": [
+						"query.property('ptb:xsize')*50",
+						"query.property('ptb:ysize')*50",
+						"1"
+					],
+					"position": [
+						"0",
+						"-(query.property('ptb:ysize'))/3.666",
+						"0"
+					]
+				}
+			}
+		}
+	}
+}

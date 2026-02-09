@@ -1,0 +1,25 @@
+{
+    "format_version": "1.21.90",
+    "minecraft:item": {
+        "description": {
+            "identifier": "sse:selector",
+            "menu_category": {
+                "category": "items"
+            }
+        },
+        "components": {
+            "minecraft:icon": "sse:selector",
+            "minecraft:enchantable": {
+                "value": 10,
+                "slot": "sword"
+            },
+            "minecraft:food": {
+                "can_always_eat": true
+            },
+            "minecraft:use_modifiers": {
+                "use_duration": 100000000,
+                "emit_vibrations": false
+            }
+        }
+    }
+}

@@ -1,0 +1,27 @@
+{
+    "format_version": "1.10.0",
+    "minecraft:client_entity": {
+        "description": {
+            "identifier": "ptb:back_panel",
+            "materials": {
+                "default": "entity_custom"
+            },
+            "textures": {
+                "default": "textures/back_panel"
+            },
+            "geometry": {
+                "default": "geometry.back_panel"
+            },
+            "animations": {
+                "panel_rotate": "animation.panel.rotation",
+                "back_panel_size": "animation.back_panel",
+                "controller.rotation": "controller.animation.panel.rotation",
+                "controller.size": "controller.animation.back_panel.size"
+            },
+            "scripts": {
+                "animate": ["controller.rotation", "controller.size"]
+            },
+            "render_controllers": ["controller.render.back_panel"]
+        }
+    }
+}

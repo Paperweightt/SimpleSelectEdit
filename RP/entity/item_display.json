@@ -1,0 +1,25 @@
+{
+    "format_version": "1.10.0",
+    "minecraft:client_entity": {
+        "description": {
+            "identifier": "ptb:item_display",
+            "materials": {
+                "default": "entity_emissive_alpha_one_sided"
+            },
+            "textures": {
+                "default": "textures/blocks/concrete_white"
+            },
+            "geometry": {
+                "default": "geometry.item_display"
+            },
+            "animations": {
+                "all": "animation.item_display",
+                "controller.item_display": "controller.animation.item_display"
+            },
+            "scripts": {
+                "animate": ["controller.item_display"]
+            },
+            "render_controllers": ["controller.render.default"]
+        }
+    }
+}

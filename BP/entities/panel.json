@@ -1,0 +1,98 @@
+{
+    "format_version": "1.18.20",
+    "minecraft:entity": {
+        "description": {
+            "identifier": "sse:panel",
+            "is_spawnable": false,
+            "is_summonable": true,
+            "is_experimental": false,
+            "properties": {
+                "ptb:pixels": {
+                    "type": "int",
+                    "client_sync": true,
+                    "default": 25,
+                    "range": [0, 47]
+                },
+                "ptb:scale": {
+                    "type": "float",
+                    "client_sync": true,
+                    "default": 1.0,
+                    "range": [0.0, 10.0]
+                },
+                "ptb:rcolor": {
+                    "type": "int",
+                    "client_sync": true,
+                    "default": 255,
+                    "range": [0, 100000000]
+                },
+                "ptb:gcolor": {
+                    "type": "int",
+                    "client_sync": true,
+                    "default": 255,
+                    "range": [0, 100000000]
+                },
+                "ptb:bcolor": {
+                    "type": "int",
+                    "client_sync": true,
+                    "default": 255,
+                    "range": [0, 100000000]
+                },
+                "ptb:xrotation": {
+                    "type": "int",
+                    "client_sync": true,
+                    "default": 1,
+                    "range": [0, 100000000]
+                },
+                "ptb:yrotation": {
+                    "type": "int",
+                    "client_sync": true,
+                    "default": 0,
+                    "range": [0, 10000000]
+                }
+            }
+        },
+        "components": {
+            "minecraft:pushable": {
+                "is_pushable": false,
+                "is_pushable_by_piston": false
+            },
+            "minecraft:interact": {
+                "interactions": [
+                    {
+                        "on_interact": {
+                            "event": "ptb:player_interact",
+                            "target": "other"
+                        }
+                    }
+                ]
+            },
+            "minecraft:physics": {
+                "has_gravity": false,
+                "has_collision": false
+            },
+            "minecraft:collision_box": {
+                "width": 0.001,
+                "height": 0.001
+            },
+            "minecraft:custom_hit_test": {
+                "hitboxes": [
+                    {
+                        "pivot": [0, 0, 0],
+                        "width": 1,
+                        "height": 1
+                    }
+                ]
+            },
+            "minecraft:nameable": {
+                "always_show": true
+            },
+            "minecraft:damage_sensor": {
+                "triggers": [
+                    {
+                        "deals_damage": false
+                    }
+                ]
+            }
+        }
+    }
+}

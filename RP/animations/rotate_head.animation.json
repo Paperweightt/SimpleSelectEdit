@@ -1,0 +1,17 @@
+{
+    "format_version": "1.8.0",
+    "animations": {
+        "animation.rotate_head": {
+            "loop": true,
+            "bones": {
+                "head": {
+                    "rotation": [
+                        "-query.property('sse:rotate_head_y')",
+                        "query.property('sse:rotate_head_x')",
+                        "0"
+                    ]
+                }
+            }
+        }
+    }
+}

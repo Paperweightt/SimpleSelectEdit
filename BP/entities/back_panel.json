@@ -2,30 +2,38 @@
     "format_version": "1.18.20",
     "minecraft:entity": {
         "description": {
-            "identifier": "sse:arrow",
+            "identifier": "sse:back_panel",
             "is_spawnable": false,
             "is_summonable": true,
             "is_experimental": false,
             "properties": {
-                "sse:rotate_head_x": {
+                "ptb:xrotation": {
                     "type": "int",
                     "client_sync": true,
                     "default": 0,
                     "range": [0, 100000000]
                 },
-                "sse:rotate_head_y": {
+                "ptb:yrotation": {
                     "type": "int",
                     "client_sync": true,
                     "default": 0,
                     "range": [0, 10000000]
+                },
+                "ptb:xsize": {
+                    "type": "int",
+                    "client_sync": true,
+                    "default": 1,
+                    "range": [0, 100000000]
+                },
+                "ptb:ysize": {
+                    "type": "int",
+                    "client_sync": true,
+                    "default": 1,
+                    "range": [0, 100000000]
                 }
             }
         },
         "components": {
-            "minecraft:pushable": {
-                "is_pushable": false,
-                "is_pushable_by_piston": false
-            },
             "minecraft:physics": {
                 "has_gravity": false,
                 "has_collision": false

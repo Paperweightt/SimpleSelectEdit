@@ -1,0 +1,18 @@
+{
+    "format_version": "1.21.50",
+    "minecraft:item": {
+        "description": {
+            "identifier": "ptb:spyglass_display",
+            "menu_category": {
+                "category": "none"
+            }
+        },
+        "components": {
+            "minecraft:icon": {
+                "textures": {
+                    "default": "spyglass"
+                }
+            }
+        }
+    }
+}

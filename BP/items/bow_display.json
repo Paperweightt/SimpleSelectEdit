@@ -1,0 +1,22 @@
+{
+    "format_version": "1.21.50",
+    "minecraft:item": {
+        "description": {
+            "identifier": "ptb:bow_display",
+            "menu_category": {
+                "category": "none"
+            }
+        },
+        "components": {
+            "minecraft:icon": {
+                "textures": {
+                    "default": "bow_standby"
+                }
+            },
+            "minecraft:enchantable": {
+                "value": 10,
+                "slot": "sword"
+            }
+        }
+    }
+}

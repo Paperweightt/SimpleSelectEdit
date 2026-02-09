@@ -2,29 +2,19 @@
     "format_version": "1.18.20",
     "minecraft:entity": {
         "description": {
-            "identifier": "sse:arrow",
+            "identifier": "sse:ticking_area",
             "is_spawnable": false,
             "is_summonable": true,
-            "is_experimental": false,
-            "properties": {
-                "sse:rotate_head_x": {
-                    "type": "int",
-                    "client_sync": true,
-                    "default": 0,
-                    "range": [0, 100000000]
-                },
-                "sse:rotate_head_y": {
-                    "type": "int",
-                    "client_sync": true,
-                    "default": 0,
-                    "range": [0, 10000000]
-                }
-            }
+            "is_experimental": false
         },
         "components": {
             "minecraft:pushable": {
                 "is_pushable": false,
                 "is_pushable_by_piston": false
+            },
+            "minecraft:tick_world": {
+                "never_despawn": true,
+                "radius": 6
             },
             "minecraft:physics": {
                 "has_gravity": false,

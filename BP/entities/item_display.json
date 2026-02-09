@@ -1,0 +1,104 @@
+{
+    "format_version": "1.18.20",
+    "minecraft:entity": {
+        "description": {
+            "identifier": "sse:item_display",
+            "is_spawnable": false,
+            "is_summonable": true,
+            "is_experimental": false,
+            "properties": {
+                "ptb:rxpos": {
+                    "type": "float",
+                    "client_sync": true,
+                    "default": 1.0,
+                    "range": [-1000.0, 1000.0]
+                },
+                "ptb:rypos": {
+                    "type": "float",
+                    "client_sync": true,
+                    "default": 1.0,
+                    "range": [-1000.0, 1000.0]
+                },
+                "ptb:rzpos": {
+                    "type": "float",
+                    "client_sync": true,
+                    "default": 1.0,
+                    "range": [-1000.0, 1000.0]
+                },
+                "ptb:yrot": {
+                    "type": "float",
+                    "client_sync": true,
+                    "default": 1.0,
+                    "range": [-1000.0, 1000.0]
+                },
+                "ptb:rxrot2": {
+                    "type": "float",
+                    "client_sync": true,
+                    "default": 1.0,
+                    "range": [-1000.0, 1000.0]
+                },
+                "ptb:ryrot2": {
+                    "type": "float",
+                    "client_sync": true,
+                    "default": 1.0,
+                    "range": [-1000.0, 1000.0]
+                },
+                "ptb:rzrot2": {
+                    "type": "float",
+                    "client_sync": true,
+                    "default": 1.0,
+                    "range": [-1000.0, 1000.0]
+                },
+                "ptb:rxrot": {
+                    "type": "float",
+                    "client_sync": true,
+                    "default": 1.0,
+                    "range": [-1000.0, 1000.0]
+                },
+                "ptb:ryrot": {
+                    "type": "float",
+                    "client_sync": true,
+                    "default": 1.0,
+                    "range": [-1000.0, 1000.0]
+                },
+                "ptb:rzrot": {
+                    "type": "float",
+                    "client_sync": true,
+                    "default": 1.0,
+                    "range": [-1000.0, 1000.0]
+                },
+                "ptb:scale": {
+                    "type": "float",
+                    "client_sync": true,
+                    "default": 1.0,
+                    "range": [-1000.0, 1000.0]
+                }
+            }
+        },
+        "components": {
+            "minecraft:pushable": {
+                "is_pushable": false,
+                "is_pushable_by_piston": false
+            },
+            "minecraft:physics": {
+                "has_gravity": false,
+                "has_collision": false
+            },
+            "minecraft:collision_box": {
+                "width": 0.001,
+                "height": 0.001
+            },
+            "minecraft:nameable": {
+                "always_show": true
+            },
+            "minecraft:damage_sensor": {
+                "triggers": [
+                    {
+                        "deals_damage": false
+                    }
+                ]
+            },
+            "minecraft:equipment": {}
+        }
+    }
+}

@@ -1,0 +1,37 @@
+{
+    "format_version": "1.8.0",
+    "animations": {
+        "animation.item_display": {
+            "loop": true,
+            "bones": {
+                "main": {
+                    "rotation": [0, "query.property('ptb:yrot')", 0]
+                },
+                "rightarm": {
+                    "rotation": [
+                        "query.property('ptb:rxrot2')",
+                        "query.property('ptb:ryrot2')",
+                        "query.property('ptb:rzrot2')"
+                    ],
+                    "scale": [
+                        "query.property('ptb:scale')",
+                        "query.property('ptb:scale')",
+                        "query.property('ptb:scale')"
+                    ],
+                    "position": [
+                        "query.property('ptb:rxpos')",
+                        "query.property('ptb:rypos')",
+                        "query.property('ptb:rzpos')"
+                    ]
+                },
+                "rightitem": {
+                    "rotation": [
+                        "query.property('ptb:rxrot')",
+                        "query.property('ptb:ryrot')",
+                        "query.property('ptb:rzrot')"
+                    ]
+                }
+            }
+        }
+    }
+}
