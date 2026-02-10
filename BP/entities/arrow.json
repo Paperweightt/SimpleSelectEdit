@@ -34,6 +34,15 @@
                 "width": 0.001,
                 "height": 0.001
             },
+            "minecraft:custom_hit_test": {
+                "hitboxes": [
+                    {
+                        "pivot": [0, 0, 0],
+                        "width": 1,
+                        "height": 1
+                    }
+                ]
+            },
             "minecraft:nameable": {
                 "always_show": true
             },

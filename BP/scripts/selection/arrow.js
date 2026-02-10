@@ -1,4 +1,4 @@
-import { system, world } from "@minecraft/server"
+import { system, world, Player } from "@minecraft/server"
 import { PROPERTIES, TYPE_IDS } from "../constants"
 import { DeathOnReload } from "../utils/deathOnReload"
 import { Vector } from "../utils/vector"
@@ -22,11 +22,23 @@ world.afterEvents.itemStartUse.subscribe((data) => {
 world.afterEvents.itemReleaseUse.subscribe((data) => {
     const { source, itemStack } = data
 
-    world.sendMessage("release")
-
     if (itemStack.typeId !== TYPE_IDS.SELECT_ITEM) return
 
+    world.sendMessage("release")
+
     Arrow.removeEditor(source)
+})
+
+world.afterEvents.playerHotbarSelectedSlotChange.subscribe((data) => {
+    Arrow.removeEditor(data.player)
+})
+
+world.afterEvents.entitySpawn.subscribe((data) => {
+    const { entity } = data
+
+    if (!(entity instanceof Player)) return
+
+    Arrow.removeEditor(data.player)
 })
 
 export class Arrow {
@@ -74,7 +86,7 @@ export class Arrow {
     static innit() {
         system.runInterval(() => {
             for (const arrow of this.getAll()) {
-                if (!arrow.editor) continue
+                if (!arrow.editor || !arrow.editor.isValid) continue
 
                 arrow.move()
             }
@@ -87,7 +99,7 @@ export class Arrow {
         onSelect: new Event(),
     }
 
-    /** @type {"x"|"y"|"z"}
+    /** @type {"x"|"y"|"z"} */
     axis
 
     /** @type {import("@minecraft/server").Player} */
@@ -98,7 +110,7 @@ export class Arrow {
      * @param {import("@minecraft/server").Dimension} dimension
      * @param {import("@minecraft/server").Vector2} rotation
      */
-    constructor(location, dimension, rotation) {
+    constructor(location, dimension, rotation = { x: 0, y: 0 }) {
         this.entity = dimension.spawnEntity(TYPE_IDS.ARROW, location)
         this.location = location
         this.dimension = dimension
@@ -123,7 +135,7 @@ export class Arrow {
                 this.planeRotation = { x: 0, y: 0 }
                 break
             case "y":
-                this.planeRotation = { x: 0, y: 90 }
+                this.planeRotation = { x: 0, y: 0 }
                 break
         }
     }
@@ -148,11 +160,25 @@ export class Arrow {
     }
 
     move() {
-        const pointer = this.getPointer()
+        const newLocation = this.getPointer().add(this.location)
 
-        this.entity.teleport(Vector.add(this.location, pointer))
+        this.entity.teleport(newLocation)
 
-        this.events.onMove.emit(this)
+        this.events.onMove.emit({
+            prevLocation: this.location.copy(),
+            newLocation: newLocation,
+            editor: this.editor,
+        })
+
+        this.location = newLocation
+    }
+
+    /**
+     * @param {Vector}
+     */
+    teleport(location) {
+        this.entity.teleport(location)
+        this.location = location
     }
 
     getPointer() {
@@ -184,8 +210,6 @@ export class Arrow {
     /** @param {import("@minecraft/server").Player} */
     setEditor(player) {
         this.editor = player
-
-        world.sendMessage(this.editor.name)
 
         this.events.onSelect.emit(this)
     }
