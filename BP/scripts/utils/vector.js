@@ -1,5 +1,5 @@
 export class Vector {
-    constructor(x, y, z) {
+    constructor(x = 0, y, z) {
         if (Array.isArray(x)) {
             this.x = x[0]
             this.y = x[1]
@@ -44,6 +44,14 @@ export class Vector {
             default:
                 return new Vector(0, 0, 0)
         }
+    }
+
+    static max(a, b) {
+        return new Vector(Math.max(a.x, b.x), Math.max(a.y, b.y), Math.max(a.z, b.z))
+    }
+
+    static min(a, b) {
+        return new Vector(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.min(a.z, b.z))
     }
 
     static abs(a) {

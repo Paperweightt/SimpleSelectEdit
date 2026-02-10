@@ -3,6 +3,7 @@ import { Arrow } from "./arrow.js"
 import { Vector } from "../utils/vector.js"
 import { Particle } from "../utils/particle.js"
 import { BLOCK_PARTICLE, TYPE_IDS } from "../constants.js"
+import "../utils/isShifting.js"
 
 system.run(() => {
     const dim = world.getDimension("overworld")
@@ -54,19 +55,21 @@ export class Selection {
             for (const selection of this.getAll()) {
                 selection.display()
             }
-        }, 4)
+        })
     }
 
     /** @type {Record<import("@minecraft/server").Direction,Arrow>} */
     arrows = {}
 
-    get middle() {
-        return Vector.divide(this.size, 2).add(this.location)
-    }
-
+    /**
+     * @param {Vector} location
+     * @param {Vector} size
+     * @param {import("@minecraft/server").Dimension} dimension
+     */
     constructor(location, size, dimension) {
-        this.location = location
+        this.displayLocation = location
         this.size = size
+        this.locatin = location
         this.dimension = dimension
         this.id = Math.floor(Math.random() * 10000000)
 
@@ -92,9 +95,37 @@ export class Selection {
         const location = this.getArrowLocation(direction)
         const rotation = Selection.directionToRotation[direction]
         const arrow = new Arrow(location, this.dimension, rotation)
+        const minSize = new Vector(1, 1, 1)
 
         arrow.events.onMove.subscribe((data) => {
-            this.location = Vector.subtract(data.newLocation, this.getArrowOffset(direction))
+            const { editor, newLocation, prevLocation } = data
+            const diff = Vector.subtract(newLocation, prevLocation)
+
+            if (editor.customIsShifting) {
+                if (direction === "Down" || direction === "West" || direction === "North") {
+                    const newSize = Vector.max(Vector.subtract(this.size, diff), minSize)
+                    const sizeChange = Vector.subtract(this.size, newSize)
+
+                    this.displayLocation.add(sizeChange)
+                    this.size = newSize
+                } else {
+                    this.size = Vector.max(Vector.add(this.size, diff), minSize)
+                }
+            } else {
+                const location = diff.add(this.displayLocation)
+                const { min, max } = this.dimension.heightRange
+
+                location.y = Math.min(location.y, max - 1)
+                location.y = Math.max(location.y, min)
+
+                this.displayLocation = location
+            }
+            this.reloadArrowLocations()
+        })
+
+        arrow.events.onRelease.subscribe(() => {
+            this.displayLocation = this.displayLocation.round()
+            this.size = this.size.round()
 
             this.reloadArrowLocations()
         })
@@ -106,7 +137,6 @@ export class Selection {
 
     reloadArrowLocations() {
         for (const [direction, arrow] of Object.entries(this.arrows)) {
-            world.sendMessage(direction)
             arrow.teleport(this.getArrowLocation(direction))
         }
     }
@@ -116,7 +146,7 @@ export class Selection {
      * @returns {Vector}
      */
     getArrowLocation(direction) {
-        return Vector.add(this.location, this.getArrowOffset(direction))
+        return Vector.add(this.displayLocation, this.getArrowOffset(direction))
     }
 
     /**
@@ -133,8 +163,10 @@ export class Selection {
     }
 
     display() {
-        Particle.boxEdges(TYPE_IDS.LINE, this.location, this.size, this.dimension, 0.4)
-        Particle.boxFaces(BLOCK_PARTICLE.BASIC, this.location, this.size, this.dimension)
+        if (system.currentTick % 4 === 0) {
+            Particle.boxFaces(BLOCK_PARTICLE.BASIC, this.displayLocation, this.size, this.dimension)
+        }
+        Particle.boxEdges(TYPE_IDS.LINE, this.displayLocation, this.size, this.dimension, 0.1)
     }
 }
 

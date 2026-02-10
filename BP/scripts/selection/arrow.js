@@ -161,16 +161,13 @@ export class Arrow {
 
     move() {
         const newLocation = this.getPointer().add(this.location)
-
-        this.entity.teleport(newLocation)
-
-        this.events.onMove.emit({
+        const data = {
             prevLocation: this.location.copy(),
             newLocation: newLocation,
             editor: this.editor,
-        })
+        }
 
-        this.location = newLocation
+        this.events.onMove.emit(data)
     }
 
     /**
@@ -211,13 +208,19 @@ export class Arrow {
     setEditor(player) {
         this.editor = player
 
-        this.events.onSelect.emit(this)
+        this.events.onSelect.emit({
+            location: this.location.copy(),
+            editor: player,
+        })
     }
 
     removeEditor() {
         delete this.editor
 
-        this.events.onRelease.emit(this)
+        this.events.onRelease.emit({
+            location: this.location.copy(),
+            editor: this.editor,
+        })
     }
 }
 
