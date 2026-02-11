@@ -1,6 +1,6 @@
 import { world } from "@minecraft/server"
 import { TYPE_IDS } from "../constants"
-import { DeathOnReload } from "../util/deathOnReload"
+import { DeathOnReload } from "../utils/deathOnReload"
 
 export class BackPanel {
     firstLoad = true
@@ -8,7 +8,7 @@ export class BackPanel {
     size = { x: 0, y: 0 }
 
     /**
-     * @param {import("../util/vector").Vector} location
+     * @param {import("../utils/vector").Vector} location
      * @param {import("@minecraft/server").Dimension)} dimension
      * @param {import("@minecraft/server").EntityQueryOptions} viewQuery
      */
@@ -33,7 +33,7 @@ export class BackPanel {
     }
 
     /**
-     * @param {import("../util/vector").Vector} location
+     * @param {import("../utils/vector").Vector} location
      */
     teleport(location) {
         this.location = location

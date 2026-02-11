@@ -3,9 +3,9 @@ import { BLOCK_PARTICLE, TYPE_IDS } from "../constants"
 import { Vector } from "../utils/vector"
 import { Particle } from "../utils/particle"
 import { Selection } from "./selection"
-import { Selector } from "../selector/selector"
+import { SelectItem } from "../selector/selectItem"
 
-Selector.events.startUse.subscribe({
+SelectItem.events.startUse.subscribe({
     priority: (data) => {
         const { blockRaycast, player } = data
 
@@ -22,7 +22,7 @@ Selector.events.startUse.subscribe({
     },
 })
 
-Selector.events.releaseUse.subscribe((data) => {
+SelectItem.events.releaseUse.subscribe((data) => {
     SelectionCreator.get(data.player.id)?.apply()
 })
 

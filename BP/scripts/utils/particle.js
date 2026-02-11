@@ -69,20 +69,22 @@ export class Particle {
             this.line(particle, start, offset, dimension, lifetime, width, rgba)
         }
 
-        line(new Vector(0, 0, 0), new Vector(0, size.y, 0))
-        line(new Vector(size.x, 0, 0), new Vector(0, size.y, 0))
-        line(new Vector(0, 0, size.z), new Vector(0, size.y, 0))
-        line(new Vector(size.x, 0, size.z), new Vector(0, size.y, 0))
+        try {
+            line(new Vector(0, 0, 0), new Vector(0, size.y, 0))
+            line(new Vector(size.x, 0, 0), new Vector(0, size.y, 0))
+            line(new Vector(0, 0, size.z), new Vector(0, size.y, 0))
+            line(new Vector(size.x, 0, size.z), new Vector(0, size.y, 0))
 
-        line(new Vector(0, 0, 0), new Vector(0, 0, size.z))
-        line(new Vector(size.x, 0, 0), new Vector(0, 0, size.z))
-        line(new Vector(0, size.y, 0), new Vector(0, 0, size.z))
-        line(new Vector(size.x, size.y, 0), new Vector(0, 0, size.z))
+            line(new Vector(0, 0, 0), new Vector(0, 0, size.z))
+            line(new Vector(size.x, 0, 0), new Vector(0, 0, size.z))
+            line(new Vector(0, size.y, 0), new Vector(0, 0, size.z))
+            line(new Vector(size.x, size.y, 0), new Vector(0, 0, size.z))
 
-        line(new Vector(0, 0, 0), new Vector(size.x, 0, 0))
-        line(new Vector(0, size.y, 0), new Vector(size.x, 0, 0))
-        line(new Vector(0, 0, size.z), new Vector(size.x, 0, 0))
-        line(new Vector(0, size.y, size.z), new Vector(size.x, 0, 0))
+            line(new Vector(0, 0, 0), new Vector(size.x, 0, 0))
+            line(new Vector(0, size.y, 0), new Vector(size.x, 0, 0))
+            line(new Vector(0, 0, size.z), new Vector(size.x, 0, 0))
+            line(new Vector(0, size.y, size.z), new Vector(size.x, 0, 0))
+        } catch (error) {}
     }
 
     /**
@@ -145,14 +147,17 @@ export class Particle {
 
             this.face(particleVector, start, offset, dimension, rgba)
         }
+        const zFight = 0.0625
 
-        face(new Vector(0, 0, 0), new Vector(0, size.y, size.z))
-        face(new Vector(size.x, 0, 0), new Vector(0, size.y, size.z))
+        try {
+            face(new Vector(-zFight, 0, 0), new Vector(0, size.y, size.z))
+            face(new Vector(size.x + zFight, 0, 0), new Vector(0, size.y, size.z))
 
-        face(new Vector(0, 0, 0), new Vector(size.x, 0, size.z))
-        face(new Vector(0, size.y, 0), new Vector(size.x, 0, size.z))
+            face(new Vector(0, -zFight, 0), new Vector(size.x, 0, size.z))
+            face(new Vector(0, size.y + zFight, 0), new Vector(size.x, 0, size.z))
 
-        face(new Vector(0, 0, 0), new Vector(size.x, size.y, 0))
-        face(new Vector(0, 0, size.z), new Vector(size.x, size.y, 0))
+            face(new Vector(0, 0, -zFight), new Vector(size.x, size.y, 0))
+            face(new Vector(0, 0, size.z + zFight), new Vector(size.x, size.y, 0))
+        } catch (error) {}
     }
 }

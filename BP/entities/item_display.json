@@ -7,67 +7,67 @@
             "is_summonable": true,
             "is_experimental": false,
             "properties": {
-                "ptb:rxpos": {
+                "sse:rxpos": {
                     "type": "float",
                     "client_sync": true,
                     "default": 1.0,
                     "range": [-1000.0, 1000.0]
                 },
-                "ptb:rypos": {
+                "sse:rypos": {
                     "type": "float",
                     "client_sync": true,
                     "default": 1.0,
                     "range": [-1000.0, 1000.0]
                 },
-                "ptb:rzpos": {
+                "sse:rzpos": {
                     "type": "float",
                     "client_sync": true,
                     "default": 1.0,
                     "range": [-1000.0, 1000.0]
                 },
-                "ptb:yrot": {
+                "sse:yrot": {
                     "type": "float",
                     "client_sync": true,
                     "default": 1.0,
                     "range": [-1000.0, 1000.0]
                 },
-                "ptb:rxrot2": {
+                "sse:rxrot2": {
                     "type": "float",
                     "client_sync": true,
                     "default": 1.0,
                     "range": [-1000.0, 1000.0]
                 },
-                "ptb:ryrot2": {
+                "sse:ryrot2": {
                     "type": "float",
                     "client_sync": true,
                     "default": 1.0,
                     "range": [-1000.0, 1000.0]
                 },
-                "ptb:rzrot2": {
+                "sse:rzrot2": {
                     "type": "float",
                     "client_sync": true,
                     "default": 1.0,
                     "range": [-1000.0, 1000.0]
                 },
-                "ptb:rxrot": {
+                "sse:rxrot": {
                     "type": "float",
                     "client_sync": true,
                     "default": 1.0,
                     "range": [-1000.0, 1000.0]
                 },
-                "ptb:ryrot": {
+                "sse:ryrot": {
                     "type": "float",
                     "client_sync": true,
                     "default": 1.0,
                     "range": [-1000.0, 1000.0]
                 },
-                "ptb:rzrot": {
+                "sse:rzrot": {
                     "type": "float",
                     "client_sync": true,
                     "default": 1.0,
                     "range": [-1000.0, 1000.0]
                 },
-                "ptb:scale": {
+                "sse:scale": {
                     "type": "float",
                     "client_sync": true,
                     "default": 1.0,

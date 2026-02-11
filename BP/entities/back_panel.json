@@ -7,25 +7,25 @@
             "is_summonable": true,
             "is_experimental": false,
             "properties": {
-                "ptb:xrotation": {
+                "sse:xrotation": {
                     "type": "int",
                     "client_sync": true,
                     "default": 0,
                     "range": [0, 100000000]
                 },
-                "ptb:yrotation": {
+                "sse:yrotation": {
                     "type": "int",
                     "client_sync": true,
                     "default": 0,
                     "range": [0, 10000000]
                 },
-                "ptb:xsize": {
+                "sse:xsize": {
                     "type": "int",
                     "client_sync": true,
                     "default": 1,
                     "range": [0, 100000000]
                 },
-                "ptb:ysize": {
+                "sse:ysize": {
                     "type": "int",
                     "client_sync": true,
                     "default": 1,

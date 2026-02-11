@@ -1,9 +1,9 @@
 import { getEdit } from "./registry"
-import { Filter } from "../util/filter"
-import { Vector } from "../util/vector"
+import { Filter } from "../utils/filter"
+import { Vector } from "../utils/vector"
 import { world, system } from "@minecraft/server"
 import { PACK_ID, TYPE_IDS } from "../constants"
-import { DeathOnReload } from "../util/deathOnReload"
+import { DeathOnReload } from "../utils/deathOnReload"
 
 export class Edit {
     static registry = new Map()

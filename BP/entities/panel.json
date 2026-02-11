@@ -7,43 +7,43 @@
             "is_summonable": true,
             "is_experimental": false,
             "properties": {
-                "ptb:pixels": {
+                "sse:pixels": {
                     "type": "int",
                     "client_sync": true,
                     "default": 25,
                     "range": [0, 47]
                 },
-                "ptb:scale": {
+                "sse:scale": {
                     "type": "float",
                     "client_sync": true,
                     "default": 1.0,
                     "range": [0.0, 10.0]
                 },
-                "ptb:rcolor": {
+                "sse:rcolor": {
                     "type": "int",
                     "client_sync": true,
                     "default": 255,
                     "range": [0, 100000000]
                 },
-                "ptb:gcolor": {
+                "sse:gcolor": {
                     "type": "int",
                     "client_sync": true,
                     "default": 255,
                     "range": [0, 100000000]
                 },
-                "ptb:bcolor": {
+                "sse:bcolor": {
                     "type": "int",
                     "client_sync": true,
                     "default": 255,
                     "range": [0, 100000000]
                 },
-                "ptb:xrotation": {
+                "sse:rotate_head_x": {
                     "type": "int",
                     "client_sync": true,
                     "default": 1,
                     "range": [0, 100000000]
                 },
-                "ptb:yrotation": {
+                "sse:rotate_head_y": {
                     "type": "int",
                     "client_sync": true,
                     "default": 0,
@@ -55,16 +55,6 @@
             "minecraft:pushable": {
                 "is_pushable": false,
                 "is_pushable_by_piston": false
-            },
-            "minecraft:interact": {
-                "interactions": [
-                    {
-                        "on_interact": {
-                            "event": "ptb:player_interact",
-                            "target": "other"
-                        }
-                    }
-                ]
             },
             "minecraft:physics": {
                 "has_gravity": false,

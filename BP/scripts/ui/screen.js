@@ -1,6 +1,6 @@
 import { system, world } from "@minecraft/server"
 import { Panel } from "./panel"
-import { Vector } from "../util/vector"
+import { Vector } from "../utils/vector"
 
 export class Screen {
     static screens = {}

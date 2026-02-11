@@ -1,7 +1,7 @@
 import { system, world } from "@minecraft/server"
-import { Vector } from "../util/vector"
-import { DeathOnReload } from "../util/deathOnReload"
-import { TYPE_IDS, PACK_ID } from "../constants"
+import { Vector } from "../utils/vector"
+import { DeathOnReload } from "../utils/deathOnReload"
+import { TYPE_IDS, PACK_ID, PROPERTIES } from "../constants"
 
 export class Panel {
     static WIDTH = 25
@@ -100,8 +100,8 @@ export class Panel {
 
     setRotation(rotation) {
         this.rotation = rotation
-        this.entity.setProperty(PACK_ID + ":xrotation", rotation.x + 90)
-        this.entity.setProperty(PACK_ID + ":yrotation", rotation.y)
+        this.entity.setProperty(PROPERTIES.HEAD_X_ROTATION, rotation.x + 90)
+        this.entity.setProperty(PROPERTIES.HEAD_Y_ROTATION, rotation.y)
     }
 
     remove() {

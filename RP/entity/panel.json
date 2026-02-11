@@ -2,7 +2,7 @@
     "format_version": "1.10.0",
     "minecraft:client_entity": {
         "description": {
-            "identifier": "ptb:panel",
+            "identifier": "sse:panel",
             "materials": {
                 "default": "entity_emissive_alpha_one_sided"
             },
@@ -60,11 +60,11 @@
                 "pixels_46": "geometry.panel.46"
             },
             "animations": {
-                "panel_rotate": "animation.panel.rotation",
-                "controller.panel": "controller.animation.rotate_head"
+                "rotate_head": "animation.rotate_head",
+                "controller.head": "controller.animation.rotate_head"
             },
             "scripts": {
-                "animate": ["controller.panel"]
+                "animate": ["controller.head"]
             },
             "render_controllers": ["controller.render.panel"]
         }

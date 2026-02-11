@@ -1,7 +1,7 @@
 import { world, system } from "@minecraft/server"
 import { molang } from "./font/molang"
-import { Vector } from "../util/vector"
-import { ItemDisplay } from "../util/itemDisplay"
+import { Vector } from "../utils/vector"
+import { ItemDisplay } from "../utils/itemDisplay"
 
 export class Element {
     resetList = []

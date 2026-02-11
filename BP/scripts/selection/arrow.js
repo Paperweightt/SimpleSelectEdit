@@ -3,9 +3,9 @@ import { PROPERTIES, TYPE_IDS } from "../constants"
 import { DeathOnReload } from "../utils/deathOnReload"
 import { Vector } from "../utils/vector"
 import { Event } from "../utils/events"
-import { Selector } from "../selector/selector"
+import { SelectItem } from "../selector/selectItem"
 
-Selector.events.startUse.subscribe({
+SelectItem.events.startUse.subscribe({
     priority: (data) => {
         const { entityRaycast } = data
 
@@ -28,7 +28,7 @@ Selector.events.startUse.subscribe({
     },
 })
 
-Selector.events.releaseUse.subscribe((data) => {
+SelectItem.events.releaseUse.subscribe((data) => {
     const { player } = data
 
     Arrow.removeEditor(player)

@@ -1,7 +1,7 @@
 import { Arrow } from "./arrow.js"
 import { Vector } from "../utils/vector.js"
 import { Selection } from "./selection.js"
-import { Selector } from "../selector/selector.js"
+import { SelectItem } from "../selector/selectItem.js"
 import { system, world } from "@minecraft/server"
 
 system.run(() => {
@@ -12,8 +12,15 @@ system.run(() => {
     new Selection(start, size, dim)
 })
 
-Selector.events.click.subscribe({
-    priority: -1,
+SelectItem.events.click.subscribe({
+    priority: (data) => {
+        const { player } = data
+        const rayResult = Selection.getPlayerViewBox(player)
+
+        if (player.customIsShifting && !rayResult) return Infinity
+
+        return -1
+    },
     callback: (data) => {
         const { player } = data
         const dimension = player.dimension

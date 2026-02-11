@@ -1,0 +1,72 @@
+{
+    "format_version": "1.8.0",
+    "render_controllers": {
+        "controller.render.panel": {
+            "arrays": {
+                "geometries": {
+                    "Array.geo": [
+                        "Geometry.default",
+                        "Geometry.pixels_1",
+                        "Geometry.pixels_2",
+                        "Geometry.pixels_3",
+                        "Geometry.pixels_4",
+                        "Geometry.pixels_5",
+                        "Geometry.pixels_6",
+                        "Geometry.pixels_7",
+                        "Geometry.pixels_8",
+                        "Geometry.pixels_9",
+                        "Geometry.pixels_10",
+                        "Geometry.pixels_11",
+                        "Geometry.pixels_12",
+                        "Geometry.pixels_13",
+                        "Geometry.pixels_14",
+                        "Geometry.pixels_15",
+                        "Geometry.pixels_16",
+                        "Geometry.pixels_17",
+                        "Geometry.pixels_18",
+                        "Geometry.pixels_19",
+                        "Geometry.pixels_20",
+                        "Geometry.pixels_21",
+                        "Geometry.pixels_22",
+                        "Geometry.pixels_23",
+                        "Geometry.pixels_24",
+                        "Geometry.pixels_25",
+                        "Geometry.pixels_26",
+                        "Geometry.pixels_27",
+                        "Geometry.pixels_28",
+                        "Geometry.pixels_29",
+                        "Geometry.pixels_31",
+                        "Geometry.pixels_32",
+                        "Geometry.pixels_33",
+                        "Geometry.pixels_34",
+                        "Geometry.pixels_35",
+                        "Geometry.pixels_36",
+                        "Geometry.pixels_37",
+                        "Geometry.pixels_38",
+                        "Geometry.pixels_39",
+                        "Geometry.pixels_40",
+                        "Geometry.pixels_41",
+                        "Geometry.pixels_42",
+                        "Geometry.pixels_43",
+                        "Geometry.pixels_44",
+                        "Geometry.pixels_45",
+                        "Geometry.pixels_46"
+                    ]
+                }
+            },
+            "geometry": "array.geo[query.property('sse:pixels')]",
+            "textures": ["Texture.default"],
+            "materials": [
+                {
+                    "*": "Material.default"
+                }
+            ],
+            "overlay_color": {
+                "r": "query.property('sse:rcolor')/255",
+                "g": "query.property('sse:gcolor')/255",
+                "b": "query.property('sse:bcolor')/255",
+                "a": 1
+            }
+        }
+    }
+}
