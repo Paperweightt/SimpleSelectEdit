@@ -5,7 +5,7 @@
             "initial_state": "default",
             "states": {
                 "default": {
-                    "animations": ["back_panel_size"]
+                    "animations": ["scale_size"]
                 }
             }
         }

@@ -6,9 +6,22 @@ export class Screen {
     static screens = {}
     static id = 0
 
-    /** @returns Screen[] */
+    /** @returns {Screen[]} */
     static getAll() {
         return Object.values(Screen.screens)
+    }
+
+    /**
+     * @param {import("@minecraft/server").Player}
+     * @returns {boolean}
+     */
+    static isPlayerLookingAtAnyScreen(player) {
+        for (const screen of Screen.getAll()) {
+            if (screen.playerIsLookingAtScreen(player)) {
+                return true
+            }
+        }
+        return false
     }
 
     pixelUpdates = {}

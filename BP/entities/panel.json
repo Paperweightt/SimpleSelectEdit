@@ -52,6 +52,16 @@
             }
         },
         "components": {
+            "minecraft:interact": {
+                "interactions": [
+                    {
+                        "on_interact": {
+                            "event": "sse:player_interact",
+                            "target": "other"
+                        }
+                    }
+                ]
+            },
             "minecraft:pushable": {
                 "is_pushable": false,
                 "is_pushable_by_piston": false

@@ -308,6 +308,7 @@ export class ButtonElement extends Element {
     }
 
     addOnClick(callback) {
+        world.sendMessage("hi")
         const id = world.afterEvents.playerInteractWithEntity.subscribe((data) => {
             const player = data.player
 

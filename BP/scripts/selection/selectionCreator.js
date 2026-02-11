@@ -1,6 +1,7 @@
-import { Player, system, world } from "@minecraft/server"
+import { Player, system } from "@minecraft/server"
 import { BLOCK_PARTICLE, TYPE_IDS } from "../constants"
 import { Vector } from "../utils/vector"
+import { SelectionGroup } from "./selectionGroup"
 import { Particle } from "../utils/particle"
 import { Selection } from "./selection"
 import { SelectItem } from "../selector/selectItem"
@@ -23,7 +24,22 @@ SelectItem.events.startUse.subscribe({
 })
 
 SelectItem.events.releaseUse.subscribe((data) => {
-    SelectionCreator.get(data.player.id)?.apply()
+    const { player } = data
+    const dimension = player.dimension
+    const creator = SelectionCreator.get(player.id)
+    let group
+
+    if (!creator) return
+
+    const selection = creator.apply()
+
+    if (player.customIsShifting) {
+        group = SelectionGroup.get(player.id) || new SelectionGroup(player, dimension)
+    } else {
+        group = new SelectionGroup(player, dimension)
+    }
+
+    group.toggleSelection(selection)
 })
 
 class SelectionCreator {
@@ -97,15 +113,16 @@ class SelectionCreator {
         this.player.onScreenDisplay.setActionBar("§l" + size.getString())
     }
 
+    /** @returns {Selection} */
     apply() {
         const { minLocation, maxLocation } = this.getStartEnd()
         const size = Vector.subtract(maxLocation, minLocation)
 
         if (minLocation.y === this.dimension.heightRange.min) minLocation.y++
 
-        new Selection(minLocation, size, this.dimension)
-
         this.remove()
+
+        return new Selection(minLocation, size, this.dimension)
     }
 
     /**

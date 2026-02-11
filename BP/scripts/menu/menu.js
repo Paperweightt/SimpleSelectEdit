@@ -1,14 +1,10 @@
-import { system, BlockTypes, ItemStack, world } from "@minecraft/server"
+import { StackElement, ButtonElement, Element } from "../ui/screenElements.js"
+import { BlockButtonElement, BlockIntElement, KeyIntElement } from "./customElements.js"
+import { system, BlockTypes, ItemStack } from "@minecraft/server"
+import { SelectionGroup } from "../selection/selectionGroup.js"
 import { Vector } from "../utils/vector.js"
 import { Screen } from "../ui/screen.js"
-import { StackElement, ButtonElement, TextElement, Element } from "../ui/screenElements.js"
 import { Edit } from "../edit/index.js"
-import {
-    BlockButtonElement,
-    BlockIntElement,
-    KeyIntElement,
-    StructureIntElement,
-} from "./customElements.js"
 import { BackPanel } from "./backPanel.js"
 import { SelectItem } from "../selector/selectItem.js"
 
@@ -24,8 +20,31 @@ SelectItem.events.click.subscribe({
         const { player } = data
         const dimension = player.dimension
 
-        new Menu(player, player.location, dimension)
+        const viewDirection = Vector.multiply(player.getViewDirection(), 2.25)
+        const location = Vector.add(player.getHeadLocation(), viewDirection)
+
+        if (location.y > dimension.heightRange.max) return
+        if (location.y < dimension.heightRange.min + 5) return
+        if (player.interacted) return
+
+        new Menu(player, location, dimension)
     },
+})
+
+SelectItem.events.click.subscribe({
+    priority: (data) => {
+        if (Screen.isPlayerLookingAtAnyScreen(data.player)) return -2
+        return Infinity
+    },
+    callback: () => {},
+})
+
+SelectItem.events.startUse.subscribe({
+    priority: (data) => {
+        if (Screen.isPlayerLookingAtAnyScreen(data.player)) return -2
+        return Infinity
+    },
+    callback: () => {},
 })
 
 export const BUTTON_WIDTH = 54
@@ -59,9 +78,9 @@ class Menu {
     }
 
     /**
-     * @param {import("@minecraft/server").Player}
-     * @param {Vector}
-     * @param {import("@minecraft/server").Dimension}
+     * @param {import("@minecraft/server").Player} player
+     * @param {Vector} location
+     * @param {import("@minecraft/server").Dimension} dimension
      */
     constructor(player, location, dimension) {
         const container = player.getComponent("inventory").container
@@ -78,9 +97,11 @@ class Menu {
         this.previousMenus = this.db.previousMenus
 
         this.lockItem()
-        this.initScreen()
         this.initBackPanel()
+        this.initScreen()
         this.runInterval()
+
+        this.resume()
 
         Menu.list[this.id] = this
     }
@@ -168,17 +189,15 @@ class Menu {
         this.screen.addElement(panel, -25, 10)
 
         this.addMiscButtons(false)
-        this.resume()
     }
 
     initBackPanel() {
         this.backPanel = new BackPanel(this.location.copy(), this.dimension)
+
         this.backPanel.setRotation({
             y: Math.round(this.rotation.y),
             x: Math.round(this.rotation.x),
         })
-
-        this.updateBackPanel()
     }
 
     addMiscButtons(update = true) {
@@ -186,7 +205,8 @@ class Menu {
         this.tabManager.addElement(this.miscPanel)
 
         const closeButton = new ButtonElement(BUTTON_HEIGHT, BUTTON_HEIGHT, "x")
-        closeButton.addOnClick(() => {
+        closeButton.addOnClick(async () => {
+            await system.waitTicks(2)
             Menu.remove(this.id)
         })
         closeButton.textElement.offset.y++

@@ -20,11 +20,9 @@ export class SelectItem {
     getData() {
         const data = this.slot.getDynamicProperty(SelectItem.propertyId)
 
-        if (!data) {
-            return SelectItem.defaultData
-        }
+        if (!data) return SelectItem.defaultData
 
-        return data
+        return JSON.parse(data)
     }
 
     save() {

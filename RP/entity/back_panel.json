@@ -13,9 +13,9 @@
                 "default": "geometry.back_panel"
             },
             "animations": {
-                "panel_rotate": "animation.panel.rotation",
-                "back_panel_size": "animation.back_panel",
-                "controller.rotation": "controller.animation.panel.rotation",
+                "rotate_head": "animation.rotate_head",
+                "scale_size": "animation.back_panel",
+                "controller.rotation": "controller.animation.rotate_head",
                 "controller.size": "controller.animation.back_panel.size"
             },
             "scripts": {

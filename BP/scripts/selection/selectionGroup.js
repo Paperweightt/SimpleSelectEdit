@@ -2,15 +2,7 @@ import { Arrow } from "./arrow.js"
 import { Vector } from "../utils/vector.js"
 import { Selection } from "./selection.js"
 import { SelectItem } from "../selector/selectItem.js"
-import { system, world } from "@minecraft/server"
-
-system.run(() => {
-    const dim = world.getDimension("overworld")
-    const start = new Vector(14, -63, -15)
-    const size = new Vector(5, 1, 5)
-
-    new Selection(start, size, dim)
-})
+import { world } from "@minecraft/server"
 
 SelectItem.events.click.subscribe({
     priority: (data) => {
@@ -38,7 +30,7 @@ SelectItem.events.click.subscribe({
             return
         }
 
-        group.addSelection(rayResult.selection)
+        group.toggleSelection(rayResult.selection)
     },
 })
 
@@ -111,12 +103,51 @@ export class SelectionGroup {
         SelectionGroup.add(this)
     }
 
-    /** @type {Selection} */
+    /** @param {Selection} selection */
+    toggleSelection(selection) {
+        const id = selection.id
+        const index = this.selections.findIndex((selection) => selection.id === id)
+
+        if (index === -1) {
+            if (this.selections.length === 0) {
+                this.addSelection(selection)
+                this.createArrows()
+            } else {
+                this.addSelection(selection)
+            }
+        } else {
+            this.removeSelection(index)
+        }
+    }
+
+    /** @param {Selection} selection */
     addSelection(selection) {
+        selection.lineRGB = SelectionGroup.lineRGB
+        this.selections.push(selection)
+
+        this.reloadLocations()
+        this.reloadArrowLocations()
+    }
+
+    /** @param {number} */
+    removeSelection(index) {
+        const selection = this.selections[index]
+
+        selection.lineRGB = Selection.defaultLineRGB
+
+        this.selections.splice(index, 1)
+
+        if (this.selections.length === 0) {
+            this.remove()
+        } else {
+            this.reloadLocations()
+            this.reloadArrowLocations()
+        }
+    }
+
+    reloadLocations() {
         let maxLocation = new Vector(-Infinity)
         let minLocation = new Vector(Infinity)
-
-        this.selections.push(selection)
 
         for (const selection of this.selections) {
             const selectionMax = Vector.add(selection.location, selection.size)
@@ -128,12 +159,6 @@ export class SelectionGroup {
         this.size = Vector.subtract(maxLocation, minLocation)
         this.displayLocation = minLocation
         this.location = minLocation
-
-        selection.lineRGB = SelectionGroup.lineRGB
-
-        if (this.selections.length === 1) this.createArrows()
-
-        this.reloadArrowLocations()
     }
 
     createArrows() {

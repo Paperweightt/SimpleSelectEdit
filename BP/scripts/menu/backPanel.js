@@ -1,5 +1,5 @@
 import { world } from "@minecraft/server"
-import { TYPE_IDS } from "../constants"
+import { PROPERTIES, TYPE_IDS } from "../constants"
 import { DeathOnReload } from "../utils/deathOnReload"
 
 export class BackPanel {
@@ -16,6 +16,7 @@ export class BackPanel {
         this.location = location
         this.dimension = dimension
         this.viewQuery = viewQuery
+
         this.load()
     }
 
@@ -45,8 +46,8 @@ export class BackPanel {
      */
     setRotation(rotation) {
         this.rotation = rotation
-        this.entity.setProperty("ptb:yrotation", rotation.y)
-        this.entity.setProperty("ptb:xrotation", rotation.x + 90)
+        this.entity.setProperty(PROPERTIES.HEAD_X_ROTATION, rotation.x + 90)
+        this.entity.setProperty(PROPERTIES.HEAD_Y_ROTATION, rotation.y)
     }
 
     /**
@@ -54,8 +55,8 @@ export class BackPanel {
      */
     setSize({ x, y }) {
         this.size = { x, y }
-        this.entity.setProperty("ptb:xsize", x)
-        this.entity.setProperty("ptb:ysize", y)
+        this.entity.setProperty(PROPERTIES.HEAD_X_SIZE, x)
+        this.entity.setProperty(PROPERTIES.HEAD_Y_SIZE, y)
     }
 
     remove() {

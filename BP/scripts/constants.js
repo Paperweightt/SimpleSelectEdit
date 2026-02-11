@@ -26,6 +26,8 @@ export const ANIMATIONS = {
 export const PROPERTIES = {
     HEAD_X_ROTATION: PACK_ID + ":rotate_head_x",
     HEAD_Y_ROTATION: PACK_ID + ":rotate_head_y",
+    HEAD_X_SIZE: PACK_ID + ":size_head_x",
+    HEAD_Y_SIZE: PACK_ID + ":size_head_y",
 }
 
 export const PATHS = {}
