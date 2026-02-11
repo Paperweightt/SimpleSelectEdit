@@ -1,45 +1,76 @@
-import { system, world, Player } from "@minecraft/server"
+import { system } from "@minecraft/server"
 import { PROPERTIES, TYPE_IDS } from "../constants"
 import { DeathOnReload } from "../utils/deathOnReload"
 import { Vector } from "../utils/vector"
+import { Event } from "../utils/events"
+import { Selector } from "../selector/selector"
 
-world.afterEvents.itemStartUse.subscribe((data) => {
-    const { source, itemStack } = data
+Selector.events.startUse.subscribe({
+    priority: (data) => {
+        const { entityRaycast } = data
 
-    if (itemStack.typeId !== TYPE_IDS.SELECT_ITEM) return
+        if (!entityRaycast.length) return Infinity
 
-    const ray = source.getEntitiesFromViewDirection({ ignoreBlockCollision: true })
+        const arrow = Arrow.get(entityRaycast[0].entity.id)
 
-    if (!ray.length) return
+        if (!arrow) return Infinity
 
-    const arrow = Arrow.get(ray[0].entity.id)
+        return -1
+    },
+    callback: (data) => {
+        const { entityRaycast, player } = data
 
-    if (!arrow) return
+        const arrow = Arrow.get(entityRaycast[0].entity.id)
 
-    arrow.setEditor(source)
+        if (!arrow) return
+
+        arrow.setEditor(player)
+    },
 })
 
-world.afterEvents.itemReleaseUse.subscribe((data) => {
-    const { source, itemStack } = data
+Selector.events.releaseUse.subscribe((data) => {
+    const { player } = data
 
-    if (itemStack.typeId !== TYPE_IDS.SELECT_ITEM) return
-
-    world.sendMessage("release")
-
-    Arrow.removeEditor(source)
+    Arrow.removeEditor(player)
 })
 
-world.afterEvents.playerHotbarSelectedSlotChange.subscribe((data) => {
-    Arrow.removeEditor(data.player)
-})
-
-world.afterEvents.entitySpawn.subscribe((data) => {
-    const { entity } = data
-
-    if (!(entity instanceof Player)) return
-
-    Arrow.removeEditor(data.player)
-})
+// world.afterEvents.itemStartUse.subscribe((data) => {
+//     const { source, itemStack } = data
+//
+//     if (itemStack.typeId !== TYPE_IDS.SELECT_ITEM) return
+//
+//     const ray = source.getEntitiesFromViewDirection({ ignoreBlockCollision: true })
+//
+//     if (!ray.length) return
+//
+//     const arrow = Arrow.get(ray[0].entity.id)
+//
+//     if (!arrow) return
+//
+//     arrow.setEditor(source)
+// })
+//
+// world.afterEvents.itemReleaseUse.subscribe((data) => {
+//     const { source, itemStack } = data
+//
+//     if (itemStack.typeId !== TYPE_IDS.SELECT_ITEM) return
+//
+//     world.sendMessage("release")
+//
+//     Arrow.removeEditor(source)
+// })
+//
+// world.afterEvents.playerHotbarSelectedSlotChange.subscribe((data) => {
+//     Arrow.removeEditor(data.player)
+// })
+//
+// world.afterEvents.entitySpawn.subscribe((data) => {
+//     const { entity } = data
+//
+//     if (!(entity instanceof Player)) return
+//
+//     Arrow.removeEditor(data.player)
+// })
 
 export class Arrow {
     /**
@@ -94,8 +125,11 @@ export class Arrow {
     }
 
     events = {
+        /** @type {Event<ArrowOnMoveData>}*/
         onMove: new Event(),
+        /** @type {Event<OnReleaseData>}*/
         onRelease: new Event(),
+        /** @type {Event<OnSelectData>}*/
         onSelect: new Event(),
     }
 
@@ -225,26 +259,6 @@ export class Arrow {
 }
 
 Arrow.innit()
-
-class Event {
-    constructor() {
-        this.listeners = new Set()
-    }
-
-    subscribe(fn) {
-        this.listeners.add(fn)
-    }
-
-    unsubscribe(fn) {
-        this.listeners.delete(fn)
-    }
-
-    emit(...args) {
-        for (const fn of this.listeners) {
-            fn(...args)
-        }
-    }
-}
 
 function getEyeLocation(player) {
     const headModelSize = 8

@@ -1,62 +1,38 @@
-import { world, Player, system } from "@minecraft/server"
-import { BLOCK_PARTICLE, TYPE_IDS } from "./constants"
-import { Vector } from "./utils/vector"
-import { Particle } from "./utils/particle"
-import { Selection } from "./selection/selection"
+import { Player, system } from "@minecraft/server"
+import { BLOCK_PARTICLE, TYPE_IDS } from "../constants"
+import { Vector } from "../utils/vector"
+import { Particle } from "../utils/particle"
+import { Selection } from "./selection"
+import { Selector } from "../selector/selector"
 
-world.afterEvents.itemStartUse.subscribe((data) => {
-    const { source, itemStack } = data
+Selector.events.startUse.subscribe({
+    priority: (data) => {
+        const { blockRaycast, player } = data
 
-    if (itemStack.typeId !== TYPE_IDS.SELECT_ITEM) return
-    if (source.customIsShifting) return
+        if (!blockRaycast) return Infinity
 
-    const entityRay = source.getEntitiesFromViewDirection({ ignoreBlockCollision: true })
+        return Vector.distance(blockRaycast.block, player.location)
+    },
+    callback: (data) => {
+        const { blockRaycast, player } = data
+        const { block, face, faceLocation } = blockRaycast
+        const location = Vector.add(block.location, faceLocation)
 
-    if (entityRay.length) return
-
-    const blockRay = source.getBlockFromViewDirection()
-
-    if (!blockRay) return
-
-    const instance = new EditInstance(data.source, blockRay.block)
-    const location = Vector.add(blockRay.block.location, blockRay.faceLocation)
-
-    instance.createEdit(location, blockRay.face)
+        new SelectionCreator(player, blockRaycast.block).createEdit(location, face)
+    },
 })
 
-world.afterEvents.itemReleaseUse.subscribe((data) => {
-    const { source, itemStack } = data
+Selector.events.releaseUse.subscribe((data) => {
+    const { player } = data
 
-    if (itemStack.typeId !== TYPE_IDS.SELECT_ITEM) return
+    const creator = SelectionCreator.get(player.id)
 
-    const instance = EditInstance.get(source.id)
+    if (!creator) return
 
-    if (instance) instance.apply()
+    creator.apply()
 })
 
-world.afterEvents.playerHotbarSelectedSlotChange.subscribe((data) => {
-    const instance = EditInstance.get(data.player.id)
-
-    if (instance) instance.remove()
-})
-
-world.afterEvents.playerLeave.subscribe((data) => {
-    const instance = EditInstance.get(data.playerId)
-
-    if (instance) instance.remove()
-})
-
-world.afterEvents.entitySpawn.subscribe((data) => {
-    const { entity } = data
-
-    if (!(entity instanceof Player)) return
-
-    const instance = EditInstance.get(entity.id)
-
-    if (instance) instance.remove()
-})
-
-class EditInstance {
+class SelectionCreator {
     static list = {}
 
     static faceToAxisRotation = {
@@ -68,20 +44,20 @@ class EditInstance {
         North: { axis: "z", rotation: { x: 270, y: 0 } },
     }
 
-    /** @returns {EditInstance|undefined} */
+    /** @returns {SelectionCreator|undefined} */
     static get(id) {
         return this.list[id]
     }
 
     /**
      * @param {number} id
-     * @param {EditInstance} instance
+     * @param {SelectionCreator} instance
      */
     static add(id, instance) {
         this.list[id] = instance
     }
 
-    /** @returns {EditInstance[]} */
+    /** @returns {SelectionCreator[]} */
     static getAll() {
         return Object.values(this.list)
     }
@@ -111,7 +87,7 @@ class EditInstance {
         this.dimension = block.dimension
         this.location = block.location
 
-        EditInstance.add(this.id, this)
+        SelectionCreator.add(this.id, this)
     }
 
     run() {
@@ -168,7 +144,7 @@ class EditInstance {
     }
 
     createEdit(location, face) {
-        const { axis, rotation } = EditInstance.faceToAxisRotation[face]
+        const { axis, rotation } = SelectionCreator.faceToAxisRotation[face]
 
         this.editLocation = location
 
@@ -182,7 +158,7 @@ class EditInstance {
     }
 
     remove() {
-        delete EditInstance.list[this.id]
+        delete SelectionCreator.list[this.id]
     }
 
     /**
@@ -220,4 +196,4 @@ function getEyeLocation(player) {
     return location
 }
 
-EditInstance.runInterval()
+SelectionCreator.runInterval()

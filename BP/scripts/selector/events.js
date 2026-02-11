@@ -1,0 +1,61 @@
+import { world, Player } from "@minecraft/server"
+import { TYPE_IDS } from "../constants"
+import { MinPriorityEvent, Event } from "../utils/events"
+
+world.afterEvents.itemStartUse.subscribe((data) => {
+    const { source, itemStack } = data
+
+    if (itemStack.typeId !== TYPE_IDS.SELECT_ITEM) return
+
+    const blockRaycast = source.getBlockFromViewDirection()
+    const entityRaycast = source.getEntitiesFromViewDirection({ ignoreBlockCollision: true })
+
+    SelectorEvents.startUse.emit({
+        player: source,
+        itemStack,
+        blockRaycast,
+        entityRaycast,
+    })
+})
+
+world.afterEvents.itemReleaseUse.subscribe((data) => {
+    const { source, itemStack } = data
+
+    if (itemStack.typeId !== TYPE_IDS.SELECT_ITEM) return
+
+    SelectorEvents.releaseUse.emit({
+        player: source,
+        itemStack,
+    })
+})
+
+world.afterEvents.playerHotbarSelectedSlotChange.subscribe((data) => {
+    const { player, previousSlotSelected } = data
+    const container = player.getComponent("inventory").container
+    const item = container.getItem(previousSlotSelected)
+
+    if (item?.typeId !== TYPE_IDS.SELECT_ITEM) return
+
+    SelectorEvents.releaseUse.emit({
+        player,
+    })
+})
+
+world.afterEvents.entitySpawn.subscribe((data) => {
+    const { entity } = data
+
+    if (!(entity instanceof Player)) return
+
+    SelectorEvents.releaseUse.emit({
+        player: entity,
+    })
+})
+
+export class SelectorEvents {
+    /** @type {MinPriorityEvent<SelectorClickData>} */
+    static click = new MinPriorityEvent()
+    /** @type {Event<SelectorReleaseData>} */
+    static releaseUse = new Event()
+    /** @type {MinPriorityEvent<SelectorStartUseData>} */
+    static startUse = new MinPriorityEvent()
+}

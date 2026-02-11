@@ -115,7 +115,7 @@ export class Selection {
                 const location = diff.add(this.displayLocation)
                 const { min, max } = this.dimension.heightRange
 
-                location.y = Math.min(location.y, max - 1)
+                location.y = Math.min(location.y, max - this.size.y)
                 location.y = Math.max(location.y, min)
 
                 this.displayLocation = location
@@ -163,9 +163,7 @@ export class Selection {
     }
 
     display() {
-        if (system.currentTick % 4 === 0) {
-            Particle.boxFaces(BLOCK_PARTICLE.BASIC, this.displayLocation, this.size, this.dimension)
-        }
+        Particle.boxFaces(BLOCK_PARTICLE.BASIC, this.displayLocation, this.size, this.dimension)
         Particle.boxEdges(TYPE_IDS.LINE, this.displayLocation, this.size, this.dimension, 0.1)
     }
 }

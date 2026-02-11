@@ -4,6 +4,9 @@
     "texture_data": {
         "sse:selector": {
             "textures": "textures/items/selector"
+        },
+        "sse:unknown_item": {
+            "textures": "textures/items/unknown_item"
         }
     }
 }

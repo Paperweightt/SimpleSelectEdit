@@ -10,7 +10,7 @@
         },
         "components": {
             "minecraft:emitter_initialization": {
-                "creation_expression": "variable.t = 0.2;variable.p = 8;"
+                "creation_expression": "variable.t = 0.05;variable.p = 8;"
             },
             "minecraft:emitter_rate_instant": {
                 "num_particles": 1
