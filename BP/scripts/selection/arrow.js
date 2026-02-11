@@ -34,44 +34,6 @@ Selector.events.releaseUse.subscribe((data) => {
     Arrow.removeEditor(player)
 })
 
-// world.afterEvents.itemStartUse.subscribe((data) => {
-//     const { source, itemStack } = data
-//
-//     if (itemStack.typeId !== TYPE_IDS.SELECT_ITEM) return
-//
-//     const ray = source.getEntitiesFromViewDirection({ ignoreBlockCollision: true })
-//
-//     if (!ray.length) return
-//
-//     const arrow = Arrow.get(ray[0].entity.id)
-//
-//     if (!arrow) return
-//
-//     arrow.setEditor(source)
-// })
-//
-// world.afterEvents.itemReleaseUse.subscribe((data) => {
-//     const { source, itemStack } = data
-//
-//     if (itemStack.typeId !== TYPE_IDS.SELECT_ITEM) return
-//
-//     world.sendMessage("release")
-//
-//     Arrow.removeEditor(source)
-// })
-//
-// world.afterEvents.playerHotbarSelectedSlotChange.subscribe((data) => {
-//     Arrow.removeEditor(data.player)
-// })
-//
-// world.afterEvents.entitySpawn.subscribe((data) => {
-//     const { entity } = data
-//
-//     if (!(entity instanceof Player)) return
-//
-//     Arrow.removeEditor(data.player)
-// })
-
 export class Arrow {
     /**
      * @type {Object<number,Arrow>}
@@ -97,7 +59,7 @@ export class Arrow {
      * @param {Arrow} arrow
      */
     static remove(arrow) {
-        delete list[arrow.id]
+        delete this.list[arrow.id]
     }
 
     /**
@@ -255,6 +217,11 @@ export class Arrow {
             location: this.location.copy(),
             editor: this.editor,
         })
+    }
+
+    remove() {
+        this.entity.remove()
+        Arrow.remove(this)
     }
 }
 

@@ -1,39 +1,39 @@
-import { system, world } from "@minecraft/server"
-import { Arrow } from "./arrow.js"
+import { system } from "@minecraft/server"
 import { Vector } from "../utils/vector.js"
 import { Particle } from "../utils/particle.js"
 import { BLOCK_PARTICLE, TYPE_IDS } from "../constants.js"
-import "../utils/isShifting.js"
-
-system.run(() => {
-    const dim = world.getDimension("overworld")
-    const start = new Vector(14, -63, -15)
-    const size = new Vector(5, 1, 5)
-
-    new Selection(start, size, dim)
-})
 
 export class Selection {
     /**
-     * @type {Object<number,Selection>}
+     * @type {Record<number,Selection>}
      */
     static list = {}
 
-    static directionToRotation = {
-        North: { x: 0, y: 0 },
-        East: { x: 90, y: 0 },
-        South: { x: 180, y: 0 },
-        West: { x: 270, y: 0 },
-        Down: { x: 0, y: 90 },
-        Up: { x: 0, y: 270 },
+    static defaultLineRGB = {
+        red: 1,
+        green: 1,
+        blue: 1,
     }
 
     /**
-     * @param {number} id
-     * @returns {Selection|undefined}
+     * @param {import("@minecraft/server").Player}
+     * @returns {{distance:number,selection:Selection}|undefined}
      */
-    static get(id) {
-        return this.list[id]
+    static getPlayerViewBox(player) {
+        const ro = getEyeLocation(player)
+        const rd = Vector.normalize(player.getViewDirection())
+        let output
+
+        for (const selection of this.getAll()) {
+            const rayResult = selection.rayIntersectsAABB(ro, rd)
+            if (!rayResult) continue
+
+            if (!output || rayResult.distance < output.distance) {
+                output = rayResult
+            }
+        }
+
+        return output
     }
 
     /**
@@ -58,8 +58,8 @@ export class Selection {
         })
     }
 
-    /** @type {Record<import("@minecraft/server").Direction,Arrow>} */
-    arrows = {}
+    /** @type {import("@minecraft/server").RGB}*/
+    lineRGB = Selection.defaultLineRGB
 
     /**
      * @param {Vector} location
@@ -69,103 +69,75 @@ export class Selection {
     constructor(location, size, dimension) {
         this.displayLocation = location
         this.size = size
-        this.locatin = location
+        this.location = location
         this.dimension = dimension
         this.id = Math.floor(Math.random() * 10000000)
-
-        this.createArrows()
 
         Selection.list[this.id] = this
     }
 
-    createArrows() {
-        const north = this.createArrow("North")
-        const east = this.createArrow("East")
-        const south = this.createArrow("South")
-        const west = this.createArrow("West")
-        const up = this.createArrow("Up")
-        const down = this.createArrow("Down")
-    }
-
     /**
-     * @param {import("@minecraft/server").Direction} direction
-     * @returns {Arrow}
+     * @param {import("@minecraft/server").Player} player
+     * @returns {{distance:number,selection:Selection}}
      */
-    createArrow(direction) {
-        const location = this.getArrowLocation(direction)
-        const rotation = Selection.directionToRotation[direction]
-        const arrow = new Arrow(location, this.dimension, rotation)
-        const minSize = new Vector(1, 1, 1)
+    rayIntersectsAABB(ro, rd) {
+        const min = this.location
+        const max = Vector.add(this.location, this.size)
 
-        arrow.events.onMove.subscribe((data) => {
-            const { editor, newLocation, prevLocation } = data
-            const diff = Vector.subtract(newLocation, prevLocation)
+        let tmin = -Infinity
+        let tmax = Infinity
 
-            if (editor.customIsShifting) {
-                if (direction === "Down" || direction === "West" || direction === "North") {
-                    const newSize = Vector.max(Vector.subtract(this.size, diff), minSize)
-                    const sizeChange = Vector.subtract(this.size, newSize)
-
-                    this.displayLocation.add(sizeChange)
-                    this.size = newSize
-                } else {
-                    this.size = Vector.max(Vector.add(this.size, diff), minSize)
+        for (const axis of ["x", "y", "z"]) {
+            if (Math.abs(rd[axis]) < 1e-8) {
+                // Ray is parallel to this axis — reject if origin is outside the slab
+                if (ro[axis] < min[axis] || ro[axis] > max[axis]) {
+                    return null
                 }
             } else {
-                const location = diff.add(this.displayLocation)
-                const { min, max } = this.dimension.heightRange
+                const invD = 1 / rd[axis]
+                let t1 = (min[axis] - ro[axis]) * invD
+                let t2 = (max[axis] - ro[axis]) * invD
 
-                location.y = Math.min(location.y, max - this.size.y)
-                location.y = Math.max(location.y, min)
+                if (t1 > t2) [t1, t2] = [t2, t1] // swap
 
-                this.displayLocation = location
+                tmin = Math.max(tmin, t1)
+                tmax = Math.min(tmax, t2)
+
+                if (tmin > tmax) return null // no hit
             }
-            this.reloadArrowLocations()
-        })
-
-        arrow.events.onRelease.subscribe(() => {
-            this.displayLocation = this.displayLocation.round()
-            this.size = this.size.round()
-
-            this.reloadArrowLocations()
-        })
-
-        this.arrows[direction] = arrow
-
-        return arrow
-    }
-
-    reloadArrowLocations() {
-        for (const [direction, arrow] of Object.entries(this.arrows)) {
-            arrow.teleport(this.getArrowLocation(direction))
         }
-    }
 
-    /**
-     * @param {import("@minecraft/server").Direction}
-     * @returns {Vector}
-     */
-    getArrowLocation(direction) {
-        return Vector.add(this.displayLocation, this.getArrowOffset(direction))
-    }
+        if (tmax < 0) return null // box is behind the ray
 
-    /**
-     * @param {import("@minecraft/server").Direction}
-     * @returns {Vector}
-     */
-    getArrowOffset(direction) {
-        const halfSize = Vector.divide(this.size, 2)
-        const offset = Vector.stringToVector(direction)
-        const edge = Vector.multiply(offset, halfSize).add(halfSize)
-        const location = edge.add(offset.multiply(0.75))
-
-        return location
+        const distance = tmin >= 0 ? tmin : tmax
+        return {
+            distance,
+            selection: this,
+        }
     }
 
     display() {
         Particle.boxFaces(BLOCK_PARTICLE.BASIC, this.displayLocation, this.size, this.dimension)
-        Particle.boxEdges(TYPE_IDS.LINE, this.displayLocation, this.size, this.dimension, 0.1)
+        Particle.boxEdges(
+            TYPE_IDS.LINE,
+            this.displayLocation,
+            this.size,
+            this.dimension,
+            0.1,
+            0.05,
+            this.lineRGB,
+        )
     }
 }
 
 Selection.innit()
+
+function getEyeLocation(player) {
+    const headModelSize = 8
+    const headHeight = headModelSize / 32
+    const location = player.getHeadLocation()
+
+    location.y += headHeight / 2 - 0.022
+
+    return location
+}

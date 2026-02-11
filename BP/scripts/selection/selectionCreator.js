@@ -1,4 +1,4 @@
-import { Player, system } from "@minecraft/server"
+import { Player, system, world } from "@minecraft/server"
 import { BLOCK_PARTICLE, TYPE_IDS } from "../constants"
 import { Vector } from "../utils/vector"
 import { Particle } from "../utils/particle"
@@ -23,13 +23,7 @@ Selector.events.startUse.subscribe({
 })
 
 Selector.events.releaseUse.subscribe((data) => {
-    const { player } = data
-
-    const creator = SelectionCreator.get(player.id)
-
-    if (!creator) return
-
-    creator.apply()
+    SelectionCreator.get(data.player.id)?.apply()
 })
 
 class SelectionCreator {

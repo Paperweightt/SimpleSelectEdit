@@ -16,13 +16,24 @@ export class Particle {
      * @param {import("@minecraft/server").Dimension} dimension
      * @param {number} [lifetime=0.11]
      * @param {number} [width=0.05]
+     * @param {import("@minecraft/server").RGBA} [rgba]
      */
-    static line(particle, start, end, dimension, lifetime = 0.11, width = 0.05) {
+    static line(
+        particle,
+        start,
+        end,
+        dimension,
+        lifetime = 0.11,
+        width = 0.05,
+        rgb = Particle.defaultRGBA,
+    ) {
         const diff = Vector.subtract(start, end)
         const middle = Vector.divide(diff, 2).add(end)
         const direction = Vector.normalize(diff)
         const length = Math.hypot(diff.x / 2, diff.y / 2, diff.z / 2)
         const molang = new MolangVariableMap()
+
+        molang.setColorRGB("color", rgb)
 
         molang.setFloat("dir_x", direction.x)
         molang.setFloat("dir_y", direction.y)
@@ -41,12 +52,21 @@ export class Particle {
      * @param {import("@minecraft/server").Dimension} dimension
      * @param {number} [lifetime=0.11]
      * @param {number} [width=0.05]
+     * @param {import("@minecraft/server").RGBA} [rgba]
      */
-    static boxEdges(particle, location, size, dimension, lifetime = 0.11, width = 0.05) {
+    static boxEdges(
+        particle,
+        location,
+        size,
+        dimension,
+        lifetime = 0.11,
+        width = 0.05,
+        rgba = this.defaultRGBA,
+    ) {
         const line = (start, offset) => {
             start.add(location)
             offset.add(start)
-            this.line(particle, start, offset, dimension, lifetime, width)
+            this.line(particle, start, offset, dimension, lifetime, width, rgba)
         }
 
         line(new Vector(0, 0, 0), new Vector(0, size.y, 0))

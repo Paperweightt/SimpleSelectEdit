@@ -1,8 +1,8 @@
-import { world, Player } from "@minecraft/server"
+import { world, Player, system } from "@minecraft/server"
 import { TYPE_IDS } from "../constants"
 import { MinPriorityEvent, Event } from "../utils/events"
 
-world.afterEvents.itemStartUse.subscribe((data) => {
+world.afterEvents.itemStartUse.subscribe(async (data) => {
     const { source, itemStack } = data
 
     if (itemStack.typeId !== TYPE_IDS.SELECT_ITEM) return
@@ -10,18 +10,33 @@ world.afterEvents.itemStartUse.subscribe((data) => {
     const blockRaycast = source.getBlockFromViewDirection()
     const entityRaycast = source.getEntitiesFromViewDirection({ ignoreBlockCollision: true })
 
-    SelectorEvents.startUse.emit({
-        player: source,
-        itemStack,
-        blockRaycast,
-        entityRaycast,
-    })
+    source.release = false
+
+    await system.waitTicks(4)
+
+    if (source.release === true) {
+        SelectorEvents.click.emit({
+            player: source,
+            itemStack,
+            blockRaycast,
+            entityRaycast,
+        })
+    } else {
+        SelectorEvents.startUse.emit({
+            player: source,
+            itemStack,
+            blockRaycast,
+            entityRaycast,
+        })
+    }
 })
 
 world.afterEvents.itemReleaseUse.subscribe((data) => {
     const { source, itemStack } = data
 
     if (itemStack.typeId !== TYPE_IDS.SELECT_ITEM) return
+
+    source.release = true
 
     SelectorEvents.releaseUse.emit({
         player: source,
@@ -36,6 +51,8 @@ world.afterEvents.playerHotbarSelectedSlotChange.subscribe((data) => {
 
     if (item?.typeId !== TYPE_IDS.SELECT_ITEM) return
 
+    player.release = true
+
     SelectorEvents.releaseUse.emit({
         player,
     })
@@ -45,6 +62,8 @@ world.afterEvents.entitySpawn.subscribe((data) => {
     const { entity } = data
 
     if (!(entity instanceof Player)) return
+
+    entity.release = true
 
     SelectorEvents.releaseUse.emit({
         player: entity,
