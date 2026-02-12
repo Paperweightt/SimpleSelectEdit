@@ -107,7 +107,16 @@ export class Arrow {
      * @param {import("@minecraft/server").Vector2} rotation
      */
     constructor(location, dimension, rotation = { x: 0, y: 0 }) {
-        this.entity = dimension.spawnEntity(TYPE_IDS.ARROW, location)
+        const miny = dimension.heightRange.min
+
+        if (location.y < miny) {
+            const offset = location.copy().setY(miny + 1)
+            this.entity = dimension.spawnEntity(TYPE_IDS.ARROW, offset)
+            this.entity.teleport(location)
+        } else {
+            this.entity = dimension.spawnEntity(TYPE_IDS.ARROW, location)
+        }
+
         this.location = location
         this.dimension = dimension
         this.rotation = rotation
@@ -211,12 +220,12 @@ export class Arrow {
     }
 
     removeEditor() {
-        delete this.editor
-
         this.events.onRelease.emit({
             location: this.location.copy(),
             editor: this.editor,
         })
+
+        delete this.editor
     }
 
     remove() {

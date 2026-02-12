@@ -118,8 +118,6 @@ class SelectionCreator {
         const { minLocation, maxLocation } = this.getStartEnd()
         const size = Vector.subtract(maxLocation, minLocation)
 
-        if (minLocation.y === this.dimension.heightRange.min) minLocation.y++
-
         this.remove()
 
         return new Selection(minLocation, size, this.dimension)

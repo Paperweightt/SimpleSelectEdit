@@ -187,7 +187,7 @@ export class Edit {
     static async playerRunAndSave(player, name, ctx) {
         const { saveId, runResult } = await this.runAndSave(name, ctx)
 
-        if (metrics.blocks > 1000) {
+        if (runResult.metrics.blocks > 1000) {
             player.sendMessage(metrics.blocks + " blocks changed in " + metrics.ticks + " ticks")
         }
 

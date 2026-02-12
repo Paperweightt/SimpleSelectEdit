@@ -44,10 +44,18 @@ export class Selection {
     }
 
     /**
+     * @param {number} id
+     * @returns {Selection}
+     */
+    static get(id) {
+        return this.list[id]
+    }
+
+    /**
      * @param {Selection} selection
      */
     static remove(selection) {
-        delete list[selection.id]
+        selection.remove()
     }
 
     static innit() {
@@ -61,19 +69,29 @@ export class Selection {
     /** @type {import("@minecraft/server").RGB}*/
     lineRGB = Selection.defaultLineRGB
 
+    /** @type {boolean}*/
+    owned = false
+
     /**
      * @param {Vector} location
      * @param {Vector} size
      * @param {import("@minecraft/server").Dimension} dimension
      */
-    constructor(location, size, dimension) {
-        this.displayLocation = location
+    constructor(location, size, dimension, id = undefined) {
         this.size = size
         this.location = location
         this.dimension = dimension
-        this.id = Math.floor(Math.random() * 10000000)
+        this.id = id ?? Math.floor(Math.random() * 10000000)
 
         Selection.list[this.id] = this
+    }
+
+    snapshot() {
+        return {
+            id: this.id,
+            size: this.size.copy(),
+            location: this.location.copy(),
+        }
     }
 
     /**
@@ -117,16 +135,20 @@ export class Selection {
     }
 
     display() {
-        Particle.boxFaces(BLOCK_PARTICLE.BASIC, this.displayLocation, this.size, this.dimension)
+        Particle.boxFaces(BLOCK_PARTICLE.BASIC, this.location, this.size, this.dimension)
         Particle.boxEdges(
             TYPE_IDS.LINE,
-            this.displayLocation,
+            this.location,
             this.size,
             this.dimension,
             0.1,
             0.05,
             this.lineRGB,
         )
+    }
+
+    remove() {
+        delete Selection.list[this.id]
     }
 }
 

@@ -1,6 +1,6 @@
 import { StackElement, ButtonElement, Element } from "../ui/screenElements.js"
 import { BlockButtonElement, BlockIntElement, KeyIntElement } from "./customElements.js"
-import { system, BlockTypes, ItemStack } from "@minecraft/server"
+import { system, BlockTypes, ItemStack, world } from "@minecraft/server"
 import { SelectionGroup } from "../selection/selectionGroup.js"
 import { Vector } from "../utils/vector.js"
 import { Screen } from "../ui/screen.js"
@@ -20,11 +20,13 @@ SelectItem.events.click.subscribe({
         const { player } = data
         const dimension = player.dimension
 
+        world.sendMessage("hi")
+
         const viewDirection = Vector.multiply(player.getViewDirection(), 2.25)
         const location = Vector.add(player.getHeadLocation(), viewDirection)
 
         if (location.y > dimension.heightRange.max) return
-        if (location.y < dimension.heightRange.min + 5) return
+        if (location.y < dimension.heightRange.min + 2) return
         if (player.interacted) return
 
         new Menu(player, location, dimension)
@@ -218,6 +220,11 @@ class Menu {
         undoButton.addOnClick(async ({ player }) => {
             const { blocks } = await Edit.playerUndoRecent(player)
 
+            if (this.selectionGroup?.isValid) {
+                this.selectionGroup.reloadLocations()
+                this.selectionGroup.reloadArrowLocations()
+            }
+
             if (blocks > 1000) {
                 player.sendMessage(blocks + " blocks filled")
             }
@@ -270,6 +277,7 @@ class Menu {
         addButtonWithUi("Fill", "addFillOptions")
         addButton("Duplicate")
         addButton("Delete", () => {
+            if (!this.selectionGroup) return
             this.selectionGroup.removeSelections()
             this.selectionGroup.remove()
         })
@@ -286,16 +294,12 @@ class Menu {
         this.db.currentMenu = ["addFillOptions"]
         this.item.save()
 
-        const addButton = (name, callback) => {
+        const addButtonWithUi = (name, callback) => {
             const button = new ButtonElement(width, BUTTON_HEIGHT, name)
             button.addOnClick(callback)
             panel.addElement(button)
+            this.previousMenus.push(["addFillOptions"])
         }
-
-        addButton("Replace")
-        addButton("Rotate -90°")
-        addButton("Flip X")
-        addButton("Flip Z")
 
         this.update()
     }

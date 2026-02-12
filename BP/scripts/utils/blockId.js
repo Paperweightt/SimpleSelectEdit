@@ -159,15 +159,18 @@ export class BlockId {
     ]
 
     /**
-     * @param {import("@minecraft/server").Block} block
+     * @param {import("@minecraft/server").BlockPermutation} permutation
      * @returns {string}
      */
-    static get(block) {
-        if (!block) return undefined
-        const data = [
-            block.typeId.startsWith("minecraft:") ? block.typeId.substring(10) : block.typeId,
-        ]
-        const states = block.permutation.getAllStates()
+    static get(permutation) {
+        const states = permutation.getAllStates()
+        let type = permutation.type.id
+
+        if (type.startsWith("minecraft:")) {
+            type = type.substring(10)
+        }
+
+        const data = [type]
 
         for (const [state, value] of Object.entries(states)) {
             data.push(this.stateToId(state))
