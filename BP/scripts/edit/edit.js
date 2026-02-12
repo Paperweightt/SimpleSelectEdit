@@ -37,7 +37,10 @@ export class Edit {
             ...ctx,
             getBlock: edit.getBlock.bind(edit),
             locationIsValid: edit.locationIsValid.bind(edit),
-            filter: new Filter(ctx.filter.type, ctx.filter.typeIds),
+        }
+
+        if (ctx.filter?.type && ctx.filter?.typeIds) {
+            editCtx.filter = new Filter(ctx.filter.type, ctx.filter.typeIds)
         }
 
         try {

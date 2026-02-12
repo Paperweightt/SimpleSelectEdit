@@ -2,7 +2,7 @@ import { Arrow } from "./arrow.js"
 import { Vector } from "../utils/vector.js"
 import { Selection } from "./selection.js"
 import { SelectItem } from "../selector/selectItem.js"
-import { world } from "@minecraft/server"
+import { Edit } from "../edit/index.js"
 
 SelectItem.events.click.subscribe({
     priority: (data) => {
@@ -194,6 +194,15 @@ export class SelectionGroup {
         arrow.events.onRelease.subscribe(() => {
             this.snapToGrid()
             this.reloadArrowLocations()
+
+            Edit.run("move", {
+                dimension: this.dimension,
+                start: this.location,
+                end: this.displayLocation,
+                selections: this.selections,
+            })
+
+            this.location = this.displayLocation
         })
 
         this.arrows[direction] = arrow
@@ -285,6 +294,12 @@ export class SelectionGroup {
         const location = edge.add(offset.multiply(0.75))
 
         return location
+    }
+
+    removeSelections() {
+        for (const box of this.selections) {
+            box.remove()
+        }
     }
 
     remove() {

@@ -90,6 +90,7 @@ class Menu {
         this.location = location
         this.dimension = dimension
         this.slot = container.getSlot(player.selectedSlotIndex)
+        this.selectionGroup = SelectionGroup.get(player.id)
         this.item = new SelectItem(this.slot)
         this.db = this.item.data
         this.player = player
@@ -242,7 +243,7 @@ class Menu {
     }
 
     addMainPanel() {
-        const width = 48
+        const width = 58
         const panel = new StackElement("vertical")
 
         this.tabManager.addElement(panel)
@@ -259,16 +260,64 @@ class Menu {
             panel.addElement(button)
         }
 
-        const addButton = (name) => {
+        const addButton = (name, callback) => {
             const button = new ButtonElement(width, BUTTON_HEIGHT, name)
-            button.addOnClick(() => {
-                this.db.mode = name.toLowerCase()
-                this.item.save()
-            })
+            button.addOnClick(callback)
             panel.addElement(button)
         }
 
+        addButtonWithUi("Transform", "addTransforms")
+        addButtonWithUi("Fill", "addFillOptions")
+        addButton("Duplicate")
+        addButton("Delete", () => {
+            this.selectionGroup.removeSelections()
+            this.selectionGroup.remove()
+        })
         addButtonWithUi("Options", "addMoreOptions")
+
+        this.update()
+    }
+
+    addFillOptions() {
+        const panel = new StackElement("vertical")
+        const width = 64
+
+        this.tabManager.addElement(panel)
+        this.db.currentMenu = ["addFillOptions"]
+        this.item.save()
+
+        const addButton = (name, callback) => {
+            const button = new ButtonElement(width, BUTTON_HEIGHT, name)
+            button.addOnClick(callback)
+            panel.addElement(button)
+        }
+
+        addButton("Replace")
+        addButton("Rotate -90°")
+        addButton("Flip X")
+        addButton("Flip Z")
+
+        this.update()
+    }
+
+    addTransforms() {
+        const panel = new StackElement("vertical")
+        const width = 64
+
+        this.tabManager.addElement(panel)
+        this.db.currentMenu = ["addTransforms"]
+        this.item.save()
+
+        const addButton = (name, callback) => {
+            const button = new ButtonElement(width, BUTTON_HEIGHT, name)
+            button.addOnClick(callback)
+            panel.addElement(button)
+        }
+
+        addButton("Rotate 90°")
+        addButton("Rotate -90°")
+        addButton("Flip X")
+        addButton("Flip Z")
 
         this.update()
     }

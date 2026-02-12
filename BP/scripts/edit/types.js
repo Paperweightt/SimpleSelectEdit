@@ -1,5 +1,5 @@
 /**
- * @typedef {"smooth"|"fill"|"extrude"|"structure"} EditNames
+ * @typedef {"move"} EditNames
  */
 
 /**
