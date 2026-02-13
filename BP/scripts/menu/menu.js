@@ -109,12 +109,12 @@ class Menu {
         this.previousMenus = this.db.previousMenus
 
         this.lockItem()
-        this.initBackPanel()
         this.initScreen()
         this.runInterval()
         this.setTitle("hello")
 
         this.resume()
+        this.initBackPanel()
 
         Menu.addMenu(this)
     }
@@ -154,6 +154,30 @@ class Menu {
         const titleHeight = this.title.height - 1
         const height = this.tabManager.height + 2 + titleHeight
         const width = this.tabManager.width + 2
+
+        this.screen.height = height
+        this.screen.width = width
+
+        this.screen.xOffset = -27
+        this.screen.yOffset = 22 - height
+
+        this.backPanel.setSize({ x: width, y: height })
+    }
+
+    initBackPanel() {
+        this.backPanel = new BackPanel(this.getBackPanelLocation(), this.dimension)
+
+        this.backPanel.setRotation({
+            y: Math.round(this.rotation.y),
+            x: Math.round(this.rotation.x),
+        })
+    }
+
+    /** @returns {Vector} */
+    getBackPanelLocation() {
+        const titleHeight = this.title.height - 1
+        const height = this.tabManager.height + 2 + titleHeight
+        const width = this.tabManager.width + 2
         const angledZOffset = -11 / 32
 
         const yOffset = (24.25 + titleHeight) / 32
@@ -172,8 +196,7 @@ class Menu {
         this.screen.xOffset = -27
         this.screen.yOffset = 22 - height
 
-        this.backPanel.teleport(Vector.add(this.location, offset))
-        this.backPanel.setSize({ x: width, y: height })
+        return Vector.add(this.location, offset)
     }
 
     runInterval() {
@@ -216,15 +239,6 @@ class Menu {
         this.screen.addElement(this.tabManager, -25, 10)
 
         this.addMiscButtons(false)
-    }
-
-    initBackPanel() {
-        this.backPanel = new BackPanel(this.location.copy(), this.dimension)
-
-        this.backPanel.setRotation({
-            y: Math.round(this.rotation.y),
-            x: Math.round(this.rotation.x),
-        })
     }
 
     addMiscButtons(update = true) {
