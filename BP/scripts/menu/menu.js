@@ -176,8 +176,6 @@ class Menu {
     /** @returns {Vector} */
     getBackPanelLocation() {
         const titleHeight = this.title.height - 1
-        const height = this.tabManager.height + 2 + titleHeight
-        const width = this.tabManager.width + 2
         const angledZOffset = -11 / 32
 
         const yOffset = (24.25 + titleHeight) / 32
@@ -189,12 +187,6 @@ class Menu {
             angledZOffset * Math.sin(((Math.round(this.rotation.x) + 90) * Math.PI) / 180)
 
         const offset = new Vector(xOffset, yOffset, zOffset)
-
-        this.screen.height = height
-        this.screen.width = width
-
-        this.screen.xOffset = -27
-        this.screen.yOffset = 22 - height
 
         return Vector.add(this.location, offset)
     }
@@ -247,7 +239,6 @@ class Menu {
 
         const closeButton = new ButtonElement(BUTTON_HEIGHT, BUTTON_HEIGHT, "x")
         closeButton.addOnClick(async () => {
-            await system.waitTicks(2)
             Menu.remove(this.id)
         })
         closeButton.textElement.offset.y++

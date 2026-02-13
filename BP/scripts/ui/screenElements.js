@@ -307,7 +307,7 @@ export class ButtonElement extends Element {
         this.runInterval()
     }
 
-    addOnClick(callback) {
+    addOnClick(callback, wait = 1) {
         const id = world.afterEvents.playerInteractWithEntity.subscribe((data) => {
             const player = data.player
 
@@ -317,7 +317,9 @@ export class ButtonElement extends Element {
             const { x, y } = pointer
             if (x < 0 || y < 0 || y > this.height || x > this.width) return
 
-            callback({ player, location: { x, y } })
+            system.runTimeout(() => {
+                callback({ player, location: { x, y } })
+            }, wait)
 
             this.endHoverEffect()
             player.playSound("random.click")

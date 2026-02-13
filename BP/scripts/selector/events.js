@@ -3,7 +3,7 @@ import { TYPE_IDS } from "../constants"
 import { MinPriorityEvent, Event } from "../utils/events"
 import { Screen } from "../ui/screen.js"
 
-world.afterEvents.itemStartUse.subscribe(async (data) => {
+world.afterEvents.itemUse.subscribe(async (data) => {
     const { source, itemStack } = data
 
     if (itemStack.typeId !== TYPE_IDS.SELECT_ITEM) return
@@ -20,10 +20,11 @@ world.afterEvents.itemStartUse.subscribe(async (data) => {
             blockRaycast,
             entityRaycast,
         })
+
         return
     }
 
-    await system.waitTicks(4)
+    await system.waitTicks(5)
 
     if (source.release === true) {
         SelectorEvents.click.emit({
