@@ -10,7 +10,7 @@ export class Edit {
     /** @type {number} */
     static blocksPlaced = 0
     /** @type {number} */
-    static defaultBlock = "smooth_stone"
+    static defaultBlock = "minecraft:smooth_stone"
     /** @type {number} */
     static blocksPerTick = 500
     /** @type {number} */

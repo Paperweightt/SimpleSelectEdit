@@ -19,7 +19,7 @@ registerEdit("fill", {
             ticks: 0,
         }
         let prevId
-        const addChange = (id) => {
+        const indexChange = (id) => {
             if (prevId === id) return
 
             if (!undoCtx.changes[id]) {
@@ -44,17 +44,15 @@ registerEdit("fill", {
                     for (let z = 0; z < selection.size.z; z++) {
                         const location = new Vector(x, y, z).add(selection.location)
                         const block = await ctx.getBlock(location)
-                        const typeId = lootTable.roll(x, y, z) ?? Edit.defaultBlock
-                        let oldPermutationId = BlockId.get(block.permutation)
+                        const typeId = lootTable.roll(location) ?? Edit.defaultBlock
 
                         if (block.typeId === typeId) {
-                            oldPermutationId = undefined
+                            indexChange(undefined)
                         } else {
+                            indexChange(BlockId.get(block.permutation))
                             block.setType(typeId)
                             metrics.blocks++
                         }
-
-                        addChange(oldPermutationId)
 
                         i++
                     }
@@ -85,7 +83,7 @@ registerEdit("fill", {
             }
         }
 
-        let j = 0
+        let i = 0
         for (const selection of ctx.selections) {
             for (let x = 0; x < selection.size.x; x++) {
                 for (let y = 0; y < selection.size.y; y++) {
@@ -93,12 +91,12 @@ registerEdit("fill", {
                         const location = new Vector(x, y, z).add(selection.location)
                         const block = await ctx.getBlock(location)
 
-                        if (indexToBlock[j]) permutation = indexToBlock[j]
+                        if (indexToBlock[i]) permutation = indexToBlock[i]
                         if (permutation && permutation !== "undefined") {
                             metrics.blocks++
                             block.setPermutation(permutation)
                         }
-                        j++
+                        i++
                     }
                 }
             }
@@ -118,6 +116,8 @@ registerEdit("fill", {
         }
 
         undoCtx.selections = ctx.selections.map((selection) => selection.snapshot())
+
+        world.sendMessage(JSON.stringify(undoCtx))
 
         return undoCtx
     },

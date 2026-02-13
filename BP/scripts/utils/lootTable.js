@@ -46,12 +46,11 @@ export class LootTable {
     }
 
     /**
-     * @param {number} x
-     * @param {number} y
-     * @param {number} z
+     * @param {import("./vector.js").Vector} location
      * @returns {any}
      */
-    roll(x, y, z) {
+    roll(location) {
+        const { x, y, z } = location
         if (!this.sorted) this.sortList()
         if (!this.weighted) this.saveWeight()
 

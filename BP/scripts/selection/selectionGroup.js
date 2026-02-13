@@ -133,11 +133,13 @@ export class SelectionGroup {
         const index = this.selections.findIndex((selection) => selection.id === id)
 
         if (index === -1) {
-            if (this.selections.length === 0 && !selection.isOwned) {
-                this.addSelection(selection)
-                this.createArrows()
-            } else {
-                this.addSelection(selection)
+            if (!selection.isOwned) {
+                if (this.selections.length === 0 && !selection.isOwned) {
+                    this.addSelection(selection)
+                    this.createArrows()
+                } else {
+                    this.addSelection(selection)
+                }
             }
         } else {
             this.removeSelection(index)

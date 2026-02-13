@@ -1,6 +1,7 @@
-import { StackElement, ButtonElement, Element, TextElement } from "../ui/screenElements.js"
+import { StackElement, ButtonElement, TextElement } from "../ui/screenElements.js"
 import { BlockButtonElement, BlockIntElement, KeyIntElement } from "./customElements.js"
 import { system, BlockTypes, ItemStack, world } from "@minecraft/server"
+import { ModalFormData } from "@minecraft/server-ui"
 import { SelectionGroup } from "../selection/selectionGroup.js"
 import { Vector } from "../utils/vector.js"
 import { Screen } from "../ui/screen.js"
@@ -299,7 +300,7 @@ class Menu {
         }
 
         addButtonWithUi("Transform", "addTransforms")
-        addButtonWithUi("Fill", "addFillOptions")
+        addButtonWithUi("Replace", "addFillOptions")
         addButton("Duplicate", () => {
             const group = this.getSelectionGroup()
             if (!group) return
@@ -313,6 +314,28 @@ class Menu {
             group.removeSelections()
             group.remove()
         })
+        addButton("Save", () => {
+            const group = this.getSelectionGroup()
+
+            if (!group) return
+
+            const form = new ModalFormData().title("Save to Structure").textField("", "id:name")
+
+            form.show(this.player).then((formData) => {
+                if (formData.canceled) return
+                let name = formData.formValues[0] || undefined
+                const endLocation = Vector.add(group.location, group.size).subtract(1)
+
+                world.structureManager.delete(name)
+
+                world.structureManager.createFromWorld(
+                    name,
+                    this.dimension,
+                    group.location,
+                    endLocation,
+                )
+            })
+        })
         addButtonWithUi("Options", "addMoreOptions")
 
         this.update()
@@ -322,7 +345,7 @@ class Menu {
         const panel = new StackElement("vertical")
         const width = 38
 
-        this.setTitle("Fill")
+        this.setTitle("Replace")
         this.tabManager.addElement(panel)
         this.db.currentMenu = ["addFillOptions"]
         this.item.save()
