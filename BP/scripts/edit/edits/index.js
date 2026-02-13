@@ -1,2 +1,2 @@
 import "./move.js"
-// import "./duplicate.js"
+import "./duplicate.js"

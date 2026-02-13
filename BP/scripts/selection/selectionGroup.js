@@ -10,14 +10,15 @@ world.afterEvents.playerLeave.subscribe((data) => {
     SelectionGroup.get(data.playerId)?.remove()
 })
 
+// click box
 SelectItem.events.click.subscribe({
     priority: (data) => {
         const { player } = data
         const rayResult = Selection.getPlayerViewBox(player)
 
-        if (player.customIsShifting && !rayResult) return Infinity
+        if (!rayResult) return Infinity
 
-        return -1
+        return rayResult.distance
     },
     callback: (data) => {
         const { player } = data
@@ -37,6 +38,21 @@ SelectItem.events.click.subscribe({
         }
 
         group.toggleSelection(rayResult.selection)
+    },
+})
+
+// click air
+SelectItem.events.click.subscribe({
+    priority: Number.MAX_SAFE_INTEGER,
+    callback: (data) => {
+        const { player } = data
+        const rayResult = Selection.getPlayerViewBox(player)
+        const group = SelectionGroup.get(player.id)
+
+        if (!rayResult && group) {
+            group.remove()
+            return
+        }
     },
 })
 
@@ -94,6 +110,9 @@ export class SelectionGroup {
     /** @type {boolean} */
     isValid = true
 
+    /** @type {"move"|"duplicate"} */
+    editMode = "move"
+
     /**
      * @param {import("@minecraft/server").Player} player
      * @param {import("@minecraft/server").Dimension} dimension
@@ -113,10 +132,8 @@ export class SelectionGroup {
         const id = selection.id
         const index = this.selections.findIndex((selection) => selection.id === id)
 
-        if (selection.owned) return
-
         if (index === -1) {
-            if (this.selections.length === 0) {
+            if (this.selections.length === 0 && !selection.isOwned) {
                 this.addSelection(selection)
                 this.createArrows()
             } else {
@@ -133,7 +150,7 @@ export class SelectionGroup {
     addSelection(selection) {
         selection.lineRGB = Color.player(this.player, 70, 60)
         this.selections.push(selection)
-        selection.owned = true
+        selection.isOwned = true
 
         this.reloadLocations()
         this.reloadArrowLocations()
@@ -144,6 +161,7 @@ export class SelectionGroup {
         const selection = this.selections[index]
 
         selection.lineRGB = Selection.defaultLineRGB
+        selection.isOwned = false
 
         this.selections.splice(index, 1)
 
@@ -210,12 +228,7 @@ export class SelectionGroup {
             if (Vector.equals(this.location, this.displayLocation)) return
 
             if (!editor.customIsShifting || this.selections.length !== 1) {
-                Edit.playerRunAndSave(this.player, "move", {
-                    dimension: this.dimension,
-                    start: this.location,
-                    end: this.displayLocation,
-                    selections: this.selections,
-                })
+                this.runEdit()
             }
 
             this.location = this.displayLocation
@@ -224,6 +237,25 @@ export class SelectionGroup {
         this.arrows[direction] = arrow
 
         return arrow
+    }
+
+    runEdit() {
+        if (this.editMode === "move") {
+            Edit.playerRunAndSave(this.player, "move", {
+                dimension: this.dimension,
+                start: this.location,
+                end: this.displayLocation,
+                selections: this.selections,
+            })
+        } else if (this.editMode === "duplicate") {
+            Edit.playerRunAndSave(this.player, "duplicate", {
+                dimension: this.dimension,
+                start: this.location,
+                end: this.displayLocation,
+                selections: this.selections,
+            })
+            this.editMode = "move"
+        }
     }
 
     snapToGrid() {
@@ -325,7 +357,7 @@ export class SelectionGroup {
 
         for (const box of this.selections) {
             box.lineRGB = Selection.defaultLineRGB
-            box.owned = false
+            box.isOwned = false
         }
 
         this.isValid = false

@@ -8,42 +8,44 @@ import { Edit } from "../edit/index.js"
 import { BackPanel } from "./backPanel.js"
 import { SelectItem } from "../selector/selectItem.js"
 
+// click air while shifting
 SelectItem.events.click.subscribe({
     priority: (data) => {
         const { player } = data
 
         if (!player.customIsShifting) return Infinity
 
-        return -1
+        return 50
     },
     callback: (data) => {
         const { player } = data
         const dimension = player.dimension
-
-        world.sendMessage("hi")
-
-        const viewDirection = Vector.multiply(player.getViewDirection(), 2.25)
+        const viewDirection = Vector.multiply(player.getViewDirection(), 2.85)
         const location = Vector.add(player.getHeadLocation(), viewDirection)
 
-        if (location.y > dimension.heightRange.max) return
-        if (location.y < dimension.heightRange.min + 2) return
-        if (player.interacted) return
+        // TODO: color message
+        if (location.y > dimension.heightRange.max || location.y < dimension.heightRange.min + 2) {
+            player.sendMessage("[ERROR] player is either too low or too high to open menu")
+            return
+        }
 
         new Menu(player, location, dimension)
     },
 })
 
+// disable clicks while viewing screen
 SelectItem.events.click.subscribe({
     priority: (data) => {
-        if (Screen.isPlayerLookingAtAnyScreen(data.player)) return -2
+        if (Screen.isPlayerLookingAtAnyScreen(data.player)) return -Infinity
         return Infinity
     },
     callback: () => {},
 })
 
+// disable drag while viewing screen
 SelectItem.events.startUse.subscribe({
     priority: (data) => {
-        if (Screen.isPlayerLookingAtAnyScreen(data.player)) return -2
+        if (Screen.isPlayerLookingAtAnyScreen(data.player)) return -Infinity
         return Infinity
     },
     callback: () => {},
@@ -72,6 +74,13 @@ class Menu {
     /** @returns {Menu} */
     static get(id) {
         return this.list[id]
+    }
+
+    /** @param {Menu} */
+    static addMenu(menu) {
+        this.get(menu.id)?.remove()
+
+        this.list[menu.id] = menu
     }
 
     /** @returns {Menu[]} */
@@ -106,7 +115,7 @@ class Menu {
 
         this.resume()
 
-        Menu.list[this.id] = this
+        Menu.addMenu(this)
     }
 
     async update() {
@@ -275,9 +284,12 @@ class Menu {
 
         addButtonWithUi("Transform", "addTransforms")
         addButtonWithUi("Fill", "addFillOptions")
-        addButton("Duplicate")
+        addButton("Duplicate", () => {
+            if (!this.selectionGroup?.isValid) return
+            this.selectionGroup.editMode = "duplicate"
+        })
         addButton("Delete", () => {
-            if (!this.selectionGroup) return
+            if (!this.selectionGroup?.isValid) return
             this.selectionGroup.removeSelections()
             this.selectionGroup.remove()
         })
@@ -434,111 +446,6 @@ class Menu {
 
             this.db.slot.nameTag = name
         })
-    }
-
-    addSmoothOptions() {
-        const verticalStack = new StackElement("vertical")
-        this.tabManager.addElement(verticalStack)
-        this.db.mode = "smooth"
-        this.db.currentMenu = ["addSmoothOptions"]
-        this.item.save()
-
-        const def = this.db.smooth.diameter
-        const keyIntElement = new KeyIntElement(BUTTON_WIDTH, BUTTON_HEIGHT, "d", def, 1, 25)
-
-        verticalStack.addElement(keyIntElement)
-        keyIntElement.addOnClick(() => {
-            this.db.smooth.diameter = keyIntElement.value
-            this.item.save()
-        })
-
-        const filterButton = new ButtonElement(BUTTON_WIDTH, BUTTON_HEIGHT, "Filter")
-        filterButton.addOnClick(() => {
-            this.tabManager.removeElementsAfter(this.miscPanel)
-            this.addFilterOptions("smooth")
-            this.previousMenus.push(["addSmoothOptions"])
-            this.update()
-        })
-        verticalStack.addElement(filterButton)
-
-        this.update()
-    }
-
-    addFillPanel() {
-        const width = 50
-        const fillPanel = new StackElement("vertical")
-        this.tabManager.addElement(fillPanel)
-        this.db.currentMenu = ["addFillPanel"]
-        this.item.save()
-
-        const addButton = (name, callback, menuParam) => {
-            const button = new ButtonElement(width, BUTTON_HEIGHT, name)
-            button.addOnClick(() => {
-                this.tabManager.removeElementsAfter(this.miscPanel)
-                this[callback](menuParam)
-                this.previousMenus.push(["addFillPanel"])
-            })
-            fillPanel.addElement(button)
-        }
-
-        addButton("Shape", "addShapeOptions")
-        addButton("Rotation", "addRotationOptions")
-        addButton("Texture", "addTexturePanel")
-        addButton("Filter", "addFilterOptions", "fill")
-
-        this.db.mode = "fill"
-        this.item.save()
-
-        const meshValue = this.db.fill.mesh ? "on" : "off"
-        const meshButton = new ButtonElement(width, BUTTON_HEIGHT, `Mesh: ${meshValue}`)
-
-        meshButton.addOnClick(() => {
-            this.db.fill.mesh = !this.db.fill.mesh
-            const value = this.db.fill.mesh ? "on" : "off"
-            meshButton.textElement.string = `Mesh: ${value}`
-            meshButton.textElement.update()
-            this.screen.update()
-            this.item.save()
-        })
-        fillPanel.addElement(meshButton)
-
-        const fullValue = this.db.fill.full ? "on" : "off"
-        const fullButton = new ButtonElement(width, BUTTON_HEIGHT, `Full: ${fullValue}`)
-
-        fullButton.addOnClick(() => {
-            this.db.fill.full = !this.db.fill.full
-            const fullValue = this.db.fill.full ? "on" : "off"
-            fullButton.textElement.string = `Full: ${fullValue}`
-            fullButton.textElement.update()
-            this.screen.update()
-            this.item.save()
-        })
-        fillPanel.addElement(fullButton)
-
-        this.update()
-    }
-
-    addShapeOptions() {
-        const vertStack = new StackElement("vertical")
-        this.tabManager.addElement(vertStack)
-        this.db.currentMenu = ["addShapeOptions"]
-        this.item.save()
-
-        for (const name of Shape.getNames()) {
-            const button = new ButtonElement(BUTTON_WIDTH, BUTTON_HEIGHT, name)
-
-            button.addOnClick(() => {
-                this.db.fill.shape = name
-                this.item.save()
-                this.tabManager.removeElementsAfter(this.miscPanel)
-                this.previousMenus.push(["addShapeOptions"])
-
-                this.addShapeParameterOptions(name)
-            })
-            vertStack.addElement(button)
-        }
-
-        this.update()
     }
 
     addTexturePanel() {

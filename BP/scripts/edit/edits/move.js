@@ -94,7 +94,7 @@ registerEdit("move", {
             ticks: 0,
         }
         const diff = Vector.subtract(ctx.start, ctx.end)
-        const originalBlocks = []
+        const originalPermutations = []
         const indexToBlock = {}
         let permutation
 
@@ -117,7 +117,7 @@ registerEdit("move", {
                         const location = new Vector(x, y, z).add(selection.location)
                         const block = await ctx.getBlock(location)
 
-                        originalBlocks.push(block.typeId)
+                        originalPermutations.push(block.permutation)
                     }
                 }
             }
@@ -150,9 +150,7 @@ registerEdit("move", {
                         const location = new Vector(x, y, z).add(selection.location).add(diff)
                         const block = await ctx.getBlock(location)
 
-                        block.setType(originalBlocks[i])
-
-                        i++
+                        block.setPermutation(originalPermutations[i++])
                     }
                 }
             }
@@ -195,6 +193,7 @@ registerEdit("move", {
                     new Vector(snapshot.location),
                     new Vector(snapshot.size),
                     undoCtx.dimension,
+                    snapshot.id,
                 )
             }
 
