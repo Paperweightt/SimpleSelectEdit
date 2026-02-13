@@ -66,11 +66,23 @@ export class Selection {
         })
     }
 
+    /**
+     * @param {number[]} snapshot
+     * @param {import('@minecraft/server').Dimension} dimension
+     */
+    static parseSnapshot(snapshot, dimension) {
+        const id = snapshot[0]
+        const size = new Vector(snapshot.slice(1, 4))
+        const location = new Vector(snapshot.slice(4, 7))
+
+        return new Selection(location, size, dimension, id)
+    }
+
     /** @type {import("@minecraft/server").RGB}*/
     lineRGB = Selection.defaultLineRGB
 
     /** @type {boolean}*/
-    owned = false
+    isOwned = false
 
     /**
      * @param {Vector} location
@@ -87,11 +99,7 @@ export class Selection {
     }
 
     snapshot() {
-        return {
-            id: this.id,
-            size: this.size.copy(),
-            location: this.location.copy(),
-        }
+        return [this.id, ...this.size.getList(), ...this.location.getList()]
     }
 
     /**

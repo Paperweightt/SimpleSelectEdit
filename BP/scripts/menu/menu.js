@@ -1,4 +1,4 @@
-import { StackElement, ButtonElement, Element } from "../ui/screenElements.js"
+import { StackElement, ButtonElement, Element, TextElement } from "../ui/screenElements.js"
 import { BlockButtonElement, BlockIntElement, KeyIntElement } from "./customElements.js"
 import { system, BlockTypes, ItemStack, world } from "@minecraft/server"
 import { SelectionGroup } from "../selection/selectionGroup.js"
@@ -101,7 +101,6 @@ class Menu {
         this.location = location
         this.dimension = dimension
         this.slot = container.getSlot(player.selectedSlotIndex)
-        this.selectionGroup = SelectionGroup.get(player.id)
         this.item = new SelectItem(this.slot)
         this.db = this.item.data
         this.player = player
@@ -112,6 +111,7 @@ class Menu {
         this.initBackPanel()
         this.initScreen()
         this.runInterval()
+        this.setTitle("hello")
 
         this.resume()
 
@@ -121,6 +121,18 @@ class Menu {
     async update() {
         await this.screen.update()
         this.updateBackPanel()
+    }
+
+    /** @param {string} */
+    setTitle(string = "") {
+        if (!this.title) {
+            this.title = new TextElement(string)
+            this.screen.addElement(this.title, -10, 22)
+        }
+
+        this.title.string = string
+
+        this.title.update()
     }
 
     savePreviousStates() {
@@ -138,11 +150,12 @@ class Menu {
     }
 
     updateBackPanel() {
-        const height = this.tabManager.height + 2
+        const titleHeight = this.title.height - 1
+        const height = this.tabManager.height + 2 + titleHeight
         const width = this.tabManager.width + 2
         const angledZOffset = -11 / 32
 
-        const yOffset = 24.25 / 32
+        const yOffset = (24.25 + titleHeight) / 32
 
         const xOffset =
             angledZOffset * Math.cos(((Math.round(this.rotation.x) + 90) * Math.PI) / 180)
@@ -171,6 +184,11 @@ class Menu {
         })
     }
 
+    /** @returns {SelectionGroup} */
+    getSelectionGroup() {
+        return SelectionGroup.get(this.player.id)
+    }
+
     lockItem() {
         this.slot.lockMode = "slot"
     }
@@ -180,7 +198,6 @@ class Menu {
     }
 
     initScreen() {
-        const panel = new Element()
         const r = this.player.getDynamicProperty("textColorr") ?? 255
         const g = this.player.getDynamicProperty("textColorg") ?? 255
         const b = this.player.getDynamicProperty("textColorb") ?? 255
@@ -195,10 +212,7 @@ class Menu {
 
         this.screen.setColor({ r, g, b })
         this.tabManager = new StackElement("horizontal")
-
-        panel.addElement(this.tabManager)
-
-        this.screen.addElement(panel, -25, 10)
+        this.screen.addElement(this.tabManager, -25, 10)
 
         this.addMiscButtons(false)
     }
@@ -228,10 +242,11 @@ class Menu {
         const undoButton = new ButtonElement(BUTTON_HEIGHT, BUTTON_HEIGHT, "u")
         undoButton.addOnClick(async ({ player }) => {
             const { blocks } = await Edit.playerUndoRecent(player)
+            const group = this.getSelectionGroup()
 
-            if (this.selectionGroup?.isValid) {
-                this.selectionGroup.reloadLocations()
-                this.selectionGroup.reloadArrowLocations()
+            if (group) {
+                group.reloadLocations()
+                group.reloadArrowLocations()
             }
 
             if (blocks > 1000) {
@@ -262,6 +277,7 @@ class Menu {
         const width = 58
         const panel = new StackElement("vertical")
 
+        this.setTitle("Main Menu")
         this.tabManager.addElement(panel)
         this.db.currentMenu = ["addMainPanel"]
         this.item.save()
@@ -285,13 +301,17 @@ class Menu {
         addButtonWithUi("Transform", "addTransforms")
         addButtonWithUi("Fill", "addFillOptions")
         addButton("Duplicate", () => {
-            if (!this.selectionGroup?.isValid) return
-            this.selectionGroup.editMode = "duplicate"
+            const group = this.getSelectionGroup()
+            if (!group) return
+            group.editMode = "duplicate"
         })
         addButton("Delete", () => {
-            if (!this.selectionGroup?.isValid) return
-            this.selectionGroup.removeSelections()
-            this.selectionGroup.remove()
+            const group = this.getSelectionGroup()
+
+            if (!group) return
+
+            group.removeSelections()
+            group.remove()
         })
         addButtonWithUi("Options", "addMoreOptions")
 
@@ -300,18 +320,79 @@ class Menu {
 
     addFillOptions() {
         const panel = new StackElement("vertical")
-        const width = 64
+        const width = 38
 
+        this.setTitle("Fill")
         this.tabManager.addElement(panel)
         this.db.currentMenu = ["addFillOptions"]
         this.item.save()
 
-        const addButtonWithUi = (name, callback) => {
+        const addButton = (name, callback) => {
             const button = new ButtonElement(width, BUTTON_HEIGHT, name)
             button.addOnClick(callback)
             panel.addElement(button)
-            this.previousMenus.push(["addFillOptions"])
+
+            return button
         }
+
+        addButton("Apply", () => {
+            const group = this.getSelectionGroup()
+
+            if (!group) return
+
+            Edit.playerRunAndSave(this.player, "fill", {
+                blocks: this.db.fill.blocks,
+                selections: group.selections,
+                dimension: this.dimension,
+            })
+        })
+
+        const inputButton = addButton("Input", ({ player }) => {
+            const container = player.getComponent("inventory").container
+            const item = container.getItem(player.selectedSlotIndex)
+            if (item && !BlockTypes.get(item.typeId)) return
+
+            const type = item?.typeId || "air"
+
+            if (this.db.fill.blocks[type]) {
+                this.db.fill.blocks[type]++
+                panel.removeElementsAfter(inputButton)
+                addInputs()
+            } else {
+                addBlockButton(item, 1)
+                this.db.fill.blocks[type] = 1
+            }
+
+            this.update()
+            this.item.save()
+        })
+
+        const addBlockButton = (item, amount) => {
+            const blockButton = new BlockIntElement(width, BUTTON_HEIGHT, item, amount)
+            const type = item?.typeId || "air"
+            panel.addElement(blockButton)
+
+            blockButton.addOnClick(() => {
+                if (blockButton.value === 0) {
+                    panel.removeElementsAfter(inputButton)
+                    delete this.db.fill.blocks[type]
+                    addInputs()
+                } else {
+                    this.db.fill.blocks[type] = blockButton.value
+                }
+
+                this.item.save()
+            })
+        }
+
+        const addInputs = () => {
+            for (const [block, amount] of Object.entries(this.db.fill.blocks)) {
+                const item = block === "air" ? null : new ItemStack(block)
+                addBlockButton(item, amount)
+            }
+            this.update()
+        }
+        addInputs()
 
         this.update()
     }
@@ -320,6 +401,7 @@ class Menu {
         const panel = new StackElement("vertical")
         const width = 64
 
+        this.setTitle("Transform")
         this.tabManager.addElement(panel)
         this.db.currentMenu = ["addTransforms"]
         this.item.save()
@@ -342,6 +424,7 @@ class Menu {
         const panel = new StackElement("vertical")
         const width = 52
 
+        this.setTitle("Options")
         this.tabManager.addElement(panel)
         this.db.currentMenu = ["addMoreOptions"]
         this.item.save()

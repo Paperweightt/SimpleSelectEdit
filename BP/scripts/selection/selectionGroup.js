@@ -209,6 +209,9 @@ export class SelectionGroup {
 
         arrow.events.onMove.subscribe((data) => {
             const { editor, newLocation, prevLocation } = data
+
+            if (editor.id !== this.player.id) return
+
             const diff = Vector.subtract(newLocation, prevLocation)
 
             if (editor.customIsShifting && this.selections.length === 1) {
@@ -221,6 +224,7 @@ export class SelectionGroup {
 
         arrow.events.onRelease.subscribe((data) => {
             const { editor } = data
+            if (editor.id !== this.player.id) return
 
             this.snapToGrid()
             this.reloadArrowLocations()

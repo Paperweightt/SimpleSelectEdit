@@ -5,30 +5,30 @@
             "loop": true,
             "bones": {
                 "main": {
-                    "rotation": [0, "query.property('ptb:yrot')", 0]
+                    "rotation": [0, "query.property('sse:yrot')", 0]
                 },
                 "rightarm": {
                     "rotation": [
-                        "query.property('ptb:rxrot2')",
-                        "query.property('ptb:ryrot2')",
-                        "query.property('ptb:rzrot2')"
+                        "query.property('sse:rxrot2')",
+                        "query.property('sse:ryrot2')",
+                        "query.property('sse:rzrot2')"
                     ],
                     "scale": [
-                        "query.property('ptb:scale')",
-                        "query.property('ptb:scale')",
-                        "query.property('ptb:scale')"
+                        "query.property('sse:scale')",
+                        "query.property('sse:scale')",
+                        "query.property('sse:scale')"
                     ],
                     "position": [
-                        "query.property('ptb:rxpos')",
-                        "query.property('ptb:rypos')",
-                        "query.property('ptb:rzpos')"
+                        "query.property('sse:rxpos')",
+                        "query.property('sse:rypos')",
+                        "query.property('sse:rzpos')"
                     ]
                 },
                 "rightitem": {
                     "rotation": [
-                        "query.property('ptb:rxrot')",
-                        "query.property('ptb:ryrot')",
-                        "query.property('ptb:rzrot')"
+                        "query.property('sse:rxrot')",
+                        "query.property('sse:ryrot')",
+                        "query.property('sse:rzrot')"
                     ]
                 }
             }

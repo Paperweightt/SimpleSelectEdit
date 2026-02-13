@@ -7,6 +7,9 @@ export class SelectItem {
     static defaultData = {
         previousMenus: [],
         currentMenu: ["addMainPanel"],
+        fill: {
+            blocks: {},
+        },
     }
 
     /**

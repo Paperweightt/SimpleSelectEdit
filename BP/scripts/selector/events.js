@@ -1,6 +1,7 @@
 import { world, Player, system } from "@minecraft/server"
 import { TYPE_IDS } from "../constants"
 import { MinPriorityEvent, Event } from "../utils/events"
+import { Screen } from "../ui/screen.js"
 
 world.afterEvents.itemStartUse.subscribe(async (data) => {
     const { source, itemStack } = data
@@ -11,6 +12,16 @@ world.afterEvents.itemStartUse.subscribe(async (data) => {
     const entityRaycast = source.getEntitiesFromViewDirection({ ignoreBlockCollision: true })
 
     source.release = false
+
+    if (Screen.isPlayerLookingAtAnyScreen(source)) {
+        SelectorEvents.click.emit({
+            player: source,
+            itemStack,
+            blockRaycast,
+            entityRaycast,
+        })
+        return
+    }
 
     await system.waitTicks(4)
 

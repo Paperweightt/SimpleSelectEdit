@@ -141,21 +141,12 @@ registerEdit("duplicate", {
             start: new Vector(ctx.start),
             end: new Vector(ctx.end),
             changes: ctx.changes,
-            selections: [],
-        }
-
-        for (const snapshot of ctx.selections) {
-            let selection = Selection.get(snapshot.id)
-
-            if (!selection) {
-                selection = new Selection(
-                    new Vector(snapshot.location),
-                    new Vector(snapshot.size),
-                    undoCtx.dimension,
+            selections: ctx.selections.map((snapshot) => {
+                return (
+                    Selection.get(snapshot[0]) ||
+                    Selection.parseSnapshot(snapshot, undoCtx.dimension)
                 )
-            }
-
-            undoCtx.selections.push(selection)
+            }),
         }
 
         return undoCtx

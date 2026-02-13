@@ -1,26 +1,23 @@
 import { world } from "@minecraft/server"
+import { LootTable } from "../../utils/lootTable.js"
 import { Vector } from "../../utils/vector.js"
 import { registerEdit } from "../registry.js"
 import { Selection } from "../../selection/selection.js"
 import { BlockId } from "../../utils/blockId.js"
+import { Edit } from "../edit.js"
 
-registerEdit("move", {
+registerEdit("fill", {
     async run(ctx) {
         const undoCtx = {
-            type: "move",
+            type: "fill",
             selections: ctx.selections,
             dimension: ctx.dimension,
-            start: ctx.start,
-            end: ctx.end,
             changes: {},
         }
         const metrics = {
             blocks: 0,
             ticks: 0,
         }
-        const diff = Vector.subtract(ctx.start, ctx.end)
-        const originalPermutations = []
-
         let prevId
         const addChange = (id) => {
             if (prevId === id) return
@@ -34,47 +31,26 @@ registerEdit("move", {
             prevId = id
         }
 
-        for (const selection of ctx.selections) {
-            for (let x = 0; x < selection.size.x; x++) {
-                for (let y = 0; y < selection.size.y; y++) {
-                    for (let z = 0; z < selection.size.z; z++) {
-                        const location = new Vector(x, y, z).add(selection.location).add(diff)
-                        const block = await ctx.getBlock(location)
+        const lootTable = new LootTable(Edit.seed)
 
-                        originalPermutations.push(block.permutation)
-                    }
-                }
-            }
+        for (const [key, value] of Object.entries(ctx.blocks)) {
+            lootTable.add(key, value)
         }
 
-        for (const selection of ctx.selections) {
-            for (let x = 0; x < selection.size.x; x++) {
-                for (let y = 0; y < selection.size.y; y++) {
-                    for (let z = 0; z < selection.size.z; z++) {
-                        const location = new Vector(x, y, z).add(selection.location).add(diff)
-                        const block = await ctx.getBlock(location)
-                        block.setType("minecraft:air")
-                        metrics.blocks++
-                    }
-                }
-            }
-        }
         let i = 0
-
         for (const selection of ctx.selections) {
             for (let x = 0; x < selection.size.x; x++) {
                 for (let y = 0; y < selection.size.y; y++) {
                     for (let z = 0; z < selection.size.z; z++) {
                         const location = new Vector(x, y, z).add(selection.location)
                         const block = await ctx.getBlock(location)
-                        const newPermutation = originalPermutations[i]
-                        const newPermutationId = BlockId.get(originalPermutations[i])
+                        const typeId = lootTable.roll(x, y, z) ?? Edit.defaultBlock
                         let oldPermutationId = BlockId.get(block.permutation)
 
-                        if (newPermutationId === oldPermutationId) {
+                        if (block.typeId === typeId) {
                             oldPermutationId = undefined
                         } else {
-                            block.setPermutation(newPermutation)
+                            block.setType(typeId)
                             metrics.blocks++
                         }
 
@@ -94,7 +70,6 @@ registerEdit("move", {
             ticks: 0,
         }
         const diff = Vector.subtract(ctx.start, ctx.end)
-        const originalPermutations = []
         const indexToBlock = {}
         let permutation
 
@@ -107,19 +82,6 @@ registerEdit("move", {
 
             for (const value of values) {
                 indexToBlock[value] = permutation
-            }
-        }
-
-        for (const selection of ctx.selections) {
-            for (let x = 0; x < selection.size.x; x++) {
-                for (let y = 0; y < selection.size.y; y++) {
-                    for (let z = 0; z < selection.size.z; z++) {
-                        const location = new Vector(x, y, z).add(selection.location)
-                        const block = await ctx.getBlock(location)
-
-                        originalPermutations.push(block.permutation)
-                    }
-                }
             }
         }
 
@@ -142,20 +104,6 @@ registerEdit("move", {
             }
         }
 
-        let i = 0
-        for (const selection of ctx.selections) {
-            for (let x = 0; x < selection.size.x; x++) {
-                for (let y = 0; y < selection.size.y; y++) {
-                    for (let z = 0; z < selection.size.z; z++) {
-                        const location = new Vector(x, y, z).add(selection.location).add(diff)
-                        const block = await ctx.getBlock(location)
-
-                        block.setPermutation(originalPermutations[i++])
-                    }
-                }
-            }
-        }
-
         for (const selection of ctx.selections) {
             selection.location.add(diff)
         }
@@ -166,8 +114,6 @@ registerEdit("move", {
         const undoCtx = {
             type: ctx.type,
             dimensionId: ctx.dimension.id,
-            start: ctx.start,
-            end: ctx.end,
             changes: ctx.changes,
         }
 
