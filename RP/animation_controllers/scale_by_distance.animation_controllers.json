@@ -1,0 +1,13 @@
+{
+    "format_version": "1.10.0",
+    "animation_controllers": {
+        "controller.animation.scale_by_distance": {
+            "initial_state": "default",
+            "states": {
+                "default": {
+                    "animations": ["scale_by_distance"]
+                }
+            }
+        }
+    }
+}

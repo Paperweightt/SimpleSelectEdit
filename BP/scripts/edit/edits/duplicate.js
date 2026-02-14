@@ -96,7 +96,7 @@ registerEdit("duplicate", {
             }
         }
 
-        let j = 0
+        let i = 0
         for (const selection of ctx.selections) {
             for (let x = 0; x < selection.size.x; x++) {
                 for (let y = 0; y < selection.size.y; y++) {
@@ -104,12 +104,12 @@ registerEdit("duplicate", {
                         const location = new Vector(x, y, z).add(selection.location)
                         const block = await ctx.getBlock(location)
 
-                        if (indexToBlock[j]) permutation = indexToBlock[j]
+                        if (indexToBlock[i]) permutation = indexToBlock[i]
                         if (permutation && permutation !== "undefined") {
                             metrics.blocks++
                             block.setPermutation(permutation)
                         }
-                        j++
+                        i++
                     }
                 }
             }

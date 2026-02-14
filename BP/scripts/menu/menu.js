@@ -197,7 +197,7 @@ class Menu {
                 this.remove()
                 system.clearRun(id)
             }
-        })
+        }, 10)
     }
 
     /** @returns {SelectionGroup} */

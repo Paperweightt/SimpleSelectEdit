@@ -12,6 +12,14 @@
                     ]
                 }
             }
+        },
+        "animation.scale_head": {
+            "loop": true,
+            "bones": {
+                "head": {
+                    "scale": "(query.distance_from_camera/11)+1"
+                }
+            }
         }
     }
 }

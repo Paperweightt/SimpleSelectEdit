@@ -20,11 +20,13 @@
                 "controller.render.arx.entity.outline" // For outline.
             ],
             "animations": {
+                "scale_by_distance": "animation.scale_head",
                 "rotate_head": "animation.rotate_head",
-                "controller.head": "controller.animation.rotate_head"
+                "controller.head": "controller.animation.rotate_head",
+                "controller.scale": "controller.animation.scale_by_distance"
             },
             "scripts": {
-                "animate": ["controller.head"]
+                "animate": ["controller.head", "controller.scale"]
             }
         }
     }
