@@ -38,7 +38,9 @@ registerEdit("duplicate", {
             for (let x = 0; x < selection.size.x; x++) {
                 for (let y = 0; y < selection.size.y; y++) {
                     for (let z = 0; z < selection.size.z; z++) {
-                        const location = new Vector(x, y, z).add(selection.location).add(diff)
+                        const location = new Vector(x, y, z)
+                            .add(selection.location)
+                            .add(diff)
                         const block = await ctx.getBlock(location)
 
                         originalPermutations.push(block.permutation)
@@ -135,16 +137,17 @@ registerEdit("duplicate", {
         return undoCtx
     },
     unzipUndo(ctx) {
+        const dimension = world.getDimension(ctx.dimensionId)
         const undoCtx = {
             type: ctx.type,
-            dimension: world.getDimension(ctx.dimensionId),
+            dimension: dimension,
             start: new Vector(ctx.start),
             end: new Vector(ctx.end),
             changes: ctx.changes,
             selections: ctx.selections.map((snapshot) => {
                 return (
                     Selection.get(snapshot[0]) ||
-                    Selection.parseSnapshot(snapshot, undoCtx.dimension)
+                    Selection.parseSnapshot(snapshot, dimension)
                 )
             }),
         }

@@ -150,7 +150,7 @@ export class SelectionGroup {
      * @param {Selection} selection
      */
     addSelection(selection) {
-        selection.lineRGB = Color.player(this.player, 70, 60)
+        selection.lineRGB = Color.playerOklab(this.player, 0.2, 0.8)
         this.selections.push(selection)
         selection.isOwned = true
 

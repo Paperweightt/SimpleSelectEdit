@@ -122,16 +122,17 @@ registerEdit("fill", {
         return undoCtx
     },
     unzipUndo(ctx) {
+        const dimension = world.getDimension(ctx.dimensionId)
         const undoCtx = {
             type: ctx.type,
-            dimension: world.getDimension(ctx.dimensionId),
+            dimension: dimension,
             start: new Vector(ctx.start),
             end: new Vector(ctx.end),
             changes: ctx.changes,
             selections: ctx.selections.map((snapshot) => {
                 return (
                     Selection.get(snapshot[0]) ||
-                    Selection.parseSnapshot(snapshot, undoCtx.dimension)
+                    Selection.parseSnapshot(snapshot, dimension)
                 )
             }),
         }
