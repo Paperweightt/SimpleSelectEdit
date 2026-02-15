@@ -1,4 +1,4 @@
-import { world, system } from "@minecraft/server"
+import { world, system, Player } from "@minecraft/server"
 import { TYPE_IDS, USE_DURATION } from "../constants"
 import { MinPriorityEvent, Event } from "../utils/events"
 import { Screen } from "../ui/screen.js"
@@ -35,7 +35,7 @@ world.afterEvents.itemUse.subscribe(async (data) => {
         const viewDirection = source.getViewDirection()
         const diff = Vector.distance(viewDirection, initialViewDirection)
 
-        if (diff > 0.1) {
+        if (diff > 0.05) {
             SelectorEvents.startUse.emit({
                 player: source,
                 itemStack,

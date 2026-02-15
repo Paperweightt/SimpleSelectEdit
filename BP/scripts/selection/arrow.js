@@ -189,9 +189,15 @@ export class Arrow {
             p: (-this.planeRotation.x * Math.PI) / 180,
             r: 0,
         }
-        const relPlayerLocation = Vector.subtract(getEyeLocation(this.editor), this.location)
+        const relPlayerLocation = Vector.subtract(
+            getEyeLocation(this.editor),
+            this.location,
+        )
         const nPlayerLocation = Vector.rotate(relPlayerLocation, inverseRotation)
-        const nViewDirection = Vector.rotate(this.editor.getViewDirection(), inverseRotation)
+        const nViewDirection = Vector.rotate(
+            this.editor.getViewDirection(),
+            inverseRotation,
+        )
 
         const dir = nViewDirection.normalize()
         const t = -nPlayerLocation.x / dir.x

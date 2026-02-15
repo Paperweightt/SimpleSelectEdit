@@ -117,8 +117,6 @@ registerEdit("fill", {
 
         undoCtx.selections = ctx.selections.map((selection) => selection.snapshot())
 
-        world.sendMessage(JSON.stringify(undoCtx))
-
         return undoCtx
     },
     unzipUndo(ctx) {

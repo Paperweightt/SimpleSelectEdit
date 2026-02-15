@@ -2,6 +2,7 @@ export const PACK_ID = "sse"
 
 export const TYPE_IDS = {
     ARROW: PACK_ID + ":arrow",
+    CORE: PACK_ID + ":core",
     LINE: PACK_ID + ":line",
     ITEM_DISPLAY: PACK_ID + ":item_display",
     BACK_PANEL: PACK_ID + ":back_panel",

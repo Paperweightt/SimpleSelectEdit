@@ -1,5 +1,6 @@
 import { world } from "@minecraft/server"
 import { Arrow } from "./arrow.js"
+import { Core } from "./core.js"
 import { Selection } from "./selection.js"
 import { SelectItem } from "../selector/selectItem.js"
 import { Edit } from "../edit/index.js"
@@ -136,9 +137,17 @@ export class SelectionGroup {
             if (!selection.isOwned) {
                 if (this.selections.length === 0 && !selection.isOwned) {
                     this.addSelection(selection)
+
+                    this.reloadLocations()
+
                     this.createArrows()
+                    this.createCore()
                 } else {
                     this.addSelection(selection)
+
+                    this.reloadLocations()
+                    this.reloadArrowLocations()
+                    this.reloadCoreLocation()
                 }
             }
         } else {
@@ -153,9 +162,6 @@ export class SelectionGroup {
         selection.lineRGB = Color.playerOklab(this.player, 0.2, 0.8)
         this.selections.push(selection)
         selection.isOwned = true
-
-        this.reloadLocations()
-        this.reloadArrowLocations()
     }
 
     /** @param {number} */
@@ -172,6 +178,7 @@ export class SelectionGroup {
         } else {
             this.reloadLocations()
             this.reloadArrowLocations()
+            this.reloadCoreLocation()
         }
     }
 
@@ -189,6 +196,54 @@ export class SelectionGroup {
         this.size = Vector.subtract(maxLocation, minLocation)
         this.displayLocation = minLocation
         this.location = minLocation
+    }
+
+    /** @returns {Core} */
+    createCore() {
+        const location = this.getCoreLocation()
+        const core = new Core(location, this.dimension)
+
+        core.events.onMove.subscribe((data) => {
+            const { editor, newLocation, prevLocation } = data
+
+            if (editor.id !== this.player.id) return
+
+            const diff = Vector.subtract(newLocation, prevLocation)
+
+            this.moveSelections(diff)
+            this.reloadArrowLocations()
+            this.reloadCoreLocation()
+        })
+
+        core.events.onRelease.subscribe((data) => {
+            const { editor } = data
+            if (editor.id !== this.player.id) return
+
+            this.snapToGrid()
+            this.reloadArrowLocations()
+            this.reloadCoreLocation()
+
+            if (Vector.equals(this.location, this.displayLocation)) return
+
+            if (!editor.customIsShifting || this.selections.length !== 1) {
+                this.runEdit()
+            }
+
+            this.location = this.displayLocation
+        })
+
+        this.core = core
+
+        return this.core
+    }
+
+    reloadCoreLocation() {
+        this.core.teleport(this.getCoreLocation())
+    }
+
+    /** @returns {Vector} */
+    getCoreLocation() {
+        return Vector.divide(this.size, 2).add(this.displayLocation)
     }
 
     createArrows() {
@@ -222,6 +277,7 @@ export class SelectionGroup {
                 this.moveSelections(diff)
             }
             this.reloadArrowLocations()
+            this.reloadCoreLocation()
         })
 
         arrow.events.onRelease.subscribe((data) => {
@@ -230,6 +286,7 @@ export class SelectionGroup {
 
             this.snapToGrid()
             this.reloadArrowLocations()
+            this.reloadCoreLocation()
 
             if (Vector.equals(this.location, this.displayLocation)) return
 
@@ -360,6 +417,8 @@ export class SelectionGroup {
         for (const arrow of Object.values(this.arrows)) {
             arrow.remove()
         }
+
+        this.core.remove()
 
         for (const box of this.selections) {
             box.lineRGB = Selection.defaultLineRGB
