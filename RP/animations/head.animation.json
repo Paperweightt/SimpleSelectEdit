@@ -8,7 +8,7 @@
                     "rotation": [
                         "-query.property('sse:rotate_head_y')",
                         "query.property('sse:rotate_head_x')",
-                        "0"
+                        0
                     ]
                 }
             }
@@ -16,6 +16,9 @@
         "animation.scale_head": {
             "loop": true,
             "bones": {
+                "move_with_scale": {
+                    "position": [0, 0, "(query.distance_from_camera/11)+1"]
+                },
                 "head": {
                     "scale": "(query.distance_from_camera/11)+1"
                 }
@@ -23,3 +26,4 @@
         }
     }
 }
+

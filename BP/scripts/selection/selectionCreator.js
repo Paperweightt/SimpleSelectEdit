@@ -78,7 +78,7 @@ class SelectionCreator {
     }
 
     static runInterval() {
-        const id = system.runInterval(() => {
+        system.runInterval(() => {
             for (const instance of this.getAll()) {
                 instance.run()
             }
@@ -132,9 +132,15 @@ class SelectionCreator {
             p: (-this.rotation.x * Math.PI) / 180,
             r: 0,
         }
-        const relPlayerLocation = Vector.subtract(getEyeLocation(this.player), this.editLocation)
+        const relPlayerLocation = Vector.subtract(
+            getEyeLocation(this.player),
+            this.editLocation,
+        )
         const nPlayerLocation = Vector.rotate(relPlayerLocation, inverseRotation)
-        const nViewDirection = Vector.rotate(this.player.getViewDirection(), inverseRotation)
+        const nViewDirection = Vector.rotate(
+            this.player.getViewDirection(),
+            inverseRotation,
+        )
 
         const dir = nViewDirection.normalize()
         const t = -nPlayerLocation.x / dir.x
@@ -176,9 +182,12 @@ class SelectionCreator {
     getStartEnd() {
         let minLocation = new Vector()
         let maxLocation = new Vector()
+        const { min, max } = this.dimension.heightRange
 
         const pointer = this.getPointer().add(this.editLocation)
         const location = new Vector(0.5).add(this.location)
+
+        pointer.y = Math.min(Math.max(pointer.y, min), max)
 
         minLocation.x = Math.min(location.x, pointer.x)
         minLocation.y = Math.min(location.y, pointer.y)

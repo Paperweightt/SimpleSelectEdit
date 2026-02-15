@@ -1,0 +1,31 @@
+{
+    "format_version": "1.10.0",
+    "minecraft:client_entity": {
+        "description": {
+            "identifier": "sse:core",
+            "materials": {
+                "default": "outline_base", // Must have due to custom material keeping the base on front.
+                "outline": "outline" // For outline.
+            },
+            "textures": {
+                "default": "textures/blocks/concrete_red", // Base texture
+                "outline": "textures/ui/White" // Outline texture
+            },
+            "geometry": {
+                "default": "geometry.sse.core", // Base geometry
+                "outline": "geometry.sse.core_outline" // Outline geometry - Same as base but inflated.
+            },
+            "render_controllers": [
+                "controller.render.default",
+                "controller.render.arx.entity.outline" // For outline.
+            ],
+            "animations": {
+                "scale_by_distance": "animation.scale_head",
+                "controller.scale": "controller.animation.scale_by_distance"
+            },
+            "scripts": {
+                "animate": ["controller.scale"]
+            }
+        }
+    }
+}

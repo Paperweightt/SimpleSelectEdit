@@ -66,25 +66,25 @@ export class Particle {
         const line = (start, offset) => {
             start.add(location)
             offset.add(start)
-            this.line(particle, start, offset, dimension, lifetime, width, rgba)
+            try {
+                this.line(particle, start, offset, dimension, lifetime, width, rgba)
+            } catch (error) {}
         }
 
-        try {
-            line(new Vector(0, 0, 0), new Vector(0, size.y, 0))
-            line(new Vector(size.x, 0, 0), new Vector(0, size.y, 0))
-            line(new Vector(0, 0, size.z), new Vector(0, size.y, 0))
-            line(new Vector(size.x, 0, size.z), new Vector(0, size.y, 0))
+        line(new Vector(0, 0, 0), new Vector(0, size.y, 0))
+        line(new Vector(size.x, 0, 0), new Vector(0, size.y, 0))
+        line(new Vector(0, 0, size.z), new Vector(0, size.y, 0))
+        line(new Vector(size.x, 0, size.z), new Vector(0, size.y, 0))
 
-            line(new Vector(0, 0, 0), new Vector(0, 0, size.z))
-            line(new Vector(size.x, 0, 0), new Vector(0, 0, size.z))
-            line(new Vector(0, size.y, 0), new Vector(0, 0, size.z))
-            line(new Vector(size.x, size.y, 0), new Vector(0, 0, size.z))
+        line(new Vector(0, 0, 0), new Vector(0, 0, size.z))
+        line(new Vector(size.x, 0, 0), new Vector(0, 0, size.z))
+        line(new Vector(0, size.y, 0), new Vector(0, 0, size.z))
+        line(new Vector(size.x, size.y, 0), new Vector(0, 0, size.z))
 
-            line(new Vector(0, 0, 0), new Vector(size.x, 0, 0))
-            line(new Vector(0, size.y, 0), new Vector(size.x, 0, 0))
-            line(new Vector(0, 0, size.z), new Vector(size.x, 0, 0))
-            line(new Vector(0, size.y, size.z), new Vector(size.x, 0, 0))
-        } catch (error) {}
+        line(new Vector(0, 0, 0), new Vector(size.x, 0, 0))
+        line(new Vector(0, size.y, 0), new Vector(size.x, 0, 0))
+        line(new Vector(0, 0, size.z), new Vector(size.x, 0, 0))
+        line(new Vector(0, size.y, size.z), new Vector(size.x, 0, 0))
     }
 
     /**
@@ -102,7 +102,9 @@ export class Particle {
         const mainAxis = Object.entries(diff).find((v) => v[1] === 0)[0]
 
         if (!mainAxis) {
-            throw new Error("invalid start and end, start and end must have one common value")
+            throw new Error(
+                "invalid start and end, start and end must have one common value",
+            )
         }
 
         const particle = particleVector[mainAxis]
@@ -145,19 +147,19 @@ export class Particle {
             start.add(location)
             offset.add(start)
 
-            this.face(particleVector, start, offset, dimension, rgba)
+            try {
+                this.face(particleVector, start, offset, dimension, rgba)
+            } catch (error) {}
         }
         const zFight = 0.0625
 
-        try {
-            face(new Vector(-zFight, 0, 0), new Vector(0, size.y, size.z))
-            face(new Vector(size.x + zFight, 0, 0), new Vector(0, size.y, size.z))
+        face(new Vector(-zFight, 0, 0), new Vector(0, size.y, size.z))
+        face(new Vector(size.x + zFight, 0, 0), new Vector(0, size.y, size.z))
 
-            face(new Vector(0, -zFight, 0), new Vector(size.x, 0, size.z))
-            face(new Vector(0, size.y + zFight, 0), new Vector(size.x, 0, size.z))
+        face(new Vector(0, -zFight, 0), new Vector(size.x, 0, size.z))
+        face(new Vector(0, size.y + zFight, 0), new Vector(size.x, 0, size.z))
 
-            face(new Vector(0, 0, -zFight), new Vector(size.x, size.y, 0))
-            face(new Vector(0, 0, size.z + zFight), new Vector(size.x, size.y, 0))
-        } catch (error) {}
+        face(new Vector(0, 0, -zFight), new Vector(size.x, size.y, 0))
+        face(new Vector(0, 0, size.z + zFight), new Vector(size.x, size.y, 0))
     }
 }

@@ -10,6 +10,10 @@ export const TYPE_IDS = {
     PANEL: PACK_ID + ":panel",
 }
 
+export const USE_DURATION = {
+    SELECT_ITEM: 2_000_000_000,
+}
+
 export const BLOCK_PARTICLE = {
     BASIC: {
         x: PACK_ID + ":face_x",
