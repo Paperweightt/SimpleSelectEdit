@@ -6,4 +6,4 @@
 
 # make fixes
 
-- [ ] deselect broke
+- [x] deselect broke
