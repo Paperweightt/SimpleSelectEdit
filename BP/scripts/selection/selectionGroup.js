@@ -1,4 +1,5 @@
 import { world } from "@minecraft/server"
+import { Menu } from "../menu/menu.js"
 import { Arrow } from "./arrow.js"
 import { Core } from "./core.js"
 import { Selection } from "./selection.js"
@@ -25,7 +26,26 @@ SelectItem.events.click.subscribe({
         const { player } = data
         const dimension = player.dimension
         const rayResult = Selection.getPlayerViewBox(player)
+        const selection = rayResult.selection
         let group
+
+        if (SelectionGroup.get(player.id)?.hasSelection(selection)) {
+            const viewDirection = Vector.multiply(player.getViewDirection(), 2.85)
+            const location = Vector.add(player.getHeadLocation(), viewDirection)
+
+            if (
+                location.y > dimension.heightRange.max ||
+                location.y < dimension.heightRange.min + 2
+            ) {
+                player.sendMessage(
+                    "[ERROR] player is either too low or too high to open menu",
+                )
+                return
+            }
+
+            new Menu(player, location, dimension)
+            return
+        }
 
         if (player.customIsShifting) {
             group = SelectionGroup.get(player.id) || new SelectionGroup(player, dimension)
@@ -38,7 +58,7 @@ SelectItem.events.click.subscribe({
             return
         }
 
-        group.toggleSelection(rayResult.selection)
+        group.toggleSelection(selection)
     },
 })
 
@@ -162,6 +182,20 @@ export class SelectionGroup {
         selection.lineRGB = Color.playerOklab(this.player, 0.2, 0.8)
         this.selections.push(selection)
         selection.isOwned = true
+    }
+
+    /**
+     * @param {Selection} selection
+     * @returns {boolean}
+     */
+    hasSelection(selection) {
+        if (!selection.isOwned) return false
+
+        for (const ownedSelection of this.selections) {
+            if (ownedSelection.id === selection.id) return true
+        }
+
+        return false
     }
 
     /** @param {number} */

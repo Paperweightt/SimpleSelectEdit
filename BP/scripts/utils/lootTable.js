@@ -59,7 +59,6 @@ export class LootTable {
 
         for (const { value, weight } of this.list) {
             accum += weight
-            console.log(roll, accum, value)
             if (accum >= roll) return value
         }
     }

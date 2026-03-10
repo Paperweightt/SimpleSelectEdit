@@ -9,31 +9,6 @@ import { Edit } from "../edit/index.js"
 import { BackPanel } from "./backPanel.js"
 import { SelectItem } from "../selector/selectItem.js"
 
-// click air while shifting
-SelectItem.events.click.subscribe({
-    priority: (data) => {
-        const { player } = data
-
-        if (!player.customIsShifting) return Infinity
-
-        return 50
-    },
-    callback: (data) => {
-        const { player } = data
-        const dimension = player.dimension
-        const viewDirection = Vector.multiply(player.getViewDirection(), 2.85)
-        const location = Vector.add(player.getHeadLocation(), viewDirection)
-
-        // TODO: color message
-        if (location.y > dimension.heightRange.max || location.y < dimension.heightRange.min + 2) {
-            player.sendMessage("[ERROR] player is either too low or too high to open menu")
-            return
-        }
-
-        new Menu(player, location, dimension)
-    },
-})
-
 // disable clicks while viewing screen
 SelectItem.events.click.subscribe({
     priority: (data) => {
@@ -55,7 +30,7 @@ SelectItem.events.startUse.subscribe({
 export const BUTTON_WIDTH = 54
 export const BUTTON_HEIGHT = 13
 
-class Menu {
+export class Menu {
     static list = {}
 
     static remove(id) {
@@ -193,7 +168,10 @@ class Menu {
 
     runInterval() {
         const id = system.runInterval(() => {
-            if (!this.player.isValid || Vector.distance(this.player.location, this.location) > 15) {
+            if (
+                !this.player.isValid ||
+                Vector.distance(this.player.location, this.location) > 15
+            ) {
                 this.remove()
                 system.clearRun(id)
             }
@@ -253,6 +231,7 @@ class Menu {
             if (group) {
                 group.reloadLocations()
                 group.reloadArrowLocations()
+                group.reloadCoreLocation()
             }
 
             if (blocks > 1000) {
@@ -324,7 +303,9 @@ class Menu {
 
             if (!group) return
 
-            const form = new ModalFormData().title("Save to Structure").textField("", "id:name")
+            const form = new ModalFormData()
+                .title("Save to Structure")
+                .textField("", "id:name")
 
             form.show(this.player).then((formData) => {
                 if (formData.canceled) return
@@ -634,7 +615,14 @@ class Menu {
             const panelColorPartId = panel + color
             const value = this.player.getDynamicProperty(panelColorPartId) ?? 190
 
-            const colorButton = new KeyIntElement(width, BUTTON_HEIGHT, color, value, 0, 255)
+            const colorButton = new KeyIntElement(
+                width,
+                BUTTON_HEIGHT,
+                color,
+                value,
+                0,
+                255,
+            )
             verticalStack.addElement(colorButton)
 
             colorButton.addOnClick(() => {

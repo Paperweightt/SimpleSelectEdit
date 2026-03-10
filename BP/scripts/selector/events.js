@@ -4,6 +4,8 @@ import { MinPriorityEvent, Event } from "../utils/events"
 import { Screen } from "../ui/screen.js"
 import { Vector } from "../utils/vector.js"
 
+const e = 0.05
+
 world.afterEvents.itemUse.subscribe(async (data) => {
     const { source, itemStack } = data
 
@@ -34,8 +36,9 @@ world.afterEvents.itemUse.subscribe(async (data) => {
     source.dragId = system.runInterval(() => {
         const viewDirection = source.getViewDirection()
         const diff = Vector.distance(viewDirection, initialViewDirection)
+        const velocity = source.getVelocity()
 
-        if (diff > 0.05) {
+        if (diff > e || velocity.x > e || velocity.y > e || velocity.z > e) {
             SelectorEvents.startUse.emit({
                 player: source,
                 itemStack,

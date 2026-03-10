@@ -75,7 +75,6 @@ export class Color {
      * @param {number} h - hue angle [[0-360]]
      */
     static oklchToRgb(L, C, h) {
-        console.log(L, C, h)
         const rad = (h * Math.PI) / 180
 
         const a = C * Math.cos(rad)
@@ -91,7 +90,6 @@ export class Color {
      * @returns {import("@minecraft/server").RGB}
      */
     static oklabToRgb(L, a, b) {
-        console.log(L, a, b)
         // 1) Convert OKLab → LMS (nonlinear)
         const l_ = L + 0.3963377774 * a + 0.2158037573 * b
         const m_ = L - 0.1055613458 * a - 0.0638541728 * b
@@ -123,6 +121,3 @@ export class Color {
         return { red: clamp(r, 0, 1), green: clamp(g, 0, 1), blue: clamp(b2, 0, 1) }
     }
 }
-
-console.log(Color.playerOklab({ name: "test" }, 0.2, 0.8))
-console.log(Color.playerHSL({ name: "Paperweightt192" }, 70, 60))
