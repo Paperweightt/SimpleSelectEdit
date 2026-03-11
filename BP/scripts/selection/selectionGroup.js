@@ -358,13 +358,9 @@ export class SelectionGroup {
     snapToGrid() {
         this.displayLocation.round()
 
-        if (this.selections.length === 1) {
-            this.size.round()
-            this.selections[0].size = this.size
-        }
-
         for (const selection of this.selections) {
             selection.location.round()
+            selection.size.round()
         }
     }
 
