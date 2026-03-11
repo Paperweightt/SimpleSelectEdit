@@ -305,7 +305,7 @@ export class SelectionGroup {
 
             const diff = Vector.subtract(newLocation, prevLocation)
 
-            if (editor.customIsShifting && this.selections.length === 1) {
+            if (editor.customIsShifting) {
                 this.resizeSelection(direction, diff)
             } else {
                 this.moveSelections(diff)
@@ -324,7 +324,7 @@ export class SelectionGroup {
 
             if (Vector.equals(this.location, this.displayLocation)) return
 
-            if (!editor.customIsShifting || this.selections.length !== 1) {
+            if (!editor.customIsShifting) {
                 this.runEdit()
             }
 
@@ -375,26 +375,30 @@ export class SelectionGroup {
     resizeSelection(direction, diff) {
         const { min, max } = this.dimension.heightRange
         const minSize = new Vector(1, 1, 1)
-        const selection = this.selections[0]
 
-        if (direction === "Down" || direction === "West" || direction === "North") {
-            const newSize = Vector.max(Vector.subtract(this.size, diff), minSize)
-            const sizeChange = Vector.subtract(this.size, newSize)
-
-            if (this.displayLocation.y + sizeChange.y < min) return
-
-            this.displayLocation.add(sizeChange)
-            selection.location.add(sizeChange)
-
-            this.size = newSize
-            selection.size = newSize
-        } else {
-            const newSize = Vector.max(Vector.add(this.size, diff), minSize)
-            if (this.displayLocation.y + newSize.y > max) return
-
-            this.size = newSize
-            selection.size = newSize
+        for (const selection of this.selections) {
+            if (direction === "Down") {
+                diff.y = Math.max(diff.y, min - selection.location.y)
+            }
+            if (direction === "Up") {
+                diff.y = Math.min(diff.y, max - selection.location.y - selection.size.y)
+            }
         }
+
+        for (const selection of this.selections) {
+            if (direction === "Down" || direction === "West" || direction === "North") {
+                const newSize = Vector.max(Vector.subtract(selection.size, diff), minSize)
+                const sizeChange = Vector.subtract(selection.size, newSize)
+
+                selection.location.add(sizeChange)
+                selection.size = newSize
+            } else {
+                const newSize = Vector.max(Vector.add(selection.size, diff), minSize)
+                selection.size = newSize
+            }
+        }
+
+        this.reloadLocations()
     }
 
     /** @param {Vector} direction */

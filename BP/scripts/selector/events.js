@@ -4,8 +4,6 @@ import { MinPriorityEvent, Event } from "../utils/events"
 import { Screen } from "../ui/screen.js"
 import { Vector } from "../utils/vector.js"
 
-const e = 0.05
-
 world.afterEvents.itemUse.subscribe(async (data) => {
     const { source, itemStack } = data
 
@@ -32,6 +30,7 @@ world.afterEvents.itemUse.subscribe(async (data) => {
     const initialViewDirection = source.getViewDirection()
     source.onRelease = "click"
 
+    const e = 0.05
     let ticks = 0
     source.dragId = system.runInterval(() => {
         const viewDirection = source.getViewDirection()
