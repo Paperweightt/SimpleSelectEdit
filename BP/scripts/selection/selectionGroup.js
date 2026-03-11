@@ -159,7 +159,6 @@ export class SelectionGroup {
                     this.addSelection(selection)
 
                     this.reloadLocations()
-
                     this.createArrows()
                     this.createCore()
                 } else {
@@ -319,6 +318,8 @@ export class SelectionGroup {
             if (editor.id !== this.player.id) return
 
             this.snapToGrid()
+
+            this.reloadLocations()
             this.reloadArrowLocations()
             this.reloadCoreLocation()
 
