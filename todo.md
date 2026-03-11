@@ -1,9 +1,10 @@
 # test fixes
 
-- [ ] ownership system
-- [x] bottom fix
-- [x] owner color
-
 # make fixes
 
+# done
+
 - [x] deselect broke
+- [x] ownership system
+- [x] bottom fix
+- [x] owner color

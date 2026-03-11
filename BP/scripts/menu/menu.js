@@ -86,7 +86,6 @@ export class Menu {
         this.lockItem()
         this.initScreen()
         this.runInterval()
-        this.setTitle("hello")
 
         this.resume()
         this.initBackPanel()
@@ -421,8 +420,25 @@ export class Menu {
             panel.addElement(button)
         }
 
-        addButton("Rotate 90°")
-        addButton("Rotate -90°")
+        addButton("Rotate 90°", () => {
+            const group = this.getSelectionGroup()
+            if (!group) return
+
+            Edit.run("rotate", {
+                selections: group.selections,
+                dimension: this.dimension,
+                rotation: 90,
+            })
+        })
+
+        addButton("Rotate -90°", () => {
+            Edit.run("rotate", {
+                selections: group.selections,
+                dimension: this.dimension,
+                rotation: 270,
+            })
+        })
+
         addButton("Flip X")
         addButton("Flip Z")
 

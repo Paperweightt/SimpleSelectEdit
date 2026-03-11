@@ -36,9 +36,9 @@ world.afterEvents.itemUse.subscribe(async (data) => {
     source.dragId = system.runInterval(() => {
         const viewDirection = source.getViewDirection()
         const diff = Vector.distance(viewDirection, initialViewDirection)
-        const velocity = source.getVelocity()
+        const velocity = new Vector(source.getVelocity()).abs().coordinateSum()
 
-        if (diff > e || velocity.x > e || velocity.y > e || velocity.z > e) {
+        if (diff > e || (velocity > e && ticks > 4)) {
             SelectorEvents.startUse.emit({
                 player: source,
                 itemStack,
