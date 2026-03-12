@@ -158,13 +158,11 @@ export class SelectionGroup {
                 if (this.selections.length === 0 && !selection.isOwned) {
                     this.addSelection(selection)
 
-                    this.reloadLocations()
                     this.createArrows()
                     this.createCore()
                 } else {
                     this.addSelection(selection)
 
-                    this.reloadLocations()
                     this.reloadArrowLocations()
                     this.reloadCoreLocation()
                 }
@@ -172,6 +170,8 @@ export class SelectionGroup {
         } else {
             this.removeSelection(index)
         }
+
+        this.updateOriginalLocations()
     }
 
     /**
@@ -209,13 +209,13 @@ export class SelectionGroup {
         if (this.selections.length === 0) {
             this.remove()
         } else {
-            this.reloadLocations()
             this.reloadArrowLocations()
             this.reloadCoreLocation()
         }
     }
 
-    reloadLocations() {
+    /** @return {{minLocation:Vector,maxLocation:Vector}} */
+    getMinMax() {
         let maxLocation = new Vector(-Infinity)
         let minLocation = new Vector(Infinity)
 
@@ -226,14 +226,25 @@ export class SelectionGroup {
             maxLocation = Vector.max(maxLocation, selectionMax)
         }
 
-        this.size = Vector.subtract(maxLocation, minLocation)
-        this.displayLocation = minLocation
-        this.location = minLocation
+        return { minLocation, maxLocation }
+    }
+
+    /** @return {Vector} */
+    getSize() {
+        const { minLocation, maxLocation } = this.getMinMax()
+
+        return Vector.subtract(maxLocation, minLocation)
+    }
+
+    /** @return {Vector} */
+    getCenter() {
+        const { minLocation, maxLocation } = this.getMinMax()
+        return Vector.add(minLocation, maxLocation).divide(2)
     }
 
     /** @returns {Core} */
     createCore() {
-        const location = this.getCoreLocation()
+        const location = this.getCenter()
         const core = new Core(location, this.dimension)
 
         core.events.onMove.subscribe((data) => {
@@ -249,20 +260,26 @@ export class SelectionGroup {
         })
 
         core.events.onRelease.subscribe((data) => {
-            const { editor } = data
+            const { editor, location, prevLocation } = data
             if (editor.id !== this.player.id) return
 
             this.snapToGrid()
             this.reloadArrowLocations()
             this.reloadCoreLocation()
 
-            if (Vector.equals(this.location, this.displayLocation)) return
+            world.sendMessage(JSON.stringify(prevLocation))
 
-            if (!editor.customIsShifting || this.selections.length !== 1) {
-                this.runEdit()
-            }
+            const diff = Vector.subtract(location, prevLocation)
 
-            this.location = this.displayLocation
+            if (Vector.equals(diff, new Vector(0))) return
+
+            Edit.playerRunAndSave(this.player, this.editMode, {
+                dimension: this.dimension,
+                vector: diff.round(),
+                selections: this.selections,
+            })
+
+            if (this.editMode === "duplicate") this.editMode = "move"
         })
 
         this.core = core
@@ -271,12 +288,7 @@ export class SelectionGroup {
     }
 
     reloadCoreLocation() {
-        this.core.teleport(this.getCoreLocation())
-    }
-
-    /** @returns {Vector} */
-    getCoreLocation() {
-        return Vector.divide(this.size, 2).add(this.displayLocation)
+        this.core.teleport(this.getCenter())
     }
 
     createArrows() {
@@ -307,29 +319,35 @@ export class SelectionGroup {
             if (editor.customIsShifting) {
                 this.resizeSelection(direction, diff)
             } else {
-                this.moveSelections(diff)
+                this.moveSelections(diff, direction)
             }
+
             this.reloadArrowLocations()
             this.reloadCoreLocation()
         })
 
         arrow.events.onRelease.subscribe((data) => {
-            const { editor } = data
+            const { editor, location, prevLocation } = data
             if (editor.id !== this.player.id) return
 
-            this.snapToGrid()
+            const diff = Vector.subtract(location, prevLocation).round()
 
-            this.reloadLocations()
+            this.snapToGrid()
             this.reloadArrowLocations()
             this.reloadCoreLocation()
 
-            if (Vector.equals(this.location, this.displayLocation)) return
+            if (new Vector(0).equals(diff)) return
 
             if (!editor.customIsShifting) {
-                this.runEdit()
+                Edit.playerRunAndSave(this.player, this.editMode, {
+                    dimension: this.dimension,
+                    vector: diff,
+                    selections: this.selections,
+                })
+                if (this.editMode === "duplicate") this.editMode = "move"
             }
 
-            this.location = this.displayLocation
+            this.updateOriginalLocations()
         })
 
         this.arrows[direction] = arrow
@@ -337,37 +355,25 @@ export class SelectionGroup {
         return arrow
     }
 
-    runEdit() {
-        if (this.editMode === "move") {
-            Edit.playerRunAndSave(this.player, "move", {
-                dimension: this.dimension,
-                start: this.location,
-                end: this.displayLocation,
-                selections: this.selections,
-            })
-        } else if (this.editMode === "duplicate") {
-            Edit.playerRunAndSave(this.player, "duplicate", {
-                dimension: this.dimension,
-                start: this.location,
-                end: this.displayLocation,
-                selections: this.selections,
-            })
-            this.editMode = "move"
-        }
-    }
-
     snapToGrid() {
-        this.displayLocation.round()
-
         for (const selection of this.selections) {
             selection.location.round()
             selection.size.round()
         }
     }
 
+    updateOriginalLocations() {
+        for (const arrow of Object.values(this.arrows)) {
+            arrow.updateOriginalLocation()
+        }
+
+        this.core.updateOriginalLocation()
+    }
+
     /**
      * @param {import("@minecraft/server").Direction}
      * @param {Vector} diff
+     * @returns {Vector}
      */
     resizeSelection(direction, diff) {
         const { min, max } = this.dimension.heightRange
@@ -395,29 +401,34 @@ export class SelectionGroup {
             }
         }
 
-        this.reloadLocations()
+        return diff
     }
 
-    /** @param {Vector} direction */
+    /**
+     * @param {Vector} diff
+     * @returns {Vector}
+     */
     moveSelections(diff) {
-        const location = diff.add(this.displayLocation)
         const { min, max } = this.dimension.heightRange
 
-        location.y = Math.min(location.y, max - this.size.y)
-        location.y = Math.max(location.y, min)
-
-        const newDiff = Vector.subtract(location, this.displayLocation)
-
         for (const selection of this.selections) {
-            selection.location.add(newDiff)
+            if (diff.y < 0) {
+                diff.y = Math.max(diff.y, min - selection.location.y)
+            } else if (diff.y > 0) {
+                diff.y = Math.min(diff.y, max - selection.location.y - selection.size.y)
+            }
         }
 
-        this.displayLocation = location
+        for (const selection of this.selections) {
+            selection.location.add(diff)
+        }
+
+        return diff
     }
 
-    reloadArrowLocations() {
+    reloadArrowLocations(changeOriginal = false) {
         for (const [direction, arrow] of Object.entries(this.arrows)) {
-            arrow.teleport(this.getArrowLocation(direction))
+            arrow.teleport(this.getArrowLocation(direction), changeOriginal)
         }
     }
 
@@ -426,7 +437,7 @@ export class SelectionGroup {
      * @returns {Vector}
      */
     getArrowLocation(direction) {
-        return Vector.add(this.displayLocation, this.getArrowOffset(direction))
+        return Vector.add(this.getCenter(), this.getArrowOffset(direction))
     }
 
     /**
@@ -434,9 +445,9 @@ export class SelectionGroup {
      * @returns {Vector}
      */
     getArrowOffset(direction) {
-        const halfSize = Vector.divide(this.size, 2)
+        const halfSize = this.getSize().divide(2)
         const offset = Vector.stringToVector(direction)
-        const edge = Vector.multiply(offset, halfSize).add(halfSize)
+        const edge = Vector.multiply(offset, halfSize)
         const location = edge.add(offset.multiply(0.75))
 
         return location

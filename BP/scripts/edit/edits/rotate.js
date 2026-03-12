@@ -14,6 +14,7 @@ registerEdit("rotate", {
      * @param {rotateObject} ctx
      */
     async run(ctx) {
+        const structureId = PACK_ID + ":edit_temp"
         const undoCtx = {
             type: "rotate",
             selections: ctx.selections,
@@ -24,13 +25,13 @@ registerEdit("rotate", {
             blocks: 0,
             ticks: 0,
         }
-        const structureId = PACK_ID + ":edit_temp"
 
         world.structureManager.delete(structureId)
 
         for (const selection of ctx.selections) {
             const start = selection.location
-            const end = Vector.add(selection.location, selection.size)
+            const end = Vector.add(selection.location, selection.size).subtract(1)
+            const offset = new Vector(0)
 
             world.structureManager.createFromWorld(
                 structureId,
@@ -51,6 +52,27 @@ registerEdit("rotate", {
                         metrics.blocks++
                     }
                 }
+            }
+
+            if (
+                selection.size.x !== selection.size.z &&
+                (ctx.rotation === 90 || ctx.rotation === 270)
+            ) {
+                if (selection.size.x > selection.size.z) {
+                    offset.z -= selection.size.x / 2 - selection.size.z / 2
+                    offset.x += selection.size.x / 2 - selection.size.z / 2
+                } else {
+                    offset.x -= selection.size.z / 2 - selection.size.x / 2
+                    offset.z += selection.size.z / 2 - selection.size.x / 2
+                }
+
+                let temp = selection.size.x
+
+                selection.size.x = selection.size.z
+                selection.size.z = temp
+
+                selection.location.add(offset).round()
+                selection.size.round()
             }
 
             world.structureManager.place(structureId, ctx.dimension, selection.location, {

@@ -228,9 +228,9 @@ export class Menu {
             const group = this.getSelectionGroup()
 
             if (group) {
-                group.reloadLocations()
                 group.reloadArrowLocations()
                 group.reloadCoreLocation()
+                group.updateOriginalLocations()
             }
 
             if (blocks > 1000) {
@@ -309,15 +309,15 @@ export class Menu {
             form.show(this.player).then((formData) => {
                 if (formData.canceled) return
                 let name = formData.formValues[0] || undefined
-                const endLocation = Vector.add(group.location, group.size).subtract(1)
 
+                const { minLocation, maxLocation } = group.getMinMax()
                 world.structureManager.delete(name)
 
                 world.structureManager.createFromWorld(
                     name,
                     this.dimension,
-                    group.location,
-                    endLocation,
+                    minLocation,
+                    maxLocation,
                 )
             })
         })
@@ -429,14 +429,25 @@ export class Menu {
                 dimension: this.dimension,
                 rotation: 90,
             })
+
+            group.reloadArrowLocations()
+            group.reloadCoreLocation()
+            group.updateOriginalLocations()
         })
 
         addButton("Rotate -90°", () => {
+            const group = this.getSelectionGroup()
+            if (!group) return
+
             Edit.run("rotate", {
                 selections: group.selections,
                 dimension: this.dimension,
                 rotation: 270,
             })
+
+            group.reloadArrowLocations()
+            group.reloadCoreLocation()
+            group.updateOriginalLocations()
         })
 
         addButton("Flip X")

@@ -118,6 +118,7 @@ export class Core {
         }
 
         this.location = location
+        this.originalLocation = location.copy()
         this.dimension = dimension
         this.id = this.entity.id
 
@@ -145,6 +146,10 @@ export class Core {
         this.location = location
     }
 
+    updateOriginalLocation() {
+        this.originalLocation = this.location.copy()
+    }
+
     getPointer() {
         return Vector.multiply(this.editor.getViewDirection(), this.distance).add(
             getEyeLocation(this.editor),
@@ -165,9 +170,12 @@ export class Core {
 
     removeEditor() {
         this.events.onRelease.emit({
-            location: this.location.copy(),
+            location: this.location,
+            prevLocation: this.originalLocation.copy(),
             editor: this.editor,
         })
+
+        this.originalLocation = this.location.copy()
 
         delete this.distance
         delete this.editor

@@ -118,6 +118,7 @@ export class Arrow {
         }
 
         this.location = location
+        this.originalLocation = location.copy()
         this.dimension = dimension
         this.rotation = rotation
         this.id = this.entity.id
@@ -177,10 +178,15 @@ export class Arrow {
 
     /**
      * @param {Vector}
+     * @param {Boolean}
      */
     teleport(location) {
         this.entity.teleport(location)
         this.location = location
+    }
+
+    updateOriginalLocation() {
+        this.originalLocation = this.location.copy()
     }
 
     getPointer() {
@@ -227,9 +233,12 @@ export class Arrow {
 
     removeEditor() {
         this.events.onRelease.emit({
-            location: this.location.copy(),
+            location: this.location,
+            prevLocation: this.originalLocation.copy(),
             editor: this.editor,
         })
+
+        this.originalLocation = this.location.copy()
 
         delete this.editor
     }

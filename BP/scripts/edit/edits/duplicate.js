@@ -10,15 +10,13 @@ registerEdit("duplicate", {
             type: "duplicate",
             selections: ctx.selections,
             dimension: ctx.dimension,
-            start: ctx.start,
-            end: ctx.end,
+            vector: ctx.vector,
             changes: {},
         }
         const metrics = {
             blocks: 0,
             ticks: 0,
         }
-        const diff = Vector.subtract(ctx.start, ctx.end)
         const originalPermutations = []
 
         let prevId
@@ -40,7 +38,7 @@ registerEdit("duplicate", {
                     for (let z = 0; z < selection.size.z; z++) {
                         const location = new Vector(x, y, z)
                             .add(selection.location)
-                            .add(diff)
+                            .subtract(ctx.vector)
                         const block = await ctx.getBlock(location)
 
                         originalPermutations.push(block.permutation)
@@ -127,8 +125,7 @@ registerEdit("duplicate", {
         const undoCtx = {
             type: ctx.type,
             dimensionId: ctx.dimension.id,
-            start: ctx.start,
-            end: ctx.end,
+            vector: ctx.vector,
             changes: ctx.changes,
         }
 
@@ -141,8 +138,7 @@ registerEdit("duplicate", {
         const undoCtx = {
             type: ctx.type,
             dimension: dimension,
-            start: new Vector(ctx.start),
-            end: new Vector(ctx.end),
+            vector: new Vector(ctx.vector),
             changes: ctx.changes,
             selections: ctx.selections.map((snapshot) => {
                 return (
