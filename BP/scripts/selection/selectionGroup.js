@@ -29,7 +29,10 @@ SelectItem.events.click.subscribe({
         const selection = rayResult.selection
         let group
 
-        if (SelectionGroup.get(player.id)?.hasSelection(selection)) {
+        if (
+            SelectionGroup.get(player.id)?.hasSelection(selection) &&
+            !player.customIsShifting
+        ) {
             const viewDirection = Vector.multiply(player.getViewDirection(), 2.85)
             const location = Vector.add(player.getHeadLocation(), viewDirection)
 
@@ -214,12 +217,15 @@ export class SelectionGroup {
         }
     }
 
-    /** @return {{minLocation:Vector,maxLocation:Vector}} */
-    getMinMax() {
+    /**
+     * @param {Selection[]} selections
+     * @return {{minLocation:Vector,maxLocation:Vector}}
+     */
+    static getMinMax(selections) {
         let maxLocation = new Vector(-Infinity)
         let minLocation = new Vector(Infinity)
 
-        for (const selection of this.selections) {
+        for (const selection of selections) {
             const selectionMax = Vector.add(selection.location, selection.size)
 
             minLocation = Vector.min(minLocation, selection.location)
@@ -227,6 +233,11 @@ export class SelectionGroup {
         }
 
         return { minLocation, maxLocation }
+    }
+
+    /** @return {{minLocation:Vector,maxLocation:Vector}} */
+    getMinMax() {
+        return SelectionGroup.getMinMax(this.selections)
     }
 
     /** @return {Vector} */
@@ -266,8 +277,6 @@ export class SelectionGroup {
             this.snapToGrid()
             this.reloadArrowLocations()
             this.reloadCoreLocation()
-
-            world.sendMessage(JSON.stringify(prevLocation))
 
             const diff = Vector.subtract(location, prevLocation)
 
@@ -437,20 +446,12 @@ export class SelectionGroup {
      * @returns {Vector}
      */
     getArrowLocation(direction) {
-        return Vector.add(this.getCenter(), this.getArrowOffset(direction))
-    }
-
-    /**
-     * @param {import("@minecraft/server").Direction}
-     * @returns {Vector}
-     */
-    getArrowOffset(direction) {
-        const halfSize = this.getSize().divide(2)
         const offset = Vector.stringToVector(direction)
-        const edge = Vector.multiply(offset, halfSize)
-        const location = edge.add(offset.multiply(0.75))
 
-        return location
+        return Vector.add(
+            this.getCenter(),
+            Vector.multiply(offset, this.getSize().divide(2)).add(offset.multiply(0.75)),
+        )
     }
 
     removeSelections() {

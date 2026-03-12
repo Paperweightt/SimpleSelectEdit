@@ -1,8 +1,36 @@
-import { world } from "@minecraft/server"
+import { world, BlockVolume } from "@minecraft/server"
 import { Vector } from "../../utils/vector.js"
 import { registerEdit } from "../registry.js"
 import { Selection } from "../../selection/selection.js"
 import { PACK_ID } from "../../constants.js"
+import { SelectionGroup } from "../../selection/selectionGroup.js"
+
+/**
+ * @param {Vector} location
+ * @param {Vector} pivot
+ * @param {0 | 90 | 180 | 270} rotation
+ * @returns {Vector}
+ */
+function rotate(location, pivot, rotation) {
+    location.subtract(pivot)
+
+    switch (rotation) {
+        case 90:
+            location.setAxisOrder("zyx")
+            location.x *= -1
+            break
+        case 180:
+            location.x *= -1
+            location.z *= -1
+            break
+        case 270:
+            location.setAxisOrder("zyx")
+            location.z *= -1
+            break
+    }
+
+    return location.add(pivot)
+}
 
 registerEdit("rotate", {
     /**
@@ -19,40 +47,55 @@ registerEdit("rotate", {
             type: "rotate",
             selections: ctx.selections,
             dimension: ctx.dimension,
-            rotation: ctx.start,
+            rotation: ctx.rotation,
         }
         const metrics = {
             blocks: 0,
             ticks: 0,
         }
+        const range = SelectionGroup.getMinMax(ctx.selections)
+        const size = Vector.subtract(range.maxLocation, range.minLocation)
+        const groupPivot = Vector.subtract(size, 1).divide(2).add(range.minLocation)
 
-        world.structureManager.delete(structureId)
+        // delete structures
+        for (let i = 0; i < ctx.selections.length; i++) {
+            const id = structureId + "_" + i
+            world.structureManager.delete(id)
+        }
+
+        // create structures
+        for (let i = 0; i < ctx.selections.length; i++) {
+            const selection = ctx.selections[i]
+            const start = selection.location
+            const end = Vector.add(selection.location, selection.size).subtract(1)
+            const id = structureId + "_" + i
+
+            world.structureManager.createFromWorld(id, ctx.dimension, start, end, {
+                includeEntities: false,
+                saveMode: "Memory",
+            })
+        }
 
         for (const selection of ctx.selections) {
             const start = selection.location
             const end = Vector.add(selection.location, selection.size).subtract(1)
-            const offset = new Vector(0)
+            const volume = new BlockVolume(start, end).getBlockLocationIterator()
 
-            world.structureManager.createFromWorld(
-                structureId,
-                ctx.dimension,
-                start,
-                end,
-                {
-                    includeEntities: false,
-                },
-            )
-
-            for (let x = 0; x < selection.size.x; x++) {
-                for (let y = 0; y < selection.size.y; y++) {
-                    for (let z = 0; z < selection.size.z; z++) {
-                        const location = new Vector(x, y, z).add(selection.location)
-                        const block = await ctx.getBlock(location)
-                        block.setType("minecraft:air")
-                        metrics.blocks++
-                    }
-                }
+            for (const location of volume) {
+                const block = await ctx.getBlock(location)
+                block.setType("minecraft:air")
+                metrics.blocks++
             }
+        }
+
+        // rotate structures
+        for (let i = 0; i < ctx.selections.length; i++) {
+            const selection = ctx.selections[i]
+            const id = structureId + "_" + i
+            const offset = new Vector(0)
+            const pivot = Vector.subtract(selection.size, 1)
+                .divide(2)
+                .add(selection.location)
 
             if (
                 selection.size.x !== selection.size.z &&
@@ -71,16 +114,23 @@ registerEdit("rotate", {
                 selection.size.x = selection.size.z
                 selection.size.z = temp
 
-                selection.location.add(offset).round()
+                selection.location.add(offset)
                 selection.size.round()
             }
 
-            world.structureManager.place(structureId, ctx.dimension, selection.location, {
+            selection.location
+                .subtract(
+                    Vector.subtract(
+                        pivot,
+                        rotate(pivot.copy(), groupPivot, ctx.rotation),
+                    ),
+                )
+                .round()
+
+            world.structureManager.place(id, ctx.dimension, selection.location, {
                 rotation: ctx.rotation === 0 ? "None" : "Rotate" + ctx.rotation,
             })
         }
-
-        world.structureManager.delete(structureId)
 
         return { undoCtx, metrics }
     },

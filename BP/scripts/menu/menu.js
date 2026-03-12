@@ -420,11 +420,11 @@ export class Menu {
             panel.addElement(button)
         }
 
-        addButton("Rotate 90°", () => {
+        addButton("Rotate 90°", async () => {
             const group = this.getSelectionGroup()
             if (!group) return
 
-            Edit.run("rotate", {
+            await Edit.run("rotate", {
                 selections: group.selections,
                 dimension: this.dimension,
                 rotation: 90,
@@ -435,11 +435,11 @@ export class Menu {
             group.updateOriginalLocations()
         })
 
-        addButton("Rotate -90°", () => {
+        addButton("Rotate -90°", async () => {
             const group = this.getSelectionGroup()
             if (!group) return
 
-            Edit.run("rotate", {
+            await Edit.run("rotate", {
                 selections: group.selections,
                 dimension: this.dimension,
                 rotation: 270,

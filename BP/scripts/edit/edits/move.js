@@ -95,7 +95,6 @@ registerEdit("move", {
             blocks: 0,
             ticks: 0,
         }
-        const diff = Vector.subtract(ctx.start, ctx.end)
         const originalPermutations = []
         const indexToBlock = {}
         let permutation
@@ -151,7 +150,8 @@ registerEdit("move", {
                     for (let z = 0; z < selection.size.z; z++) {
                         const location = new Vector(x, y, z)
                             .add(selection.location)
-                            .add(diff)
+                            .subtract(ctx.vector)
+
                         const block = await ctx.getBlock(location)
 
                         block.setPermutation(originalPermutations[i++])
@@ -161,7 +161,7 @@ registerEdit("move", {
         }
 
         for (const selection of ctx.selections) {
-            selection.location.add(diff)
+            selection.location.subtract(ctx.vector)
         }
 
         return metrics

@@ -80,7 +80,6 @@ registerEdit("duplicate", {
             blocks: 0,
             ticks: 0,
         }
-        const diff = Vector.subtract(ctx.start, ctx.end)
         const indexToBlock = {}
         let permutation
 
@@ -116,7 +115,7 @@ registerEdit("duplicate", {
         }
 
         for (const selection of ctx.selections) {
-            selection.location.add(diff)
+            selection.location.subtract(ctx.vector)
         }
 
         return metrics
