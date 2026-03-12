@@ -289,6 +289,8 @@ export class SelectionGroup {
             })
 
             if (this.editMode === "duplicate") this.editMode = "move"
+
+            this.updateOriginalLocations()
         })
 
         this.core = core
