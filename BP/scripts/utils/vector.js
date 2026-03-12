@@ -4,7 +4,7 @@ export class Vector {
             this.x = x[0]
             this.y = x[1]
             this.z = x[2]
-        } else if (x.x) {
+        } else if (x.x !== undefined) {
             this.x = x.x
             this.y = x.y
             this.z = x.z
@@ -69,7 +69,11 @@ export class Vector {
     }
 
     static crossProduct(a, b) {
-        return new Vector(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x)
+        return new Vector(
+            a.y * b.z - a.z * b.y,
+            a.z * b.x - a.x * b.z,
+            a.x * b.y - a.y * b.x,
+        )
     }
 
     static dotProduct(a, b) {
@@ -202,9 +206,12 @@ export class Vector {
     }
 
     isBetween(a, b) {
-        if (!((a.x < this.x && this.x < b.x) || (a.x > this.x && this.x > b.x))) return false
-        if (!((a.y < this.y && this.y < b.y) || (a.y > this.y && this.y > b.y))) return false
-        if (!((a.z < this.z && this.z < b.z) || (a.z > this.z && this.z > b.z))) return false
+        if (!((a.x < this.x && this.x < b.x) || (a.x > this.x && this.x > b.x)))
+            return false
+        if (!((a.y < this.y && this.y < b.y) || (a.y > this.y && this.y > b.y)))
+            return false
+        if (!((a.z < this.z && this.z < b.z) || (a.z > this.z && this.z > b.z)))
+            return false
         return true
     }
 
@@ -299,7 +306,8 @@ export class Vector {
         const cos = Math.cos
         const sin = Math.sin
 
-        const x = this.x * (cos(y) * cos(p)) + this.y * (sin(y) * cos(p)) + this.z * -sin(p)
+        const x =
+            this.x * (cos(y) * cos(p)) + this.y * (sin(y) * cos(p)) + this.z * -sin(p)
 
         const _y =
             this.x * (cos(y) * sin(p) * sin(r) - sin(y) * cos(r)) +
