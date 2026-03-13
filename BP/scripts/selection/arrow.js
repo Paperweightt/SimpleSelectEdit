@@ -11,17 +11,22 @@ SelectItem.events.startUse.subscribe({
 
         if (!entityRaycast.length) return Infinity
 
-        const arrow = Arrow.get(entityRaycast[0].entity.id)
+        const arrowRay = entityRaycast.find((ray) => Arrow.get(ray.entity.id))
 
-        if (!arrow) return Infinity
+        if (!arrowRay) return Infinity
 
-        return -1
+        console.log("arrow", arrowRay.distance)
+
+        return arrowRay.distance
     },
     callback: (data) => {
         const { entityRaycast, player } = data
 
-        const arrow = Arrow.get(entityRaycast[0].entity.id)
+        console.log("arrow event ran")
 
+        const arrow = Arrow.get(
+            entityRaycast.find((ray) => Arrow.get(ray.entity.id)).entity.id,
+        )
         if (!arrow) return
 
         arrow.setEditor(player)

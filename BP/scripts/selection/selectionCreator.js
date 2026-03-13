@@ -12,7 +12,7 @@ SelectItem.events.startUse.subscribe({
 
         if (!blockRaycast) return Infinity
 
-        return Vector.distance(blockRaycast.block, player.location)
+        return Vector.distance(blockRaycast.block, player.location) + 100
     },
     callback: (data) => {
         const { blockRaycast, player } = data
