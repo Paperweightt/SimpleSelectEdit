@@ -452,7 +452,7 @@ export class SelectionGroup {
 
         return Vector.add(
             this.getCenter(),
-            Vector.multiply(offset, this.getSize().divide(2)).add(offset.multiply(0.75)),
+            Vector.multiply(offset, this.getSize().divide(2)).add(offset.multiply(0.55)),
         )
     }
 

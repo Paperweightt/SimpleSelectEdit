@@ -450,8 +450,26 @@ export class Menu {
             group.updateOriginalLocations()
         })
 
-        addButton("Flip X")
-        addButton("Flip Z")
+        addButton("Flip X", () => {
+            const group = this.getSelectionGroup()
+            if (!group) return
+
+            Edit.playerRunAndSave(this.player, "flip", {
+                selections: group.selections,
+                dimension: this.dimension,
+                flip: "x",
+            })
+        })
+        addButton("Flip Z", () => {
+            const group = this.getSelectionGroup()
+            if (!group) return
+
+            Edit.playerRunAndSave(this.player, "flip", {
+                selections: group.selections,
+                dimension: this.dimension,
+                flip: "z",
+            })
+        })
 
         this.update()
     }

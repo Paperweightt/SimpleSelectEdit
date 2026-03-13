@@ -32,49 +32,6 @@ function rotate(location, pivot, rotation) {
     return location.add(pivot)
 }
 
-function rotateVoxel(location, size, rotation) {
-    switch (rotation) {
-        case 90:
-            return new Vector(location.z, location.y, size.x - 1 - location.x)
-        case 180:
-            return new Vector(
-                size.x - 1 - location.x,
-                location.y,
-                size.z - 1 - location.z,
-            )
-        case 270:
-            return new Vector(size.z - 1 - location.z, location.y, location.x)
-
-        default:
-            return new Vector(x, z, y)
-    }
-}
-
-// function rotateVoxel(x, z, sizeX, sizeZ, rotation) {
-//     switch (rotation) {
-//         case 90:
-//             return {
-//                 x: z,
-//                 z: sizeX - 1 - x,
-//             }
-//
-//         case 180:
-//             return {
-//                 x: sizeX - 1 - x,
-//                 z: sizeZ - 1 - z,
-//             }
-//
-//         case 270:
-//             return {
-//                 x: sizeZ - 1 - z,
-//                 z: x,
-//             }
-//
-//         default:
-//             return { x, z }
-//     }
-// }
-
 registerEdit("rotate", {
     /**
      * @typedef {object} rotateObject
@@ -173,6 +130,12 @@ registerEdit("rotate", {
             world.structureManager.place(id, ctx.dimension, selection.location, {
                 rotation: ctx.rotation === 0 ? "None" : "Rotate" + ctx.rotation,
             })
+        }
+
+        // delete structures
+        for (let i = 0; i < ctx.selections.length; i++) {
+            const id = structureId + "_" + i
+            world.structureManager.delete(id)
         }
 
         return { undoCtx, metrics }
