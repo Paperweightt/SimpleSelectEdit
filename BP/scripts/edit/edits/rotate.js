@@ -32,6 +32,49 @@ function rotate(location, pivot, rotation) {
     return location.add(pivot)
 }
 
+function rotateVoxel(location, size, rotation) {
+    switch (rotation) {
+        case 90:
+            return new Vector(location.z, location.y, size.x - 1 - location.x)
+        case 180:
+            return new Vector(
+                size.x - 1 - location.x,
+                location.y,
+                size.z - 1 - location.z,
+            )
+        case 270:
+            return new Vector(size.z - 1 - location.z, location.y, location.x)
+
+        default:
+            return new Vector(x, z, y)
+    }
+}
+
+// function rotateVoxel(x, z, sizeX, sizeZ, rotation) {
+//     switch (rotation) {
+//         case 90:
+//             return {
+//                 x: z,
+//                 z: sizeX - 1 - x,
+//             }
+//
+//         case 180:
+//             return {
+//                 x: sizeX - 1 - x,
+//                 z: sizeZ - 1 - z,
+//             }
+//
+//         case 270:
+//             return {
+//                 x: sizeZ - 1 - z,
+//                 z: x,
+//             }
+//
+//         default:
+//             return { x, z }
+//     }
+// }
+
 registerEdit("rotate", {
     /**
      * @typedef {object} rotateObject
@@ -47,7 +90,7 @@ registerEdit("rotate", {
             type: "rotate",
             selections: ctx.selections,
             dimension: ctx.dimension,
-            rotation: ctx.rotation,
+            rotation: (360 + ctx.rotation) % 360,
         }
         const metrics = {
             blocks: 0,
@@ -125,7 +168,7 @@ registerEdit("rotate", {
                         rotate(pivot.copy(), groupPivot, ctx.rotation),
                     ),
                 )
-                .round()
+                .ceil()
 
             world.structureManager.place(id, ctx.dimension, selection.location, {
                 rotation: ctx.rotation === 0 ? "None" : "Rotate" + ctx.rotation,
@@ -135,13 +178,89 @@ registerEdit("rotate", {
         return { undoCtx, metrics }
     },
     async undo(ctx) {
+        const structureId = PACK_ID + ":edit_temp"
         const metrics = {
             blocks: 0,
             ticks: 0,
         }
 
+        const range = SelectionGroup.getMinMax(ctx.selections)
+        const size = Vector.subtract(range.maxLocation, range.minLocation)
+        const groupPivot = Vector.subtract(size, 1).divide(2).add(range.minLocation)
+
+        // delete structures
+        for (let i = 0; i < ctx.selections.length; i++) {
+            const id = structureId + "_" + i
+            world.structureManager.delete(id)
+        }
+
+        // create structures
+        for (let i = 0; i < ctx.selections.length; i++) {
+            const selection = ctx.selections[i]
+            const start = selection.location
+            const end = Vector.add(selection.location, selection.size).subtract(1)
+            const id = structureId + "_" + i
+
+            world.structureManager.createFromWorld(id, ctx.dimension, start, end, {
+                includeEntities: false,
+                saveMode: "Memory",
+            })
+        }
+
         for (const selection of ctx.selections) {
-            selection.location.add(diff)
+            const start = selection.location
+            const end = Vector.add(selection.location, selection.size).subtract(1)
+            const volume = new BlockVolume(start, end).getBlockLocationIterator()
+
+            for (const location of volume) {
+                const block = await ctx.getBlock(location)
+                block.setType("minecraft:air")
+                metrics.blocks++
+            }
+        }
+
+        // rotate structures
+        for (let i = 0; i < ctx.selections.length; i++) {
+            const selection = ctx.selections[i]
+            const id = structureId + "_" + i
+            const offset = new Vector(0)
+            const pivot = Vector.subtract(selection.size, 1)
+                .divide(2)
+                .add(selection.location)
+
+            if (
+                selection.size.x !== selection.size.z &&
+                (ctx.rotation === 90 || ctx.rotation === 270)
+            ) {
+                if (selection.size.x > selection.size.z) {
+                    offset.z -= selection.size.x / 2 - selection.size.z / 2
+                    offset.x += selection.size.x / 2 - selection.size.z / 2
+                } else {
+                    offset.x -= selection.size.z / 2 - selection.size.x / 2
+                    offset.z += selection.size.z / 2 - selection.size.x / 2
+                }
+
+                let temp = selection.size.x
+
+                selection.size.x = selection.size.z
+                selection.size.z = temp
+
+                selection.location.add(offset)
+                selection.size.round()
+            }
+
+            selection.location
+                .subtract(
+                    Vector.subtract(
+                        pivot,
+                        rotate(pivot.copy(), groupPivot, ctx.rotation),
+                    ),
+                )
+                .floor()
+
+            world.structureManager.place(id, ctx.dimension, selection.location, {
+                rotation: ctx.rotation === 0 ? "None" : "Rotate" + ctx.rotation,
+            })
         }
 
         return metrics
@@ -160,7 +279,7 @@ registerEdit("rotate", {
         const dimension = world.getDimension(ctx.dimensionId)
         const undoCtx = {
             type: ctx.type,
-            dimensionId: ctx.dimension.id,
+            dimension: dimension,
             rotation: ctx.rotation,
             selections: ctx.selections.map((snapshot) => {
                 return (

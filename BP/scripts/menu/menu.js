@@ -424,7 +424,7 @@ export class Menu {
             const group = this.getSelectionGroup()
             if (!group) return
 
-            await Edit.run("rotate", {
+            await Edit.playerRunAndSave(this.player, "rotate", {
                 selections: group.selections,
                 dimension: this.dimension,
                 rotation: 90,
@@ -439,7 +439,7 @@ export class Menu {
             const group = this.getSelectionGroup()
             if (!group) return
 
-            await Edit.run("rotate", {
+            await Edit.playerRunAndSave(this.player, "rotate", {
                 selections: group.selections,
                 dimension: this.dimension,
                 rotation: 270,
