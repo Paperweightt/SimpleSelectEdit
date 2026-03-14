@@ -60,6 +60,7 @@ registerEdit("rotate", {
         const groupPivot = Vector.subtract(size, 1).divide(2).add(range.minLocation)
 
         let prevId
+        let j = 0
         const addChange = (id, i) => {
             if (prevId === id) return
 
@@ -103,6 +104,45 @@ registerEdit("rotate", {
             }
         }
 
+        for (let i = 0; i < ctx.selections.length; i++) {
+            const selection = ctx.selections[i]
+            const offset = new Vector(0)
+            const pivot = Vector.subtract(selection.size, 1)
+                .divide(2)
+                .add(selection.location)
+            const start = selection.location.copy()
+            const size = selection.size.copy()
+
+            if (size.x !== size.z && (ctx.rotation === 90 || ctx.rotation === 270)) {
+                if (size.x > size.z) {
+                    offset.z -= size.x / 2 - size.z / 2
+                    offset.x += size.x / 2 - size.z / 2
+                } else {
+                    offset.x -= size.z / 2 - size.x / 2
+                    offset.z += size.z / 2 - size.x / 2
+                }
+
+                size.x = selection.size.z
+                size.z = selection.size.x
+
+                start.add(offset)
+                selection.size.round()
+            }
+
+            start
+                .subtract(pivot.subtract(rotate(pivot.copy(), groupPivot, ctx.rotation)))
+                .ceil()
+
+            const end = Vector.add(start, size).subtract(1)
+            const volume = new BlockVolume(start, end).getBlockLocationIterator()
+
+            for (const location of volume) {
+                const block = await ctx.getBlock(location)
+                const id = BlockId.get(block.permutation)
+
+                addChange(id, j++)
+            }
+        }
         // rotate structures
         for (let i = 0; i < ctx.selections.length; i++) {
             const selection = ctx.selections[i]
@@ -165,6 +205,20 @@ registerEdit("rotate", {
         const range = SelectionGroup.getMinMax(ctx.selections)
         const size = Vector.subtract(range.maxLocation, range.minLocation)
         const groupPivot = Vector.subtract(size, 1).divide(2).add(range.minLocation)
+        const indexToBlock = {}
+        let permutation
+
+        for (const [key, values] of Object.entries(ctx.changes)) {
+            let permutation = "undefined"
+
+            if (key !== "undefined") {
+                permutation = BlockId.toPermutation(key)
+            }
+
+            for (const value of values) {
+                indexToBlock[value] = permutation
+            }
+        }
 
         // delete structures
         for (let i = 0; i < ctx.selections.length; i++) {
@@ -194,6 +248,25 @@ registerEdit("rotate", {
                 const block = await ctx.getBlock(location)
                 block.setType("minecraft:air")
                 metrics.blocks++
+            }
+        }
+
+        let j = 0
+        for (let i = 0; i < ctx.selections.length; i++) {
+            const selection = ctx.selections[i]
+            const start = selection.location
+            const end = Vector.add(selection.location, selection.size).subtract(1)
+            const volume = new BlockVolume(start, end).getBlockLocationIterator()
+
+            for (const location of volume) {
+                const block = await ctx.getBlock(location)
+
+                if (indexToBlock[j]) permutation = indexToBlock[j]
+                if (permutation && permutation !== "undefined") {
+                    metrics.blocks++
+                    block.setPermutation(permutation)
+                }
+                j++
             }
         }
 
@@ -241,6 +314,12 @@ registerEdit("rotate", {
             })
         }
 
+        // delete structures
+        for (let i = 0; i < ctx.selections.length; i++) {
+            const id = structureId + "_" + i
+            world.structureManager.delete(id)
+        }
+
         return metrics
     },
     zipUndo(ctx) {
@@ -248,6 +327,7 @@ registerEdit("rotate", {
             type: ctx.type,
             dimensionId: ctx.dimension.id,
             rotation: ctx.rotation,
+            changes: ctx.changes,
         }
         undoCtx.selections = ctx.selections.map((selection) => selection.snapshot())
 
@@ -259,6 +339,7 @@ registerEdit("rotate", {
             type: ctx.type,
             dimension: dimension,
             rotation: ctx.rotation,
+            changes: ctx.changes,
             selections: ctx.selections.map((snapshot) => {
                 return (
                     Selection.get(snapshot[0]) ||
