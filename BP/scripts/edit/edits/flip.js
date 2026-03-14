@@ -107,7 +107,7 @@ registerEdit("flip", {
                 const block = await ctx.getBlock(location)
                 const id = BlockId.get(block.permutation)
 
-                addChange(id, j)
+                addChange(id, j++)
             }
         }
 
@@ -120,7 +120,7 @@ registerEdit("flip", {
                 .add(selection.location)
 
             selection.location.subtract(
-                Vector.subtract(pivot, flip(pivot.copy(), groupPivot, ctx.flip)),
+                Vector.subtract(pivot, flip(pivot, groupPivot, ctx.flip)),
             )
 
             world.structureManager.place(id, ctx.dimension, selection.location, {
@@ -142,6 +142,8 @@ registerEdit("flip", {
             blocks: 0,
             ticks: 0,
         }
+        const indexToBlock = {}
+        let permutation
 
         for (const [key, values] of Object.entries(ctx.changes)) {
             let permutation = "undefined"
@@ -217,13 +219,9 @@ registerEdit("flip", {
                 .divide(2)
                 .add(selection.location)
 
-            // selection.location.subtract(
-            //     Vector.subtract(pivot, flip(pivot.copy(), groupPivot, ctx.flip)),
-            // )
-            // selection.location.subtract(
-            //     Vector.subtract(pivot, flip(pivot.copy(), groupPivot, ctx.flip)),
-            // )
-            selection.location = flip(selection.location.copy(), groupPivot, ctx.flip)
+            selection.location.subtract(
+                Vector.subtract(pivot, flip(pivot.copy(), groupPivot, ctx.flip)),
+            )
 
             world.structureManager.place(id, ctx.dimension, selection.location, {
                 mirror: ctx.flip.toUpperCase(),
