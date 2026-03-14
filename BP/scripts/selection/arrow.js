@@ -15,14 +15,10 @@ SelectItem.events.startUse.subscribe({
 
         if (!arrowRay) return Infinity
 
-        console.log("arrow", arrowRay.distance)
-
         return arrowRay.distance
     },
     callback: (data) => {
         const { entityRaycast, player } = data
-
-        console.log("arrow event ran")
 
         const arrow = Arrow.get(
             entityRaycast.find((ray) => Arrow.get(ray.entity.id)).entity.id,

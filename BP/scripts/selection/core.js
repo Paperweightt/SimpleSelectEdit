@@ -15,14 +15,10 @@ SelectItem.events.startUse.subscribe({
 
         if (!coreRay) return Infinity
 
-        console.log("core", coreRay.distance - 10)
-
         return coreRay.distance - 10
     },
     callback: (data) => {
         const { entityRaycast, player } = data
-
-        console.log("core event ran")
 
         const core = Core.get(
             entityRaycast.find((ray) => Core.get(ray.entity.id)).entity.id,

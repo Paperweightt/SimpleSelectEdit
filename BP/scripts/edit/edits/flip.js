@@ -15,8 +15,8 @@ import { BlockId } from "../../utils/blockId.js"
 function flip(location, pivot, flip) {
     const newLocation = Vector.subtract(location, pivot)
 
-    if (flip.includes("z")) location.x *= -1
-    if (flip.includes("x")) location.z *= -1
+    if (flip.includes("z")) newLocation.x *= -1
+    if (flip.includes("x")) newLocation.z *= -1
 
     return newLocation.add(pivot)
 }
@@ -94,22 +94,22 @@ registerEdit("flip", {
         }
 
         // save blocks
-        // for (let i = 0; i < ctx.selections.length; i++) {
-        //     const selection = ctx.selections[i]
-        //     const start = flip(selection.location, groupPivot, ctx.flip)
-        //     let end = Vector.add(selection.location, selection.size).subtract(1)
-        //
-        //     end = flip(end, groupPivot, ctx.flip)
-        //
-        //     const volume = new BlockVolume(start, end).getBlockLocationIterator()
-        //
-        //     for (const location of volume) {
-        //         const block = await ctx.getBlock(location)
-        //         const id = BlockId.get(block.permutation)
-        //
-        //         addChange(id, j)
-        //     }
-        // }
+        for (let i = 0; i < ctx.selections.length; i++) {
+            const selection = ctx.selections[i]
+            const start = flip(selection.location, groupPivot, ctx.flip)
+            let end = Vector.add(selection.location, selection.size).subtract(1)
+
+            end = flip(end, groupPivot, ctx.flip)
+
+            const volume = new BlockVolume(start, end).getBlockLocationIterator()
+
+            for (const location of volume) {
+                const block = await ctx.getBlock(location)
+                const id = BlockId.get(block.permutation)
+
+                addChange(id, j)
+            }
+        }
 
         // flip structures
         for (let i = 0; i < ctx.selections.length; i++) {
@@ -217,9 +217,13 @@ registerEdit("flip", {
                 .divide(2)
                 .add(selection.location)
 
-            selection.location.subtract(
-                Vector.subtract(pivot, flip(pivot.copy(), groupPivot, ctx.flip)),
-            )
+            // selection.location.subtract(
+            //     Vector.subtract(pivot, flip(pivot.copy(), groupPivot, ctx.flip)),
+            // )
+            // selection.location.subtract(
+            //     Vector.subtract(pivot, flip(pivot.copy(), groupPivot, ctx.flip)),
+            // )
+            selection.location = flip(selection.location.copy(), groupPivot, ctx.flip)
 
             world.structureManager.place(id, ctx.dimension, selection.location, {
                 mirror: ctx.flip.toUpperCase(),
