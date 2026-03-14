@@ -35,4 +35,8 @@ export const PROPERTIES = {
     HEAD_Y_SIZE: PACK_ID + ":size_head_y",
 }
 
+export const CONFIG = {
+    MAX_SELECTION_DISTANCE: 50,
+}
+
 export const PATHS = {}

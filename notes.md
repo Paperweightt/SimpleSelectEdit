@@ -4,15 +4,15 @@
 2. core
 3. arrows
 4. selection
-5. blocks
-6. entities
+5. entities
+6. blocks
 
 ## drag
 
 2. core
 3. arrows
-4. blocks
-5. entities
+4. entities
+5. blocks
 
 ## click
 
@@ -21,21 +21,21 @@
 
 # todo
 
+## bugs fixes
+
 ## do
 
-- [ ] prioritize center core over arrows
-- [ ] add distance to player limit
-- [ ] perfect flip & rotate undo
+- [ ] perfect flip undo
+- [ ] perfect rotate undo
 - [ ] drag entities
-
-## flesh out
-
-- [ ] make rotations stable using non-rounded bounding boxes
 
 ## consider
 
+- [ ] nice rotation animation + interactable entities
+- [ ] make rotations stable using non-rounded bounding boxes
 - [ ] auto undo changes in size
 - [ ] tp entities with box
+- [ ] fix panel 2 axis rotation
 
 ## too much effort / not worth
 
@@ -44,6 +44,11 @@
 
 ## done
 
+- [x] add distance to player limit
+- [x] bad screen spawn location
+- [x] back panel
+- [x] prioritize center core over arrows
+- [x] undo size change
 - [x] deselect broke
 - [x] ownership system
 - [x] bottom fix

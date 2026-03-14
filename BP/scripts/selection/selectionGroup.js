@@ -7,6 +7,7 @@ import { SelectItem } from "../selector/selectItem.js"
 import { Edit } from "../edit/index.js"
 import { Vector } from "../utils/vector.js"
 import { Color } from "../utils/color.js"
+import { CONFIG } from "../constants.js"
 
 world.afterEvents.playerLeave.subscribe((data) => {
     SelectionGroup.get(data.playerId)?.remove()
@@ -35,16 +36,6 @@ SelectItem.events.click.subscribe({
         ) {
             const viewDirection = Vector.multiply(player.getViewDirection(), 2.85)
             const location = Vector.add(player.getHeadLocation(), viewDirection)
-
-            if (
-                location.y > dimension.heightRange.max ||
-                location.y < dimension.heightRange.min + 2
-            ) {
-                player.sendMessage(
-                    "[ERROR] player is either too low or too high to open menu",
-                )
-                return
-            }
 
             new Menu(player, location, dimension)
             return
@@ -395,16 +386,18 @@ export class SelectionGroup {
      * @returns {Vector}
      */
     resizeSelections(direction, diff) {
-        const { min, max } = this.dimension.heightRange
+        const { min: yMin, max: yMax } = this.dimension.heightRange
         const minSize = new Vector(1)
+        const distanceMax = CONFIG.MAX_SELECTION_DISTANCE
+        const max = new Vector(this.player.location).add(distanceMax).setY(yMax)
+        const min = new Vector(this.player.location).subtract(distanceMax).setY(yMin)
 
         for (const selection of this.selections) {
-            if (direction === "Down") {
-                diff.y = Math.max(diff.y, min - selection.location.y)
-            }
-            if (direction === "Up") {
-                diff.y = Math.min(diff.y, max - selection.location.y - selection.size.y)
-            }
+            diff = Vector.max(diff, Vector.subtract(min, selection.location))
+            diff = Vector.min(
+                diff,
+                Vector.subtract(max, selection.location).subtract(selection.size),
+            )
         }
 
         for (const selection of this.selections) {
@@ -428,14 +421,17 @@ export class SelectionGroup {
      * @returns {Vector}
      */
     moveSelections(diff) {
-        const { min, max } = this.dimension.heightRange
+        const { min: yMin, max: yMax } = this.dimension.heightRange
+        const distanceMax = CONFIG.MAX_SELECTION_DISTANCE
+        const max = new Vector(this.player.location).add(distanceMax).setY(yMax)
+        const min = new Vector(this.player.location).subtract(distanceMax).setY(yMin)
 
         for (const selection of this.selections) {
-            if (diff.y < 0) {
-                diff.y = Math.max(diff.y, min - selection.location.y)
-            } else if (diff.y > 0) {
-                diff.y = Math.min(diff.y, max - selection.location.y - selection.size.y)
-            }
+            diff = Vector.max(diff, Vector.subtract(min, selection.location))
+            diff = Vector.min(
+                diff,
+                Vector.subtract(max, selection.location).subtract(selection.size),
+            )
         }
 
         for (const selection of this.selections) {
