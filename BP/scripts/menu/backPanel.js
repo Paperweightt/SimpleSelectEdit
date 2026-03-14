@@ -21,7 +21,20 @@ export class BackPanel {
     }
 
     load() {
-        this.entity = this.dimension.spawnEntity(TYPE_IDS.BACK_PANEL, this.location)
+        const { min, max } = this.dimension.heightRange
+
+        if (this.location.y < min || this.location.y > max) {
+            const spawnLocation = this.location.copy()
+
+            spawnLocation.y = Math.min(this.location.y, max)
+            spawnLocation.y = Math.max(this.location.y, min)
+
+            this.entity = this.dimension.spawnEntity(TYPE_IDS.BACK_PANEL, spawnLocation)
+            this.entity.teleport(this.location)
+        } else {
+            this.entity = this.dimension.spawnEntity(TYPE_IDS.BACK_PANEL, this.location)
+        }
+
         this.setRotation(this.rotation)
         this.setSize(this.size)
 
