@@ -297,7 +297,7 @@ export class Menu {
             group.removeSelections()
             group.remove()
         })
-        addButton("Save", () => {
+        addButton("Save As", () => {
             const group = this.getSelectionGroup()
 
             if (!group) return

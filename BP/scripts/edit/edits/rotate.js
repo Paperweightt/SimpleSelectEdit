@@ -1,4 +1,5 @@
 import { world, BlockVolume } from "@minecraft/server"
+import { BlockId } from "../../utils/blockId.js"
 import { Vector } from "../../utils/vector.js"
 import { registerEdit } from "../registry.js"
 import { Selection } from "../../selection/selection.js"
@@ -48,6 +49,7 @@ registerEdit("rotate", {
             selections: ctx.selections,
             dimension: ctx.dimension,
             rotation: (360 + ctx.rotation) % 360,
+            changes: {},
         }
         const metrics = {
             blocks: 0,
@@ -56,6 +58,19 @@ registerEdit("rotate", {
         const range = SelectionGroup.getMinMax(ctx.selections)
         const size = Vector.subtract(range.maxLocation, range.minLocation)
         const groupPivot = Vector.subtract(size, 1).divide(2).add(range.minLocation)
+
+        let prevId
+        const addChange = (id, i) => {
+            if (prevId === id) return
+
+            if (!undoCtx.changes[id]) {
+                undoCtx.changes[id] = [i]
+            } else {
+                undoCtx.changes[id].push(i)
+            }
+
+            prevId = id
+        }
 
         // delete structures
         for (let i = 0; i < ctx.selections.length; i++) {

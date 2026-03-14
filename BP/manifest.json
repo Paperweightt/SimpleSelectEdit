@@ -2,7 +2,7 @@
     "format_version": 2,
     "header": {
         "name": "SimpleSelectTool",
-        "version": [1, 0, 0],
+        "version": [1, 0, 1],
         "description": "$desc",
         "uuid": "74d3c280-93c4-4605-9f22-c6199b4122da",
         "min_engine_version": [1, 21, 121]

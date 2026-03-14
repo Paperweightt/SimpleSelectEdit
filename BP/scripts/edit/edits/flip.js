@@ -4,6 +4,7 @@ import { registerEdit } from "../registry.js"
 import { Selection } from "../../selection/selection.js"
 import { PACK_ID } from "../../constants.js"
 import { SelectionGroup } from "../../selection/selectionGroup.js"
+import { BlockId } from "../../utils/blockId.js"
 
 /**
  * @param {Vector} location
@@ -12,12 +13,12 @@ import { SelectionGroup } from "../../selection/selectionGroup.js"
  * @returns {Vector}
  */
 function flip(location, pivot, flip) {
-    location.subtract(pivot)
+    const newLocation = Vector.subtract(location, pivot)
 
     if (flip.includes("z")) location.x *= -1
     if (flip.includes("x")) location.z *= -1
 
-    return location.add(pivot)
+    return newLocation.add(pivot)
 }
 
 registerEdit("flip", {
@@ -36,6 +37,7 @@ registerEdit("flip", {
             selections: ctx.selections,
             dimension: ctx.dimension,
             flip: ctx.flip,
+            changes: {},
         }
         const metrics = {
             blocks: 0,
@@ -44,6 +46,20 @@ registerEdit("flip", {
         const range = SelectionGroup.getMinMax(ctx.selections)
         const size = Vector.subtract(range.maxLocation, range.minLocation)
         const groupPivot = Vector.subtract(size, 1).divide(2).add(range.minLocation)
+
+        let j = 0
+        let prevId
+        const addChange = (id, i) => {
+            if (prevId === id) return
+
+            if (!undoCtx.changes[id]) {
+                undoCtx.changes[id] = [i]
+            } else {
+                undoCtx.changes[id].push(i)
+            }
+
+            prevId = id
+        }
 
         // delete structures
         for (let i = 0; i < ctx.selections.length; i++) {
@@ -64,7 +80,7 @@ registerEdit("flip", {
             })
         }
 
-        // set air & save blocks
+        // set air
         for (const selection of ctx.selections) {
             const start = selection.location
             const end = Vector.add(selection.location, selection.size).subtract(1)
@@ -76,6 +92,24 @@ registerEdit("flip", {
                 metrics.blocks++
             }
         }
+
+        // save blocks
+        // for (let i = 0; i < ctx.selections.length; i++) {
+        //     const selection = ctx.selections[i]
+        //     const start = flip(selection.location, groupPivot, ctx.flip)
+        //     let end = Vector.add(selection.location, selection.size).subtract(1)
+        //
+        //     end = flip(end, groupPivot, ctx.flip)
+        //
+        //     const volume = new BlockVolume(start, end).getBlockLocationIterator()
+        //
+        //     for (const location of volume) {
+        //         const block = await ctx.getBlock(location)
+        //         const id = BlockId.get(block.permutation)
+        //
+        //         addChange(id, j)
+        //     }
+        // }
 
         // flip structures
         for (let i = 0; i < ctx.selections.length; i++) {
@@ -109,6 +143,18 @@ registerEdit("flip", {
             ticks: 0,
         }
 
+        for (const [key, values] of Object.entries(ctx.changes)) {
+            let permutation = "undefined"
+
+            if (key !== "undefined") {
+                permutation = BlockId.toPermutation(key)
+            }
+
+            for (const value of values) {
+                indexToBlock[value] = permutation
+            }
+        }
+
         const range = SelectionGroup.getMinMax(ctx.selections)
         const size = Vector.subtract(range.maxLocation, range.minLocation)
         const groupPivot = Vector.subtract(size, 1).divide(2).add(range.minLocation)
@@ -144,6 +190,25 @@ registerEdit("flip", {
             }
         }
 
+        let j = 0
+        for (let i = 0; i < ctx.selections.length; i++) {
+            const selection = ctx.selections[i]
+            const start = selection.location
+            const end = Vector.add(selection.location, selection.size).subtract(1)
+            const volume = new BlockVolume(start, end).getBlockLocationIterator()
+
+            for (const location of volume) {
+                const block = await ctx.getBlock(location)
+
+                if (indexToBlock[j]) permutation = indexToBlock[j]
+                if (permutation && permutation !== "undefined") {
+                    metrics.blocks++
+                    block.setPermutation(permutation)
+                }
+                j++
+            }
+        }
+
         // flip structures
         for (let i = 0; i < ctx.selections.length; i++) {
             const selection = ctx.selections[i]
@@ -174,6 +239,7 @@ registerEdit("flip", {
             type: ctx.type,
             dimensionId: ctx.dimension.id,
             flip: ctx.flip,
+            changes: ctx.changes,
         }
         undoCtx.selections = ctx.selections.map((selection) => selection.snapshot())
 
@@ -185,6 +251,7 @@ registerEdit("flip", {
             type: ctx.type,
             dimension: dimension,
             flip: ctx.flip,
+            changes: ctx.changes,
             selections: ctx.selections.map((snapshot) => {
                 return (
                     Selection.get(snapshot[0]) ||

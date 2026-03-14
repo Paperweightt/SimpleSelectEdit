@@ -328,7 +328,7 @@ export class SelectionGroup {
             const diff = Vector.subtract(newLocation, prevLocation)
 
             if (editor.customIsShifting) {
-                this.resizeSelection(direction, diff)
+                this.resizeSelections(direction, diff)
             } else {
                 this.moveSelections(diff, direction)
             }
@@ -353,9 +353,17 @@ export class SelectionGroup {
                 Edit.playerRunAndSave(this.player, this.editMode, {
                     dimension: this.dimension,
                     vector: diff,
+                    direction: direction,
                     selections: this.selections,
                 })
                 if (this.editMode === "duplicate") this.editMode = "move"
+            } else {
+                Edit.playerRunAndSave(this.player, "resize", {
+                    dimension: this.dimension,
+                    direction: direction,
+                    vector: diff,
+                    selections: this.selections,
+                })
             }
 
             this.updateOriginalLocations()
@@ -386,9 +394,9 @@ export class SelectionGroup {
      * @param {Vector} diff
      * @returns {Vector}
      */
-    resizeSelection(direction, diff) {
+    resizeSelections(direction, diff) {
         const { min, max } = this.dimension.heightRange
-        const minSize = new Vector(1, 1, 1)
+        const minSize = new Vector(1)
 
         for (const selection of this.selections) {
             if (direction === "Down") {
