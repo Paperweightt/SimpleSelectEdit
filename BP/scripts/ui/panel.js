@@ -18,7 +18,9 @@ export class Panel {
     isLoaded = false
     pixelIndex = 0
     firstLoad = true
-    pixelCache = Array.from({ length: Panel.HEIGHT }).map(() => Array(Panel.WIDTH).fill(0))
+    pixelCache = Array.from({ length: Panel.HEIGHT }).map(() =>
+        Array(Panel.WIDTH).fill(0),
+    )
     /** @type {import("@minecraft/server").Entity} */
     entity
     loadedPixels = 0
@@ -35,7 +37,9 @@ export class Panel {
     }
 
     resetCache() {
-        this.pixelCache = Array.from({ length: Panel.HEIGHT }).map(() => Array(Panel.WIDTH).fill(0))
+        this.pixelCache = Array.from({ length: Panel.HEIGHT }).map(() =>
+            Array(Panel.WIDTH).fill(0),
+        )
     }
 
     setViewQuery(viewQuery) {
@@ -61,15 +65,25 @@ export class Panel {
     spawnEntity() {
         if (this.entity?.isValid) return
         this.firstLoad = true
-        try {
+
+        const { min, max } = this.dimension.heightRange
+
+        if (this.location.y < min || this.location.y > max) {
+            const spawnLocation = this.location.copy()
+
+            spawnLocation.y = Math.min(this.location.y, max)
+            spawnLocation.y = Math.max(this.location.y, min)
+
+            this.entity = this.dimension.spawnEntity(TYPE_IDS.PANEL, spawnLocation)
+            this.entity.teleport(this.location)
+        } else {
             this.entity = this.dimension.spawnEntity(TYPE_IDS.PANEL, this.location)
-            this.entity.setProperty(PACK_ID + ":pixels", 46)
-            DeathOnReload.addEntity(this.entity)
-            this.resetCache()
-            this.refreshScale()
-        } catch (e) {
-            delete this
         }
+
+        this.entity.setProperty(PACK_ID + ":pixels", 46)
+        DeathOnReload.addEntity(this.entity)
+        this.resetCache()
+        this.refreshScale()
     }
 
     reload() {
@@ -92,7 +106,9 @@ export class Panel {
         }
         for (const controller of this.animationControllers) {
             try {
-                this.entity.playAnimation("animation.end", { controller: `s${controller}` })
+                this.entity.playAnimation("animation.end", {
+                    controller: `s${controller}`,
+                })
             } catch (e) {}
         }
         this.animationControllers = []
@@ -120,7 +136,10 @@ export class Panel {
     }
 
     loadPixels(players = undefined) {
-        const visited = Array.from({ length: Panel.HEIGHT }, () => new Uint8Array(Panel.WIDTH))
+        const visited = Array.from(
+            { length: Panel.HEIGHT },
+            () => new Uint8Array(Panel.WIDTH),
+        )
         const refCache = this.pixelCache
         let pixels = 0
 
@@ -266,7 +285,10 @@ system.runInterval(() => {
         for (const panel of Panel.list) {
             if (panel.isLoaded) continue
             if (Vector.distance(panel.location, player.location) > 40) continue
-            if (player.prevLocation && Vector.distance(panel.location, player.prevLocation) < 40)
+            if (
+                player.prevLocation &&
+                Vector.distance(panel.location, player.prevLocation) < 40
+            )
                 continue
             panel.isLoaded = true
             panel.loadPixels()
