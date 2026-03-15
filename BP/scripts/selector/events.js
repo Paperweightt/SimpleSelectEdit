@@ -10,16 +10,16 @@ world.afterEvents.itemUse.subscribe(async (data) => {
     if (itemStack.typeId !== TYPE_IDS.SELECT_ITEM) return
 
     const blockRaycast = source.getBlockFromViewDirection()
-    const entityRaycast = source.getEntitiesFromViewDirection({
-        ignoreBlockCollision: true,
-    })
+    const initialViewDirection = source.getViewDirection()
+    const viewStart = getEyeLocation(source)
 
     if (Screen.isPlayerLookingAtAnyScreen(source)) {
         SelectorEvents.click.emit({
             player: source,
+            viewDirection: initialViewDirection,
+            viewStart: viewStart,
             itemStack,
             blockRaycast,
-            entityRaycast,
         })
 
         source.onRelease = "cancel"
@@ -27,7 +27,6 @@ world.afterEvents.itemUse.subscribe(async (data) => {
         return
     }
 
-    const initialViewDirection = source.getViewDirection()
     source.onRelease = "click"
 
     const e = 0.05
@@ -40,9 +39,10 @@ world.afterEvents.itemUse.subscribe(async (data) => {
         if (diff > e || (velocity > e && ticks > 4)) {
             SelectorEvents.startUse.emit({
                 player: source,
+                viewDirection: initialViewDirection,
+                viewStart: viewStart,
                 itemStack,
                 blockRaycast,
-                entityRaycast,
             })
             system.clearRun(source.dragId)
             source.onRelease = "release"
@@ -116,4 +116,14 @@ export class SelectorEvents {
     static releaseUse = new Event()
     /** @type {MinPriorityEvent<SelectorStartUseData>} */
     static startUse = new MinPriorityEvent()
+}
+
+function getEyeLocation(player) {
+    const headModelSize = 8
+    const headHeight = headModelSize / 32
+    const location = player.getHeadLocation()
+
+    location.y += headHeight / 2 - 0.022
+
+    return location
 }

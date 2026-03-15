@@ -7,23 +7,18 @@ import { SelectItem } from "../selector/selectItem"
 
 SelectItem.events.startUse.subscribe({
     priority: (data) => {
-        const { entityRaycast } = data
+        const { viewDirection, viewStart } = data
+        const arrowRay = Arrow.getInteractableArrow(viewStart, viewDirection)
 
-        if (!entityRaycast.length) return Infinity
-
-        const arrowRay = entityRaycast.find((ray) => Arrow.get(ray.entity.id))
-
-        if (!arrowRay) return Infinity
+        if (!arrowRay) {
+            return Infinity
+        }
 
         return arrowRay.distance
     },
     callback: (data) => {
-        const { entityRaycast, player } = data
-
-        const arrow = Arrow.get(
-            entityRaycast.find((ray) => Arrow.get(ray.entity.id)).entity.id,
-        )
-        if (!arrow) return
+        const { viewDirection, viewStart, player } = data
+        const arrow = Arrow.getInteractableArrow(viewStart, viewDirection).arrow
 
         arrow.setEditor(player)
     },
@@ -77,6 +72,27 @@ export class Arrow {
         return false
     }
 
+    /**
+     * @param {Vector} viewStart
+     * @param {Vector} viewDirection
+     * @returns {{distance:number,arrow:Arrow}|undefined}
+     */
+    static getInteractableArrow(viewStart, viewDirection) {
+        let output
+
+        for (const arrow of this.getAll()) {
+            const rayResult = arrow.rayIntersectsAABB(viewStart, viewDirection)
+
+            if (!rayResult) continue
+
+            if (!output || rayResult.distance < output.distance) {
+                output = rayResult
+            }
+        }
+
+        return output
+    }
+
     static innit() {
         system.runInterval(() => {
             for (const arrow of this.getAll()) {
@@ -125,7 +141,8 @@ export class Arrow {
         this.id = this.entity.id
 
         this.setAxis(rotation)
-        this.setRotation(this.axis)
+        this.setPlaneRotation(this.axis)
+        this.setSize(this.axis)
         this.setEntityRotation()
 
         DeathOnReload.addEntity(this.entity)
@@ -133,7 +150,81 @@ export class Arrow {
         Arrow.list[this.id] = this
     }
 
-    setRotation(axis) {
+    /**
+     * @param {Vector} location
+     * @param {Vector} direction
+     * @returns {{distance:number,arrow:Arrow}|undefined}
+     */
+    rayIntersectsAABB(location, direction) {
+        const playerDistance = Vector.distance(location, this.location)
+        const arrowLocation = this.getVisibleLocation(playerDistance)
+        const halfSize = Vector.divide(this.getVisibleSize(playerDistance), 2)
+        const min = Vector.subtract(arrowLocation, halfSize)
+        const max = Vector.add(arrowLocation, halfSize)
+
+        let tmin = -Infinity
+        let tmax = Infinity
+
+        for (const axis of ["x", "y", "z"]) {
+            if (Math.abs(direction[axis]) < 1e-8) {
+                // Ray is parallel to this axis — reject if origin is outside the slab
+                if (location[axis] < min[axis] || location[axis] > max[axis]) {
+                    return null
+                }
+            } else {
+                const invD = 1 / direction[axis]
+                let t1 = (min[axis] - location[axis]) * invD
+                let t2 = (max[axis] - location[axis]) * invD
+
+                if (t1 > t2) [t1, t2] = [t2, t1] // swap
+
+                tmin = Math.max(tmin, t1)
+                tmax = Math.min(tmax, t2)
+
+                if (tmin > tmax) return null // no hit
+            }
+        }
+
+        if (tmax < 0) return null // box is behind the ray
+
+        const distance = tmin >= 0 ? tmin : tmax
+        return {
+            distance,
+            arrow: this,
+        }
+    }
+
+    getVisibleSize(distance) {
+        const scale = distance / 15.5 + 1
+
+        return Vector.multiply(this.size, scale)
+    }
+
+    getVisibleLocation(distance) {
+        const direction = new Vector(0)
+
+        if (this.rotation.y) {
+            if (this.rotation.y === 90) direction.y = -1
+            if (this.rotation.y === 270) direction.y = 1
+        } else {
+            // prettier-ignore
+            switch (this.rotation.x) {
+                case 0: direction.z = -1; break
+                case 90: direction.x = 1; break 
+                case 180: direction.z = 1; break 
+                case 270: direction.x = -1;; break 
+            }
+        }
+
+        // return this.location.copy()
+        const offset = Vector.multiply(direction, distance / 22 + 1)
+
+        offset.subtract(Vector.multiply(this.size, direction))
+
+        return offset.add(this.location)
+    }
+
+    setPlaneRotation(axis) {
         switch (axis) {
             case "x":
                 this.planeRotation = { x: 270, y: 0 }
@@ -143,6 +234,21 @@ export class Arrow {
                 break
             case "y":
                 this.planeRotation = { x: 0, y: 0 }
+                break
+        }
+    }
+
+    setSize(axis) {
+        const size = new Vector(0.25, 0.75, 1)
+        switch (axis) {
+            case "x":
+                this.size = size.copy().setAxisOrder("zyx")
+                break
+            case "z":
+                this.size = size
+                break
+            case "y":
+                this.size = size.copy().setAxisOrder("xzy")
                 break
         }
     }

@@ -23,27 +23,37 @@
 
 ## bugs fixes
 
+- [ ] arrow drag along plane
+- [ ] move things from behind
+- [ ] kill @e fix
+- [ ] player can move and resize at the same time
+- [ ] player interactable entities priority with other player's interactable entities not organized
+
 ## do
 
-- [ ] perfect flip undo
-- [ ] perfect rotate undo
+- [ ] arrows are invisible to people that dont own that box
+- [ ] is viewing / grabbable indicator
 - [ ] drag entities
 
 ## consider
 
-- [ ] nice rotation animation + interactable entities
+- [ ] nice rotation animation + interactable rotate entities
 - [ ] make rotations stable using non-rounded bounding boxes
 - [ ] auto undo changes in size
 - [ ] tp entities with box
-- [ ] fix panel 2 axis rotation
 
 ## too much effort / not worth
 
+- [ ] fix panel 2 axis rotation
 - [ ] entity based outline
 - [ ] menu for mobile
 
 ## done
 
+- [x] arrow hitboxes
+- [x] core hitbox
+- [x] perfect rotate undo
+- [x] perfect flip undo
 - [x] add distance to player limit
 - [x] bad screen spawn location
 - [x] back panel

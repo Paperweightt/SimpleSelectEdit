@@ -7,24 +7,19 @@ import { SelectItem } from "../selector/selectItem"
 
 SelectItem.events.startUse.subscribe({
     priority: (data) => {
-        const { entityRaycast } = data
+        const { viewDirection, viewStart } = data
 
-        if (!entityRaycast.length) return Infinity
+        const coreRay = Core.getInteractableCore(viewStart, viewDirection)
 
-        const coreRay = entityRaycast.find((ray) => Core.get(ray.entity.id))
-
-        if (!coreRay) return Infinity
+        if (!coreRay) {
+            return Infinity
+        }
 
         return coreRay.distance - 10
     },
     callback: (data) => {
-        const { entityRaycast, player } = data
-
-        const core = Core.get(
-            entityRaycast.find((ray) => Core.get(ray.entity.id)).entity.id,
-        )
-
-        if (!core) return
+        const { viewDirection, viewStart, player } = data
+        const core = Core.getInteractableCore(viewStart, viewDirection).arrow
 
         core.setEditor(player)
     },
@@ -78,6 +73,27 @@ export class Core {
         return false
     }
 
+    /**
+     * @param {Vector} viewStart
+     * @param {Vector} viewDirection
+     * @returns {{distance:number,arrow:Core}|undefined}
+     */
+    static getInteractableCore(viewStart, viewDirection) {
+        let output
+
+        for (const core of this.getAll()) {
+            const rayResult = core.rayIntersectsAABB(viewStart, viewDirection)
+
+            if (!rayResult) continue
+
+            if (!output || rayResult.distance < output.distance) {
+                output = rayResult
+            }
+        }
+
+        return output
+    }
+
     static innit() {
         system.runInterval(() => {
             for (const core of this.getAll()) {
@@ -102,6 +118,7 @@ export class Core {
 
     /** @type {import("@minecraft/server").Player} */
     editor
+    size = new Vector(0.5)
 
     /**
      * @param {Vector} location
@@ -127,6 +144,55 @@ export class Core {
         DeathOnReload.addEntity(this.entity)
 
         Core.list[this.id] = this
+    }
+
+    /**
+     * @param {Vector} location
+     * @param {Vector} direction
+     * @returns {{distance:number,arrow:Core}|undefined}
+     */
+    rayIntersectsAABB(location, direction) {
+        const playerDistance = Vector.distance(location, this.location)
+        const halfSize = Vector.divide(this.getVisibleSize(playerDistance), 2)
+        const min = Vector.subtract(this.location, halfSize)
+        const max = Vector.add(this.location, halfSize)
+
+        let tmin = -Infinity
+        let tmax = Infinity
+
+        for (const axis of ["x", "y", "z"]) {
+            if (Math.abs(direction[axis]) < 1e-8) {
+                // Ray is parallel to this axis — reject if origin is outside the slab
+                if (location[axis] < min[axis] || location[axis] > max[axis]) {
+                    return null
+                }
+            } else {
+                const invD = 1 / direction[axis]
+                let t1 = (min[axis] - location[axis]) * invD
+                let t2 = (max[axis] - location[axis]) * invD
+
+                if (t1 > t2) [t1, t2] = [t2, t1] // swap
+
+                tmin = Math.max(tmin, t1)
+                tmax = Math.min(tmax, t2)
+
+                if (tmin > tmax) return null // no hit
+            }
+        }
+
+        if (tmax < 0) return null // box is behind the ray
+
+        const distance = tmin >= 0 ? tmin : tmax
+        return {
+            distance,
+            arrow: this,
+        }
+    }
+
+    getVisibleSize(distance) {
+        const scale = distance / 15.5 + 1
+
+        return Vector.multiply(this.size, scale)
     }
 
     move() {
