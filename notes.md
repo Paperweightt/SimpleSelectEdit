@@ -23,6 +23,8 @@
 
 ## major bugs
 
+- [ ] cant increase y size at bottom of world
+
 ## minor bugs
 
 - [ ] kill @e fix
@@ -33,14 +35,15 @@
 
 - [ ] arrows are invisible to people that dont own that box
 - [ ] is viewing / grabbable indicator
-- [ ] drag entities
 
 ## consider
 
 - [ ] nice rotation animation + interactable rotate entities
+- [ ] use shearing to make any rotation work
 - [ ] make rotations stable using non-rounded bounding boxes
 - [ ] auto undo changes in size
 - [ ] tp entities with box
+- [ ] magic select
 
 ## too much effort / not worth
 
@@ -50,6 +53,7 @@
 
 ## done
 
+- [x] drag entities
 - [x] core offset on pickup
 - [x] player can move and resize at the same time
 - [x] arrow drag along plane
