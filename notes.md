@@ -21,13 +21,15 @@
 
 # todo
 
-## bugs fixes
+## major bugs
 
-- [ ] arrow drag along plane
-- [ ] move things from behind
-- [ ] kill @e fix
 - [ ] player can move and resize at the same time
+
+## minor bugs
+
+- [ ] kill @e fix
 - [ ] player interactable entities priority with other player's interactable entities not organized
+- [ ] structure max size causes issue with rotation and fill with large inputs
 
 ## do
 
@@ -50,6 +52,8 @@
 
 ## done
 
+- [x] arrow drag along plane
+- [x] move things from behind
 - [x] arrow hitboxes
 - [x] core hitbox
 - [x] perfect rotate undo

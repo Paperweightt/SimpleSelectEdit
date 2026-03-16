@@ -1,9 +1,16 @@
-import { system } from "@minecraft/server"
+import { system, world } from "@minecraft/server"
 import { PROPERTIES, TYPE_IDS } from "../constants"
 import { DeathOnReload } from "../utils/deathOnReload"
 import { Vector } from "../utils/vector"
 import { Event } from "../utils/events"
 import { SelectItem } from "../selector/selectItem"
+
+system.run(() => {
+    const location = new Vector(-3, -56, 31).add(0.5)
+    const dim = world.getDimension("overworld")
+    const rotation = { x: 0, y: 90 }
+    new Arrow(location, dim, rotation)
+})
 
 SelectItem.events.startUse.subscribe({
     priority: (data) => {
@@ -141,7 +148,6 @@ export class Arrow {
         this.id = this.entity.id
 
         this.setAxis(rotation)
-        this.setPlaneRotation(this.axis)
         this.setSize(this.axis)
         this.setEntityRotation()
 
@@ -224,20 +230,6 @@ export class Arrow {
         return offset.add(this.location)
     }
 
-    setPlaneRotation(axis) {
-        switch (axis) {
-            case "x":
-                this.planeRotation = { x: 270, y: 0 }
-                break
-            case "z":
-                this.planeRotation = { x: 0, y: 0 }
-                break
-            case "y":
-                this.planeRotation = { x: 0, y: 0 }
-                break
-        }
-    }
-
     setSize(axis) {
         const size = new Vector(0.25, 0.75, 1)
         switch (axis) {
@@ -274,6 +266,7 @@ export class Arrow {
 
     move() {
         const newLocation = this.getPointer().add(this.location)
+
         const data = {
             prevLocation: this.location.copy(),
             newLocation: newLocation,
@@ -296,36 +289,47 @@ export class Arrow {
         this.originalLocation = this.location.copy()
     }
 
+    /** @returns {Vector} */
     getPointer() {
-        const inverseRotation = {
-            y: (-this.planeRotation.y * Math.PI) / 180,
-            p: (-this.planeRotation.x * Math.PI) / 180,
-            r: 0,
-        }
-        const relPlayerLocation = Vector.subtract(
-            getEyeLocation(this.editor),
-            this.location,
-        )
-        const nPlayerLocation = Vector.rotate(relPlayerLocation, inverseRotation)
-        const nViewDirection = Vector.rotate(
-            this.editor.getViewDirection(),
-            inverseRotation,
-        )
+        const eye = getEyeLocation(this.editor)
+        const rayDir = Vector.normalize(this.editor.getViewDirection())
+        const origin = this.location
 
-        const dir = nViewDirection.normalize()
-        const t = -nPlayerLocation.x / dir.x
+        // 1. Define the movement axis
+        const axis =
+            this.axis === "x"
+                ? new Vector(1, 0, 0)
+                : this.axis === "y"
+                  ? new Vector(0, 1, 0)
+                  : new Vector(0, 0, 1)
 
-        const hitY = nPlayerLocation.y + t * dir.y
-        const hitZ = nPlayerLocation.z + t * dir.z
+        // 2. Calculate a Plane Normal that faces the camera
+        // We want a plane that contains the 'axis' and is as perpendicular
+        // to the camera view as possible.
+        const eyeToOrigin = Vector.subtract(origin, eye).normalize()
+        const perpendicular = Vector.crossProduct(axis, eyeToOrigin).normalize()
+        const planeNormal = Vector.crossProduct(perpendicular, axis).normalize()
 
-        switch (this.axis) {
-            case "x":
-                return new Vector(hitZ, 0, 0)
-            case "y":
-                return new Vector(0, hitY, 0)
-            case "z":
-                return new Vector(0, 0, hitZ)
-        }
+        // 3. Ray-Plane Intersection Math
+        const denom = Vector.dotProduct(rayDir, planeNormal)
+
+        // If ray is parallel to the plane, we can't intersect
+        if (Math.abs(denom) < 1e-6) return new Vector(0, 0, 0)
+
+        const t = Vector.dotProduct(Vector.subtract(origin, eye), planeNormal) / denom
+
+        // Intersection is behind the camera
+        if (t < 0) return new Vector(0, 0, 0)
+
+        // 4. Calculate hit point and project onto axis
+        const hitPoint = Vector.add(eye, Vector.multiply(rayDir, t))
+        const offset = Vector.subtract(hitPoint, origin)
+
+        // How far along the axis are we?
+        const distanceAlongAxis = Vector.dotProduct(offset, axis)
+
+        // Return the constrained 3D point
+        return Vector.multiply(axis, distanceAlongAxis)
     }
 
     /** @param {import("@minecraft/server").Player} */
