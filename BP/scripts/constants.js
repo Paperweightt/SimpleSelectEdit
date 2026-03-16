@@ -7,6 +7,7 @@ export const TYPE_IDS = {
     ITEM_DISPLAY: PACK_ID + ":item_display",
     BACK_PANEL: PACK_ID + ":back_panel",
     SELECT_ITEM: PACK_ID + ":selector",
+    DELETE_ITEM: PACK_ID + ":deleter",
     TICKING_ENTITY: PACK_ID + ":ticking_area",
     PANEL: PACK_ID + ":panel",
 }

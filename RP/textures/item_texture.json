@@ -5,6 +5,9 @@
         "sse:selector": {
             "textures": "textures/items/selector"
         },
+        "sse:deleter": {
+            "textures": "textures/items/deleter"
+        },
         "sse:unknown_item": {
             "textures": "textures/items/unknown_item"
         }
