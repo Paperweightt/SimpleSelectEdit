@@ -188,7 +188,7 @@ export class Edit {
         const { saveId, runResult } = await this.runAndSave(name, ctx)
 
         if (runResult.metrics.blocks > 1000) {
-            player.sendMessage(metrics.blocks + " blocks changed in " + metrics.ticks + " ticks")
+            player.sendMessage(runResult.metrics.blocks + " blocks filled")
         }
 
         Edit.saveToPlayer(player, saveId)
