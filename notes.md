@@ -23,8 +23,6 @@
 
 ## major bugs
 
-- [ ] player can move and resize at the same time
-
 ## minor bugs
 
 - [ ] kill @e fix
@@ -52,6 +50,8 @@
 
 ## done
 
+- [x] core offset on pickup
+- [x] player can move and resize at the same time
 - [x] arrow drag along plane
 - [x] move things from behind
 - [x] arrow hitboxes

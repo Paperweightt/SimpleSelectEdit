@@ -310,17 +310,21 @@ export class SelectionGroup {
         const location = this.getArrowLocation(direction)
         const rotation = SelectionGroup.directionToRotation[direction]
         const arrow = new Arrow(location, this.dimension, rotation)
+        let mode
 
         arrow.events.onMove.subscribe((data) => {
             const { editor, newLocation, prevLocation } = data
 
             if (editor.id !== this.player.id) return
+            if (!mode) {
+                mode = editor.customIsShifting ? "resize" : "move"
+            }
 
             const diff = Vector.subtract(newLocation, prevLocation)
 
-            if (editor.customIsShifting) {
+            if (mode === "resize") {
                 this.resizeSelections(direction, diff)
-            } else {
+            } else if (mode === "move") {
                 this.moveSelections(diff, direction)
             }
 
@@ -340,7 +344,7 @@ export class SelectionGroup {
 
             if (new Vector(0).equals(diff)) return
 
-            if (!editor.customIsShifting) {
+            if (mode === "move") {
                 Edit.playerRunAndSave(this.player, this.editMode, {
                     dimension: this.dimension,
                     vector: diff,
@@ -348,7 +352,7 @@ export class SelectionGroup {
                     selections: this.selections,
                 })
                 if (this.editMode === "duplicate") this.editMode = "move"
-            } else {
+            } else if (mode === "resize") {
                 Edit.playerRunAndSave(this.player, "resize", {
                     dimension: this.dimension,
                     direction: direction,
@@ -356,6 +360,8 @@ export class SelectionGroup {
                     selections: this.selections,
                 })
             }
+
+            mode = undefined
 
             this.updateOriginalLocations()
         })

@@ -228,7 +228,7 @@ export class Core {
     setEditor(player) {
         this.editor = player
 
-        this.distance = Vector.distance(this.location, player.location)
+        this.distance = Vector.distance(this.location, getEyeLocation(player))
 
         this.events.onSelect.emit({
             location: this.location.copy(),
