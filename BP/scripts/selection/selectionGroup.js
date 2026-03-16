@@ -342,7 +342,9 @@ export class SelectionGroup {
             this.reloadArrowLocations()
             this.reloadCoreLocation()
 
-            if (new Vector(0).equals(diff)) return
+            if (new Vector(0).equals(diff)) {
+                mode = undefined
+            }
 
             if (mode === "move") {
                 Edit.playerRunAndSave(this.player, this.editMode, {
@@ -399,11 +401,14 @@ export class SelectionGroup {
         const min = new Vector(this.player.location).subtract(distanceMax).setY(yMin)
 
         for (const selection of this.selections) {
-            diff = Vector.max(diff, Vector.subtract(min, selection.location))
-            diff = Vector.min(
-                diff,
-                Vector.subtract(max, selection.location).subtract(selection.size),
-            )
+            if (direction === "Down" || direction === "West" || direction === "North") {
+                diff = Vector.max(diff, Vector.subtract(min, selection.location))
+            } else {
+                diff = Vector.min(
+                    diff,
+                    Vector.subtract(max, selection.location).subtract(selection.size),
+                )
+            }
         }
 
         for (const selection of this.selections) {

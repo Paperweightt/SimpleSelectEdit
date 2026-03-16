@@ -23,10 +23,9 @@
 
 ## major bugs
 
-- [ ] cant increase y size at bottom of world
-
 ## minor bugs
 
+- [ ] selection creator doesnt have a bounding box
 - [ ] kill @e fix
 - [ ] player interactable entities priority with other player's interactable entities not organized
 - [ ] structure max size causes issue with rotation and fill with large inputs
@@ -53,6 +52,8 @@
 
 ## done
 
+- [x] cant increase y size at bottom of world
+- [x] doesnt release the change type when change = 0
 - [x] drag entities
 - [x] core offset on pickup
 - [x] player can move and resize at the same time
