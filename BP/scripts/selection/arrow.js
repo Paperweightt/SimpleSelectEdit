@@ -1,16 +1,9 @@
-import { system, world } from "@minecraft/server"
+import { system } from "@minecraft/server"
 import { PROPERTIES, TYPE_IDS } from "../constants"
 import { DeathOnReload } from "../utils/deathOnReload"
 import { Vector } from "../utils/vector"
 import { Event } from "../utils/events"
 import { SelectItem } from "../selector/selectItem"
-
-system.run(() => {
-    const location = new Vector(-3, -56, 31).add(0.5)
-    const dim = world.getDimension("overworld")
-    const rotation = { x: 0, y: 90 }
-    new Arrow(location, dim, rotation)
-})
 
 SelectItem.events.startUse.subscribe({
     priority: (data) => {
