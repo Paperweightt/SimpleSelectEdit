@@ -1,0 +1,20 @@
+{
+    "format_version": "1.10.0",
+    "render_controllers": {
+        "controller.render.sse.entity.arrow": {
+            "geometry": "Geometry.default",
+            "textures": ["Array.axis[query.property('sse:axis')]"],
+            "arrays": {
+                "textures": {
+                    "Array.axis": ["Texture.red", "Texture.green", "Texture.blue"]
+                }
+            },
+            "ignore_lighting": true,
+            "materials": [
+                {
+                    "*": "Material.default"
+                }
+            ]
+        }
+    }
+}

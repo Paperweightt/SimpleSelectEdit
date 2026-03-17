@@ -1,7 +1,7 @@
+import { Selection } from "../../selection/selection"
+import { SelectionGroup } from "../../selection/selectionGroup"
+import { TYPE_IDS } from "../../constants"
 import { world } from "@minecraft/server"
-import { Selection } from "../selection/selection"
-import { SelectionGroup } from "../selection/selectionGroup"
-import { TYPE_IDS } from "../constants"
 
 world.afterEvents.itemUse.subscribe((data) => {
     const { source, itemStack } = data

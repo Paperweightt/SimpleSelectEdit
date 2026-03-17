@@ -1,3 +1,10 @@
+# axis colors
+
+- x - red - #f15d6e
+- y - green - #51af35
+- z - blue - #009bff
+- c - purple - #b771e9
+
 # priority system
 
 1. screen
@@ -21,6 +28,10 @@
 
 # todo
 
+## test
+
+- [ ] delete tool with someone elses selection group
+
 ## major bugs
 
 ## minor bugs
@@ -30,10 +41,11 @@
 - [ ] player interactable entities priority with other player's interactable entities not organized
 - [ ] structure max size causes issue with rotation and fill with large inputs
 
-## do
+## implement
 
-- [ ] arrows are invisible to people that dont own that box
+- [ ] axis color
 - [ ] is viewing / grabbable indicator
+- [ ] undo item
 
 ## consider
 
@@ -42,13 +54,14 @@
 - [ ] make rotations stable using non-rounded bounding boxes
 - [ ] auto undo changes in size
 - [ ] tp entities with box
-- [ ] magic select
+- [ ] magic select (smart flood fill)
 
 ## too much effort / not worth
 
 - [ ] fix panel 2 axis rotation
 - [ ] entity based outline
 - [ ] menu for mobile
+- [ ] arrows are invisible to people that dont own that box (entities will still obstruct placement)
 
 ## done
 

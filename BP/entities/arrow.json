@@ -18,6 +18,12 @@
                     "client_sync": true,
                     "default": 0,
                     "range": [0, 10000000]
+                },
+                "sse:axis": {
+                    "type": "int",
+                    "client_sync": true,
+                    "default": 1,
+                    "range": [0, 2]
                 }
             }
         },

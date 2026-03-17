@@ -3,7 +3,7 @@ import { TYPE_IDS } from "../constants"
 import { DeathOnReload } from "../utils/deathOnReload"
 import { Vector } from "../utils/vector"
 import { Event } from "../utils/events"
-import { SelectItem } from "../selector/selectItem"
+import { SelectItem } from "../items/selector/selectItem"
 
 SelectItem.events.startUse.subscribe({
     priority: (data) => {

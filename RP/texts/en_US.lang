@@ -1,2 +1,3 @@
-item.sse:selector=Selector
-item.sse:deleter=Deleter
+item.sse:selector=Select
+item.sse:deleter=Delete
+item.sse:undo=Undo

@@ -1,5 +1,5 @@
 import { SelectorEvents } from "./events"
-import { PACK_ID } from "../constants"
+import { PACK_ID } from "../../constants"
 
 export class SelectItem {
     static events = SelectorEvents

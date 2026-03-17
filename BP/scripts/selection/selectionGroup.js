@@ -3,7 +3,7 @@ import { Menu } from "../menu/menu.js"
 import { Arrow } from "./arrow.js"
 import { Core } from "./core.js"
 import { Selection } from "./selection.js"
-import { SelectItem } from "../selector/selectItem.js"
+import { SelectItem } from "../items/selector/selectItem.js"
 import { Edit } from "../edit/index.js"
 import { Vector } from "../utils/vector.js"
 import { Color } from "../utils/color.js"
@@ -172,7 +172,7 @@ export class SelectionGroup {
      * @param {Selection} selection
      */
     addSelection(selection) {
-        selection.lineRGB = Color.playerOklab(this.player, 0.2, 0.8)
+        selection.lineRGB = Color.playerOklab(this.player, 0.15, 0.9)
         this.selections.push(selection)
         selection.isOwned = true
     }

@@ -4,7 +4,7 @@ import { Vector } from "../utils/vector"
 import { SelectionGroup } from "./selectionGroup"
 import { Particle } from "../utils/particle"
 import { Selection } from "./selection"
-import { SelectItem } from "../selector/selectItem"
+import { SelectItem } from "../items/selector/selectItem"
 
 SelectItem.events.startUse.subscribe({
     priority: (data) => {

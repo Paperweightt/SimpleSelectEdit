@@ -8,7 +8,9 @@
                 "outline": "outline" // For outline.
             },
             "textures": {
-                "default": "textures/blocks/concrete_red", // Base texture
+                "red": "textures/entity/red",
+                "green": "textures/entity/green",
+                "blue": "textures/entity/blue",
                 "outline": "textures/ui/White" // Outline texture
             },
             "geometry": {
@@ -16,7 +18,7 @@
                 "outline": "geometry.sse.arrow_outline" // Outline geometry - Same as base but inflated.
             },
             "render_controllers": [
-                "controller.render.default",
+                "controller.render.sse.entity.arrow",
                 "controller.render.arx.entity.outline" // For outline.
             ],
             "animations": {

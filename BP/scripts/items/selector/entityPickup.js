@@ -1,7 +1,7 @@
-import { system, world } from "@minecraft/server"
-import { Vector } from "../utils/vector"
+import { system } from "@minecraft/server"
+import { Vector } from "../../utils/vector"
 import { SelectItem } from "../selector/selectItem"
-import { TYPE_IDS } from "../constants"
+import { TYPE_IDS } from "../../constants"
 
 SelectItem.events.startUse.subscribe({
     priority: (data) => {

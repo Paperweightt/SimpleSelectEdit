@@ -3,7 +3,7 @@ import { PROPERTIES, TYPE_IDS } from "../constants"
 import { DeathOnReload } from "../utils/deathOnReload"
 import { Vector } from "../utils/vector"
 import { Event } from "../utils/events"
-import { SelectItem } from "../selector/selectItem"
+import { SelectItem } from "../items/selector/selectItem"
 
 SelectItem.events.startUse.subscribe({
     priority: (data) => {
@@ -143,10 +143,24 @@ export class Arrow {
         this.setAxis(rotation)
         this.setSize(this.axis)
         this.setEntityRotation()
+        this.setColor(this.axis)
 
         DeathOnReload.addEntity(this.entity)
 
         Arrow.list[this.id] = this
+    }
+
+    /**
+     * @param {"x"|"y"|"z"} axis
+     */
+    setColor(axis) {
+        if (axis === "x") {
+            this.entity.setProperty(PROPERTIES.AXIS, 0)
+        } else if (axis === "y") {
+            this.entity.setProperty(PROPERTIES.AXIS, 1)
+        } else if (axis === "z") {
+            this.entity.setProperty(PROPERTIES.AXIS, 2)
+        }
     }
 
     /**

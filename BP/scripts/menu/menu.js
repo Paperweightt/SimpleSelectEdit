@@ -7,7 +7,7 @@ import { Vector } from "../utils/vector.js"
 import { Screen } from "../ui/screen.js"
 import { Edit } from "../edit/index.js"
 import { BackPanel } from "./backPanel.js"
-import { SelectItem } from "../selector/selectItem.js"
+import { SelectItem } from "../items/selector/selectItem.js"
 
 // disable clicks while viewing screen
 SelectItem.events.click.subscribe({

@@ -1,8 +1,8 @@
 import { world, system, Player } from "@minecraft/server"
-import { TYPE_IDS, USE_DURATION } from "../constants"
-import { MinPriorityEvent, Event } from "../utils/events"
-import { Screen } from "../ui/screen.js"
-import { Vector } from "../utils/vector.js"
+import { TYPE_IDS, USE_DURATION } from "../../constants"
+import { MinPriorityEvent, Event } from "../../utils/events"
+import { Screen } from "../../ui/screen.js"
+import { Vector } from "../../utils/vector.js"
 
 world.afterEvents.itemUse.subscribe(async (data) => {
     const { source, itemStack } = data
