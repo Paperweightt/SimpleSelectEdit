@@ -106,6 +106,12 @@ export class Edit {
         return Edit.edits
     }
 
+    static getAllHistoryIds() {
+        return world.getDynamicPropertyIds().filter((id) => {
+            id.startsWith(PACK_ID + ":fill")
+        })
+    }
+
     /**
      * @param {number} i
      * @returns {ZippedUndoCtx}
@@ -145,15 +151,33 @@ export class Edit {
 
     /**
      * @param {import("@minecraft/server").Player} player
+     * @returns {number[]}
+     */
+    static getPlayerUndoIds(player) {
+        const property = PACK_ID + ":edit_list"
+        const ids = JSON.parse(player.getDynamicProperty(property) || "[]")
+        return ids
+    }
+
+    /**
+     * @param {import("@minecraft/server").Player} player
+     * @param {number[]} ids
+     */
+    static setPlayerUndoIds(player, ids) {
+        const property = PACK_ID + ":edit_list"
+        player.setDynamicProperty(property, JSON.stringify(ids))
+    }
+
+    /**
+     * @param {import("@minecraft/server").Player} player
      * @returns {UndoCtx}
      */
     static playerGetRecentUndo(player) {
-        const property = PACK_ID + ":edit_list"
-        const fills = JSON.parse(player.getDynamicProperty(property) || "[]")
+        const ids = this.getPlayerUndoIds(player)
 
-        const undoIndex = fills.pop()
+        const undoIndex = ids.pop()
 
-        player.setDynamicProperty(property, JSON.stringify(fills))
+        this.setPlayerUndoIds(player, ids)
 
         const zippedUndo = this.getFromHistory(undoIndex)
 
