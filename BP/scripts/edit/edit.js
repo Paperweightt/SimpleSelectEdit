@@ -5,6 +5,8 @@ import { world, system } from "@minecraft/server"
 import { PACK_ID, TYPE_IDS } from "../constants"
 import { DeathOnReload } from "../utils/deathOnReload"
 
+/** @import * as Types from "./types.js"  */
+
 export class Edit {
     static registry = new Map()
     /** @type {number} */
@@ -25,9 +27,9 @@ export class Edit {
     }
 
     /**
-     * @param {EditNames} name
-     * @param {EditCtx} ctx
-     * @returns {Promise<RunResult>}
+     * @param {Types.EditNames} name
+     * @param {Types.EditCtx} ctx
+     * @returns {Promise<Types.RunResult>}
      */
     static async run(name, ctx) {
         const edit = new Edit(ctx.dimension)
@@ -53,8 +55,8 @@ export class Edit {
     }
 
     /**
-     * @param {EditNames} name
-     * @returns {Promise<EditMetrics>}
+     * @param {Types.EditNames} name
+     * @returns {Promise<Types.EditMetrics>}
      */
     static async undo(name, ctx) {
         const edit = new Edit(ctx.dimension)
@@ -76,26 +78,26 @@ export class Edit {
     }
 
     /**
-     * @param {EditNames} name
-     * @param {UndoCtx} ctx
-     * @returns {ZippedUndoCtx}
+     * @param {Types.EditNames} name
+     * @param {Types.UndoCtx} ctx
+     * @returns {Types.ZippedUndoCtx}
      */
     static zipUndo(name, ctx) {
         return getEdit(name).zipUndo(ctx)
     }
 
     /**
-     * @param {EditNames} name
-     * @param {ZippedUndoCtx} ctx
-     * @returns {UndoCtx}
+     * @param {Types.EditNames} name
+     * @param {Types.ZippedUndoCtx} ctx
+     * @returns {Types.UndoCtx}
      */
     static unzipUndo(name, ctx) {
         return getEdit(name).unzipUndo(ctx)
     }
 
     /**
-     * @param {ZippedUndoCtx} undoData
-     * @returns {number}
+     * @param {Types.ZippedUndoCtx} undoData
+     * @returns {Types.number}
      */
     static saveToHistory(undoData) {
         Edit.edits++
@@ -106,18 +108,19 @@ export class Edit {
         return Edit.edits
     }
 
+    /** @returns {string[]}*/
     static getAllHistoryIds() {
-        return world.getDynamicPropertyIds().filter((id) => {
-            id.startsWith(PACK_ID + ":fill")
-        })
+        return world
+            .getDynamicPropertyIds()
+            .filter((id) => id.startsWith(PACK_ID + ":fill"))
     }
 
     /**
-     * @param {number} i
-     * @returns {ZippedUndoCtx}
+     * @param {number} id
+     * @returns {Types.ZippedUndoCtx}
      */
-    static getFromHistory(i) {
-        const property = PACK_ID + ":fill" + i
+    static getFromHistory(id) {
+        const property = PACK_ID + ":fill" + id
         const string = world.getDynamicProperty(property)
 
         if (!string) throw new Error("no edit exists at index")
@@ -130,16 +133,16 @@ export class Edit {
      * @param {number} i
      */
     static saveToPlayer(player, i) {
-        const property = PACK_ID + ":edit_list"
-        const editList = JSON.parse(player.getDynamicProperty(property) || "[]")
+        const editList = this.getPlayerUndoIds(player)
 
         editList.push(i)
-        player.setDynamicProperty(property, JSON.stringify(editList))
+
+        this.setPlayerUndoIds(player, editList)
     }
 
     /**
      * @param {import("@minecraft/server").Player} player
-     * @returns {promise<EditMetrics>}
+     * @returns {promise<Types.EditMetrics>}
      */
     static async playerUndoRecent(player) {
         const undoCtx = this.playerGetRecentUndo(player)
@@ -170,7 +173,7 @@ export class Edit {
 
     /**
      * @param {import("@minecraft/server").Player} player
-     * @returns {UndoCtx}
+     * @returns {Types.UndoCtx}
      */
     static playerGetRecentUndo(player) {
         const ids = this.getPlayerUndoIds(player)
@@ -180,16 +183,13 @@ export class Edit {
         this.setPlayerUndoIds(player, ids)
 
         const zippedUndo = this.getFromHistory(undoIndex)
-
-        const undoCtx = this.unzipUndo(zippedUndo.type, zippedUndo)
-
-        return undoCtx
+        return this.unzipUndo(zippedUndo.type, zippedUndo)
     }
 
     /**
-     * @param {EditNames} name
-     * @param {EditCtx} ctx
-     * @returns {Promise<{saveId:number,runResult: RunResult}>}
+     * @param {Types.EditNames} name
+     * @param {Types.EditCtx} ctx
+     * @returns {Promise<{saveId:number,runResult: Types.RunResult}>}
      */
     static async runAndSave(name, ctx) {
         const runResult = await Edit.run(name, ctx)
@@ -204,9 +204,9 @@ export class Edit {
 
     /**
      * @param {import("@minecraft/server").Player} player
-     * @param {EditNames} name
-     * @param {EditCtx} ctx
-     * @returns {Promise<RunResult>}
+     * @param {Types.EditNames} name
+     * @param {Types.EditCtx} ctx
+     * @returns {Promise<Types.RunResult>}
      */
     static async playerRunAndSave(player, name, ctx) {
         const { saveId, runResult } = await this.runAndSave(name, ctx)

@@ -1,5 +1,5 @@
 /**
- * @typedef {"move"} EditNames
+ * @typedef {"move"|"duplicate"|"fill"|"flip"|"resize"|"rotate"} EditNames
  */
 
 /**
@@ -18,6 +18,7 @@
 
 /**
  * @typedef {Object} ZippedUndoCtx
+ * @property {EditNames} type
  * @property {string} dimensionId
  * @property {Vector} location
  * @property {any} [key: string] Extra arbitrary fields
@@ -46,3 +47,5 @@
  * @property {function(UndoCtx):Object} zip
  * @property {function(Object):UndoCtx} unzip
  */
+
+export {}

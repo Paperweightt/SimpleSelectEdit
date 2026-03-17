@@ -30,7 +30,8 @@
 
 ## test
 
-- [ ] delete tool with someone elses selection group
+- [ ] player leave while they own a selection group
+- [ ] dimension with undo
 
 ## major bugs
 
@@ -55,6 +56,7 @@
 - [ ] auto undo changes in size
 - [ ] tp entities with box
 - [ ] magic select (smart flood fill)
+- [ ] ignore air on all edits
 
 ## too much effort / not worth
 
@@ -65,6 +67,7 @@
 
 ## done
 
+- [x] delete tool with someone elses selection group
 - [x] cant increase y size at bottom of world
 - [x] doesnt release the change type when change = 0
 - [x] drag entities
