@@ -224,7 +224,7 @@ export class Menu {
 
         const undoButton = new ButtonElement(BUTTON_HEIGHT, BUTTON_HEIGHT, "u")
         undoButton.addOnClick(async ({ player }) => {
-            const { blocks } = await Edit.playerUndoRecent(player)
+            const { blocks } = await Edit.playerUndoRecent(player.id)
             const group = this.getSelectionGroup()
 
             if (group) {
@@ -348,7 +348,7 @@ export class Menu {
 
             if (!group) return
 
-            Edit.playerRunAndSave(this.player, "fill", {
+            Edit.playerRunAndSave(this.player.id, "fill", {
                 blocks: this.db.fill.blocks,
                 selections: group.selections,
                 dimension: this.dimension,
@@ -424,7 +424,7 @@ export class Menu {
             const group = this.getSelectionGroup()
             if (!group) return
 
-            await Edit.playerRunAndSave(this.player, "rotate", {
+            await Edit.playerRunAndSave(this.player.id, "rotate", {
                 selections: group.selections,
                 dimension: this.dimension,
                 rotation: 90,
@@ -439,7 +439,7 @@ export class Menu {
             const group = this.getSelectionGroup()
             if (!group) return
 
-            await Edit.playerRunAndSave(this.player, "rotate", {
+            await Edit.playerRunAndSave(this.player.id, "rotate", {
                 selections: group.selections,
                 dimension: this.dimension,
                 rotation: 270,
@@ -454,7 +454,7 @@ export class Menu {
             const group = this.getSelectionGroup()
             if (!group) return
 
-            Edit.playerRunAndSave(this.player, "flip", {
+            Edit.playerRunAndSave(this.player.id, "flip", {
                 selections: group.selections,
                 dimension: this.dimension,
                 flip: "x",
@@ -464,7 +464,7 @@ export class Menu {
             const group = this.getSelectionGroup()
             if (!group) return
 
-            Edit.playerRunAndSave(this.player, "flip", {
+            Edit.playerRunAndSave(this.player.id, "flip", {
                 selections: group.selections,
                 dimension: this.dimension,
                 flip: "z",

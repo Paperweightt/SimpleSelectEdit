@@ -273,7 +273,7 @@ export class SelectionGroup {
 
             if (Vector.equals(diff, new Vector(0))) return
 
-            Edit.playerRunAndSave(this.player, this.editMode, {
+            Edit.playerRunAndSave(this.player.id, this.editMode, {
                 dimension: this.dimension,
                 vector: diff.round(),
                 selections: this.selections,
@@ -344,10 +344,11 @@ export class SelectionGroup {
 
             if (new Vector(0).equals(diff)) {
                 mode = undefined
+                return
             }
 
             if (mode === "move") {
-                Edit.playerRunAndSave(this.player, this.editMode, {
+                Edit.playerRunAndSave(this.player.id, this.editMode, {
                     dimension: this.dimension,
                     vector: diff,
                     direction: direction,
@@ -355,7 +356,7 @@ export class SelectionGroup {
                 })
                 if (this.editMode === "duplicate") this.editMode = "move"
             } else if (mode === "resize") {
-                Edit.playerRunAndSave(this.player, "resize", {
+                Edit.playerRunAndSave(this.player.id, "resize", {
                     dimension: this.dimension,
                     direction: direction,
                     vector: diff,

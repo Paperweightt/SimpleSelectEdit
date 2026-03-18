@@ -101,9 +101,11 @@ export class Edit {
      */
     static saveToHistory(undoData) {
         Edit.edits++
-        const property = PACK_ID + ":fill" + Edit.edits
+        const property = PACK_ID + ":fill_" + Edit.edits
 
         world.setDynamicProperty(property, JSON.stringify(undoData))
+
+        world.sendMessage("save to " + property)
 
         return Edit.edits
     }
@@ -112,7 +114,26 @@ export class Edit {
     static getAllHistoryIds() {
         return world
             .getDynamicPropertyIds()
-            .filter((id) => id.startsWith(PACK_ID + ":fill"))
+            .filter((id) => id.startsWith(PACK_ID + ":fill_"))
+    }
+
+    /** @returns {string[]}*/
+    static getAllPlayerHistory() {
+        return world
+            .getDynamicPropertyIds()
+            .filter((id) => id.startsWith(PACK_ID + ":playerList_"))
+    }
+
+    static deleteHistory() {
+        for (const id of this.getAllHistoryIds()) {
+            world.setDynamicProperty(id)
+        }
+
+        for (const id of this.getAllPlayerHistory()) {
+            world.setDynamicProperty(id)
+        }
+
+        world.setDynamicProperty(PACK_ID + ":edits_amount")
     }
 
     /**
@@ -120,8 +141,10 @@ export class Edit {
      * @returns {Types.ZippedUndoCtx}
      */
     static getFromHistory(id) {
-        const property = PACK_ID + ":fill" + id
+        const property = PACK_ID + ":fill_" + id
         const string = world.getDynamicProperty(property)
+
+        world.sendMessage("attempt targeted " + property)
 
         if (!string) throw new Error("no edit exists at index")
 
@@ -129,23 +152,25 @@ export class Edit {
     }
 
     /**
-     * @param {import("@minecraft/server").Player} player
+     * @param {playerId} playerId
      * @param {number} i
      */
-    static saveToPlayer(player, i) {
-        const editList = this.getPlayerUndoIds(player)
+    static saveToPlayer(playerId, i) {
+        const editList = this.getPlayerUndoIds(playerId)
 
         editList.push(i)
 
-        this.setPlayerUndoIds(player, editList)
+        world.sendMessage("player history: " + JSON.stringify(editList))
+
+        this.setPlayerUndoIds(playerId, editList)
     }
 
     /**
-     * @param {import("@minecraft/server").Player} player
+     * @param {string} playerId
      * @returns {promise<Types.EditMetrics>}
      */
-    static async playerUndoRecent(player) {
-        const undoCtx = this.playerGetRecentUndo(player)
+    static async playerUndoRecent(playerId) {
+        const undoCtx = this.playerGetRecentUndo(playerId)
 
         const editResolve = await this.undo(undoCtx.type, undoCtx)
 
@@ -153,34 +178,34 @@ export class Edit {
     }
 
     /**
-     * @param {import("@minecraft/server").Player} player
+     * @param {string} playerId
      * @returns {number[]}
      */
-    static getPlayerUndoIds(player) {
-        const property = PACK_ID + ":edit_list"
-        const ids = JSON.parse(player.getDynamicProperty(property) || "[]")
-        return ids
+    static getPlayerUndoIds(playerId) {
+        const property = PACK_ID + ":playerList_" + playerId
+
+        return JSON.parse(world.getDynamicProperty(property) || "[]")
     }
 
     /**
-     * @param {import("@minecraft/server").Player} player
+     * @param {string} playerId
      * @param {number[]} ids
      */
-    static setPlayerUndoIds(player, ids) {
-        const property = PACK_ID + ":edit_list"
-        player.setDynamicProperty(property, JSON.stringify(ids))
+    static setPlayerUndoIds(playerId, ids) {
+        const property = PACK_ID + ":playerList_" + playerId
+        world.setDynamicProperty(property, JSON.stringify(ids))
     }
 
     /**
-     * @param {import("@minecraft/server").Player} player
+     * @param {playerId} playerId
      * @returns {Types.UndoCtx}
      */
-    static playerGetRecentUndo(player) {
-        const ids = this.getPlayerUndoIds(player)
+    static playerGetRecentUndo(playerId) {
+        const ids = this.getPlayerUndoIds(playerId)
 
         const undoIndex = ids.pop()
 
-        this.setPlayerUndoIds(player, ids)
+        this.setPlayerUndoIds(playerId, ids)
 
         const zippedUndo = this.getFromHistory(undoIndex)
         return this.unzipUndo(zippedUndo.type, zippedUndo)
