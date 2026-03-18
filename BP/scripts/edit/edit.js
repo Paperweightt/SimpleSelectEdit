@@ -105,32 +105,36 @@ export class Edit {
 
         world.setDynamicProperty(property, JSON.stringify(undoData))
 
-        world.sendMessage("save to " + property)
-
         return Edit.edits
     }
 
     /** @returns {string[]}*/
     static getAllHistoryIds() {
+        const length = (PACK_ID + ":fill_").length
+
         return world
             .getDynamicPropertyIds()
             .filter((id) => id.startsWith(PACK_ID + ":fill_"))
+            .map((id) => id.substring(length))
     }
 
     /** @returns {string[]}*/
     static getAllPlayerHistory() {
+        const length = (PACK_ID + ":playerList_").length
+
         return world
             .getDynamicPropertyIds()
             .filter((id) => id.startsWith(PACK_ID + ":playerList_"))
+            .map((id) => id.substring(length))
     }
 
     static deleteHistory() {
         for (const id of this.getAllHistoryIds()) {
-            world.setDynamicProperty(id)
+            world.setDynamicProperty(PACK_ID + ":fill_" + id)
         }
 
         for (const id of this.getAllPlayerHistory()) {
-            world.setDynamicProperty(id)
+            world.setDynamicProperty(PACK_ID + ":playerList_" + id)
         }
 
         world.setDynamicProperty(PACK_ID + ":edits_amount")
@@ -143,8 +147,6 @@ export class Edit {
     static getFromHistory(id) {
         const property = PACK_ID + ":fill_" + id
         const string = world.getDynamicProperty(property)
-
-        world.sendMessage("attempt targeted " + property)
 
         if (!string) throw new Error("no edit exists at index")
 
@@ -160,8 +162,6 @@ export class Edit {
 
         editList.push(i)
 
-        world.sendMessage("player history: " + JSON.stringify(editList))
-
         this.setPlayerUndoIds(playerId, editList)
     }
 
@@ -175,6 +175,25 @@ export class Edit {
         const editResolve = await this.undo(undoCtx.type, undoCtx)
 
         return editResolve
+    }
+
+    /**
+     * @param {string} playerId
+     * @param {number} repeats
+     * @param {number} delay - measured in ticks
+     * @returns {promise<Types.EditMetrics>[]}
+     */
+    static async playerUndoRepeat(playerId, repeats, delay) {
+        const editMetrics = []
+
+        for (let i = 0; i < repeats; i++) {
+            const editResolve = await this.playerUndoRecent(playerId)
+            editMetrics.push(editResolve)
+
+            if (delay) await system.waitTicks(delay)
+        }
+
+        return editMetrics
     }
 
     /**
@@ -202,12 +221,14 @@ export class Edit {
      */
     static playerGetRecentUndo(playerId) {
         const ids = this.getPlayerUndoIds(playerId)
-
         const undoIndex = ids.pop()
 
         this.setPlayerUndoIds(playerId, ids)
 
         const zippedUndo = this.getFromHistory(undoIndex)
+
+        world.setDynamicProperty(PACK_ID + ":fill_" + undoIndex)
+
         return this.unzipUndo(zippedUndo.type, zippedUndo)
     }
 
@@ -228,19 +249,19 @@ export class Edit {
     }
 
     /**
-     * @param {import("@minecraft/server").Player} player
+     * @param {string} playerId
      * @param {Types.EditNames} name
      * @param {Types.EditCtx} ctx
      * @returns {Promise<Types.RunResult>}
      */
-    static async playerRunAndSave(player, name, ctx) {
+    static async playerRunAndSave(playerId, name, ctx) {
         const { saveId, runResult } = await this.runAndSave(name, ctx)
 
         if (runResult.metrics.blocks > 1000) {
-            player.sendMessage(runResult.metrics.blocks + " blocks filled")
+            playerId.sendMessage(runResult.metrics.blocks + " blocks filled")
         }
 
-        Edit.saveToPlayer(player, saveId)
+        Edit.saveToPlayer(playerId, saveId)
 
         return runResult
     }
