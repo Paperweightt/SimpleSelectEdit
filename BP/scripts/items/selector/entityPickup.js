@@ -9,7 +9,14 @@ SelectItem.events.startUse.subscribe({
 
         const rayResult = player.dimension.getEntitiesFromRay(viewStart, viewDirection, {
             ignoreBlockCollision: true,
-            excludeTypes: [TYPE_IDS.ARROW, TYPE_IDS.CORE],
+            excludeTypes: [
+                TYPE_IDS.ARROW,
+                TYPE_IDS.CORE,
+                TYPE_IDS.BACK_PANEL,
+                TYPE_IDS.TICKING_ENTITY,
+                TYPE_IDS.ITEM_DISPLAY,
+                TYPE_IDS.PANEL,
+            ],
             excludeNames: [player.name],
         })
 
@@ -22,7 +29,14 @@ SelectItem.events.startUse.subscribe({
 
         const rayResult = player.dimension.getEntitiesFromRay(viewStart, viewDirection, {
             ignoreBlockCollision: true,
-            excludeTypes: [TYPE_IDS.ARROW, TYPE_IDS.CORE],
+            excludeTypes: [
+                TYPE_IDS.ARROW,
+                TYPE_IDS.CORE,
+                TYPE_IDS.BACK_PANEL,
+                TYPE_IDS.TICKING_ENTITY,
+                TYPE_IDS.ITEM_DISPLAY,
+                TYPE_IDS.PANEL,
+            ],
             excludeNames: [player.name],
         })
 
