@@ -10,7 +10,7 @@ world.afterEvents.itemUse.subscribe(async (data) => {
     if (itemStack.typeId !== TYPE_IDS.UNDO_ITEM) return
 
     if (!source.customIsShifting) {
-        const { blocks } = await Edit.playerUndoRecent(source)
+        const { blocks } = await Edit.playerUndoRecent(source.id)
 
         const group = SelectionGroup.get(source.id)
 
