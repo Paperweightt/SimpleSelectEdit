@@ -5,6 +5,7 @@ import { SelectionGroup } from "./selectionGroup"
 import { Particle } from "../utils/particle"
 import { Selection } from "./selection"
 import { SelectItem } from "../items/selector/selectItem"
+import { PlayerUtils } from "../utils/player"
 
 SelectItem.events.startUse.subscribe({
     priority: (data) => {
@@ -133,7 +134,7 @@ class SelectionCreator {
             r: 0,
         }
         const relPlayerLocation = Vector.subtract(
-            getEyeLocation(this.player),
+            PlayerUtils.getEyeLocation(this.player),
             this.editLocation,
         )
         const nPlayerLocation = Vector.rotate(relPlayerLocation, inverseRotation)
@@ -202,16 +203,6 @@ class SelectionCreator {
             maxLocation: maxLocation.ceil(),
         }
     }
-}
-
-function getEyeLocation(player) {
-    const headModelSize = 8
-    const headHeight = headModelSize / 32
-    const location = player.getHeadLocation()
-
-    location.y += headHeight / 2 - 0.022
-
-    return location
 }
 
 SelectionCreator.runInterval()

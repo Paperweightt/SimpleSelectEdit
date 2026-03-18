@@ -179,25 +179,6 @@ export class Edit {
 
     /**
      * @param {string} playerId
-     * @param {number} repeats
-     * @param {number} delay - measured in ticks
-     * @returns {promise<Types.EditMetrics>[]}
-     */
-    static async playerUndoRepeat(playerId, repeats, delay) {
-        const editMetrics = []
-
-        for (let i = 0; i < repeats; i++) {
-            const editResolve = await this.playerUndoRecent(playerId)
-            editMetrics.push(editResolve)
-
-            if (delay) await system.waitTicks(delay)
-        }
-
-        return editMetrics
-    }
-
-    /**
-     * @param {string} playerId
      * @returns {number[]}
      */
     static getPlayerUndoIds(playerId) {
@@ -256,10 +237,6 @@ export class Edit {
      */
     static async playerRunAndSave(playerId, name, ctx) {
         const { saveId, runResult } = await this.runAndSave(name, ctx)
-
-        if (runResult.metrics.blocks > 1000) {
-            playerId.sendMessage(runResult.metrics.blocks + " blocks filled")
-        }
 
         Edit.saveToPlayer(playerId, saveId)
 

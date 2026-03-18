@@ -1,6 +1,7 @@
 import { system } from "@minecraft/server"
 import { Vector } from "../utils/vector.js"
 import { Particle } from "../utils/particle.js"
+import { PlayerUtils } from "../utils/player.js"
 import { BLOCK_PARTICLE, TYPE_IDS } from "../constants.js"
 
 export class Selection {
@@ -20,7 +21,7 @@ export class Selection {
      * @returns {{distance:number,selection:Selection}|undefined}
      */
     static getPlayerViewBox(player) {
-        const ro = getEyeLocation(player)
+        const ro = PlayerUtils.getEyeLocation(player)
         const rd = Vector.normalize(player.getViewDirection())
         let output
 
@@ -174,13 +175,3 @@ export class Selection {
 }
 
 Selection.innit()
-
-function getEyeLocation(player) {
-    const headModelSize = 8
-    const headHeight = headModelSize / 32
-    const location = player.getHeadLocation()
-
-    location.y += headHeight / 2 - 0.022
-
-    return location
-}

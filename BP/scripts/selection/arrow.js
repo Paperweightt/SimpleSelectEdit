@@ -4,6 +4,7 @@ import { DeathOnReload } from "../utils/deathOnReload"
 import { Vector } from "../utils/vector"
 import { Event } from "../utils/events"
 import { SelectItem } from "../items/selector/selectItem"
+import { PlayerUtils } from "../utils/player"
 
 SelectItem.events.startUse.subscribe({
     priority: (data) => {
@@ -298,7 +299,7 @@ export class Arrow {
 
     /** @returns {Vector} */
     getPointer() {
-        const eye = getEyeLocation(this.editor)
+        const eye = PlayerUtils.getEyeLocation(this.editor)
         const rayDir = Vector.normalize(this.editor.getViewDirection())
         const origin = this.location
 
@@ -362,19 +363,9 @@ export class Arrow {
     }
 
     remove() {
-        this.entity.remove()
+        if (this.entity.isValid) this.entity.remove()
         Arrow.remove(this)
     }
 }
 
 Arrow.innit()
-
-function getEyeLocation(player) {
-    const headModelSize = 8
-    const headHeight = headModelSize / 32
-    const location = player.getHeadLocation()
-
-    location.y += headHeight / 2 - 0.022
-
-    return location
-}

@@ -3,6 +3,7 @@ import { TYPE_IDS } from "../constants"
 import { DeathOnReload } from "../utils/deathOnReload"
 import { Vector } from "../utils/vector"
 import { Event } from "../utils/events"
+import { PlayerUtils } from "../utils/player"
 import { SelectItem } from "../items/selector/selectItem"
 
 SelectItem.events.startUse.subscribe({
@@ -220,7 +221,7 @@ export class Core {
 
     getPointer() {
         return Vector.multiply(this.editor.getViewDirection(), this.distance).add(
-            getEyeLocation(this.editor),
+            PlayerUtils.getEyeLocation(this.editor),
         )
     }
 
@@ -228,7 +229,7 @@ export class Core {
     setEditor(player) {
         this.editor = player
 
-        this.distance = Vector.distance(this.location, getEyeLocation(player))
+        this.distance = Vector.distance(this.location, PlayerUtils.getEyeLocation(player))
 
         this.events.onSelect.emit({
             location: this.location.copy(),
@@ -250,19 +251,9 @@ export class Core {
     }
 
     remove() {
-        this.entity.remove()
+        if (this.entity.isValid) this.entity.remove()
         Core.remove(this)
     }
 }
 
 Core.innit()
-
-function getEyeLocation(player) {
-    const headModelSize = 8
-    const headHeight = headModelSize / 32
-    const location = player.getHeadLocation()
-
-    location.y += headHeight / 2 - 0.022
-
-    return location
-}

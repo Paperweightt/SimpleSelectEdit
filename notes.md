@@ -30,20 +30,17 @@
 
 ## test
 
-- [ ] test undo other players work
-- [ ] player leave while they own a selection group
 - [ ] dimension with undo
 
 ## major bugs
 
-- [ ] undo rotation with unowned selection box duplicates boxes
+- [ ] undo rotation with unowned selection box duplicates boxes (not recreatable yet)
 
 ## minor bugs
 
 - [ ] selection creator doesnt have a bounding box
-- [ ] kill @e fix
 - [ ] player interactable entities priority with other player's interactable entities not organized
-- [ ] structure max size causes issue with rotation and fill with large inputs
+- [ ] structure max size causes issue with rotation and flip with large inputs
 
 ## implement
 
@@ -68,6 +65,10 @@
 
 ## done
 
+- [x] kill @e fix
+- [x] you can drag the menu entities
+- [x] test undo other players work
+- [x] player leave while they own a selection group
 - [x] axis color
 - [x] undo item
 - [x] delete tool with someone elses selection group

@@ -1,6 +1,7 @@
 import { system, world } from "@minecraft/server"
 import { Panel } from "./panel"
 import { Vector } from "../utils/vector"
+import { PlayerUtils } from "../utils/player"
 
 export class Screen {
     static screens = {}
@@ -292,7 +293,10 @@ export class Screen {
             p: (-this.rotation.x * Math.PI) / 180,
             r: 0,
         }
-        const relPlayerLocation = Vector.subtract(getEyeLocation(player), this.location)
+        const relPlayerLocation = Vector.subtract(
+            PlayerUtils.getEyeLocation(player),
+            this.location,
+        )
         const nPlayerLocation = Vector.rotate(relPlayerLocation, inverseRotation)
         const nViewDirection = Vector.rotate(player.getViewDirection(), inverseRotation)
 
@@ -330,16 +334,6 @@ export class Screen {
 
         return true
     }
-}
-
-function getEyeLocation(player) {
-    const headModelSize = 8
-    const headHeight = headModelSize / 32
-    const location = player.getHeadLocation()
-
-    location.y += headHeight / 2 - 0.022
-
-    return location
 }
 
 system.runInterval(() => {

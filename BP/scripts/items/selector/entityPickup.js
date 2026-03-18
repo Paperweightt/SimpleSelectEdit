@@ -2,6 +2,7 @@ import { system } from "@minecraft/server"
 import { Vector } from "../../utils/vector"
 import { SelectItem } from "../selector/selectItem"
 import { TYPE_IDS } from "../../constants"
+import { PlayerUtils } from "../../utils/player"
 
 SelectItem.events.startUse.subscribe({
     priority: (data) => {
@@ -134,7 +135,7 @@ export class EntityDrag {
 
     getPointer() {
         return Vector.multiply(this.editor.getViewDirection(), this.distance).add(
-            getEyeLocation(this.editor),
+            PlayerUtils.getEyeLocation(this.editor),
         )
     }
 
@@ -142,7 +143,10 @@ export class EntityDrag {
     setEditor(player) {
         this.editor = player
 
-        this.distance = Vector.distance(this.entity.location, getEyeLocation(player))
+        this.distance = Vector.distance(
+            this.entity.location,
+            PlayerUtils.getEyeLocation(player),
+        )
     }
 
     removeEditor() {
@@ -158,13 +162,3 @@ export class EntityDrag {
 }
 
 EntityDrag.innit()
-
-function getEyeLocation(player) {
-    const headModelSize = 8
-    const headHeight = headModelSize / 32
-    const location = player.getHeadLocation()
-
-    location.y += headHeight / 2 - 0.022
-
-    return location
-}

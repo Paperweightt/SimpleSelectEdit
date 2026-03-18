@@ -1,5 +1,3 @@
-/** @param {import("@minecraft/server").Player} */
-
 import { system, world } from "@minecraft/server"
 import { PACK_ID } from "../constants"
 

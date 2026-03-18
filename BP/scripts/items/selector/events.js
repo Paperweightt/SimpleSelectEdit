@@ -3,6 +3,7 @@ import { TYPE_IDS, USE_DURATION } from "../../constants"
 import { MinPriorityEvent, Event } from "../../utils/events"
 import { Screen } from "../../ui/screen.js"
 import { Vector } from "../../utils/vector.js"
+import { PlayerUtils } from "../../utils/player.js"
 
 world.afterEvents.itemUse.subscribe(async (data) => {
     const { source, itemStack } = data
@@ -11,7 +12,7 @@ world.afterEvents.itemUse.subscribe(async (data) => {
 
     const blockRaycast = source.getBlockFromViewDirection()
     const initialViewDirection = source.getViewDirection()
-    const viewStart = getEyeLocation(source)
+    const viewStart = PlayerUtils.getEyeLocation(source)
 
     if (Screen.isPlayerLookingAtAnyScreen(source)) {
         SelectorEvents.click.emit({
@@ -116,14 +117,4 @@ export class SelectorEvents {
     static releaseUse = new Event()
     /** @type {MinPriorityEvent<SelectorStartUseData>} */
     static startUse = new MinPriorityEvent()
-}
-
-function getEyeLocation(player) {
-    const headModelSize = 8
-    const headHeight = headModelSize / 32
-    const location = player.getHeadLocation()
-
-    location.y += headHeight / 2 - 0.022
-
-    return location
 }
