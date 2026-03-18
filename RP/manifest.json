@@ -4,7 +4,7 @@
         "name": "SimpleSelectTool",
         "description": "$desc",
         "uuid": "bef9df01-909c-420d-aaf5-92344f3e7c72",
-        "version": [1, 13, 1],
+        "version": [1, 14, 1],
         "min_engine_version": [1, 12, 1]
     },
     "modules": [

@@ -30,10 +30,13 @@
 
 ## test
 
+- [ ] test undo other players work
 - [ ] player leave while they own a selection group
 - [ ] dimension with undo
 
 ## major bugs
+
+- [ ] undo rotation with unowned selection box duplicates boxes
 
 ## minor bugs
 
@@ -44,9 +47,7 @@
 
 ## implement
 
-- [ ] axis color
 - [ ] is viewing / grabbable indicator
-- [ ] undo item
 
 ## consider
 
@@ -67,6 +68,8 @@
 
 ## done
 
+- [x] axis color
+- [x] undo item
 - [x] delete tool with someone elses selection group
 - [x] cant increase y size at bottom of world
 - [x] doesnt release the change type when change = 0
