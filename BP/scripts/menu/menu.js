@@ -317,6 +317,8 @@ export class Menu {
                 const itemStack = new Blueprint(group, name)
 
                 container.addItem(itemStack)
+
+                this.remove()
             })
         })
         addButtonWithUi("Options", "addMoreOptions")

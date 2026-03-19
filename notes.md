@@ -35,7 +35,6 @@
 ## major bugs
 
 - [ ] structure max size causes issue with rotation and flip with large inputs
-- [ ] undo create selection bugs out with owned selections
 
 ## minor bugs
 
@@ -67,6 +66,8 @@
 
 ## done
 
+- [x] undo create selection bugs out with owned selections
+- [x] blueprint item
 - [x] create box doesnt have undo
 - [x] kill @e fix
 - [x] you can drag the menu entities

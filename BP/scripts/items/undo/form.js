@@ -6,7 +6,7 @@ import { SelectionGroup } from "../../selection/selectionGroup.js"
 
 export class UndoMenu {
     static ENTRIES_PER_PAGE = 100
-    static DELAY = 20
+    static DELAY = 5
 
     /** @type {import("@minecraft/server").Player} */
     constructor(player) {
