@@ -9,6 +9,7 @@ export const TYPE_IDS = {
     SELECT_ITEM: PACK_ID + ":selector",
     DELETE_ITEM: PACK_ID + ":deleter",
     UNDO_ITEM: PACK_ID + ":undo",
+    BLUEPRINT_ITEM: PACK_ID + ":blueprint",
     TICKING_ENTITY: PACK_ID + ":ticking_area",
     PANEL: PACK_ID + ":panel",
 }

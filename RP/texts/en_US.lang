@@ -1,3 +1,4 @@
 item.sse:selector=Select
 item.sse:deleter=Delete
 item.sse:undo=Undo
+item.sse:blueprint=Blueprint

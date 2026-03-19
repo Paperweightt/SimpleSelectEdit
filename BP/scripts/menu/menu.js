@@ -8,6 +8,7 @@ import { Screen } from "../ui/screen.js"
 import { Edit } from "../edit/index.js"
 import { BackPanel } from "./backPanel.js"
 import { SelectItem } from "../items/selector/selectItem.js"
+import { Blueprint } from "../items/blueprint/blueprint.js"
 
 // disable clicks while viewing screen
 SelectItem.events.click.subscribe({
@@ -222,24 +223,24 @@ export class Menu {
         closeButton.textElement.update()
         this.miscPanel.addElement(closeButton)
 
-        const undoButton = new ButtonElement(BUTTON_HEIGHT, BUTTON_HEIGHT, "u")
-        undoButton.addOnClick(async ({ player }) => {
-            const { blocks } = await Edit.playerUndoRecent(player.id)
-            const group = this.getSelectionGroup()
-
-            if (group) {
-                group.reloadArrowLocations()
-                group.reloadCoreLocation()
-                group.updateOriginalLocations()
-            }
-
-            if (blocks > 1000) {
-                player.sendMessage(blocks + " blocks filled")
-            }
-        })
-        undoButton.textElement.offset.y++
-        undoButton.textElement.update()
-        this.miscPanel.addElement(undoButton)
+        // const undoButton = new ButtonElement(BUTTON_HEIGHT, BUTTON_HEIGHT, "u")
+        // undoButton.addOnClick(async ({ player }) => {
+        //     const { blocks } = await Edit.playerUndoRecent(player.id)
+        //     const group = this.getSelectionGroup()
+        //
+        //     if (group) {
+        //         group.reloadArrowLocations()
+        //         group.reloadCoreLocation()
+        //         group.updateOriginalLocations()
+        //     }
+        //
+        //     if (blocks > 1000) {
+        //         player.sendMessage(blocks + " blocks filled")
+        //     }
+        // })
+        // undoButton.textElement.offset.y++
+        // undoButton.textElement.update()
+        // this.miscPanel.addElement(undoButton)
 
         const backButton = new ButtonElement(BUTTON_HEIGHT, BUTTON_HEIGHT, "<")
         backButton.addOnClick(() => {
@@ -288,6 +289,7 @@ export class Menu {
             const group = this.getSelectionGroup()
             if (!group) return
             group.editMode = "duplicate"
+            this.remove()
         })
         addButton("Delete", () => {
             const group = this.getSelectionGroup()
@@ -296,6 +298,8 @@ export class Menu {
 
             group.removeSelections()
             group.remove()
+
+            this.remove()
         })
         addButton("Save As", () => {
             const group = this.getSelectionGroup()
@@ -304,21 +308,15 @@ export class Menu {
 
             const form = new ModalFormData()
                 .title("Save to Structure")
-                .textField("", "id:name")
+                .textField("", "name")
 
             form.show(this.player).then((formData) => {
                 if (formData.canceled) return
+                const container = this.player.getComponent("inventory").container
                 let name = formData.formValues[0] || undefined
+                const itemStack = new Blueprint(group, name)
 
-                const { minLocation, maxLocation } = group.getMinMax()
-                world.structureManager.delete(name)
-
-                world.structureManager.createFromWorld(
-                    name,
-                    this.dimension,
-                    minLocation,
-                    maxLocation,
-                )
+                container.addItem(itemStack)
             })
         })
         addButtonWithUi("Options", "addMoreOptions")

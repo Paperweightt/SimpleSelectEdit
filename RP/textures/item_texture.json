@@ -2,6 +2,9 @@
     "texture_name": "atlas.items",
     "resource_pack_name": "sse",
     "texture_data": {
+        "sse:blueprint": {
+            "textures": "textures/items/blueprint"
+        },
         "sse:selector": {
             "textures": "textures/items/selector"
         },
