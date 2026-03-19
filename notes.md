@@ -34,25 +34,27 @@
 
 ## major bugs
 
-- [ ] undo rotation with unowned selection box duplicates boxes (not recreatable yet)
+- [ ] structure max size causes issue with rotation and flip with large inputs
+- [ ] undo create selection bugs out with owned selections
 
 ## minor bugs
 
 - [ ] selection creator doesnt have a bounding box
 - [ ] player interactable entities priority with other player's interactable entities not organized
-- [ ] structure max size causes issue with rotation and flip with large inputs
 
 ## implement
 
-- [ ] is viewing / grabbable indicator
-
-## consider
+## implement later
 
 - [ ] nice rotation animation + interactable rotate entities
 - [ ] use shearing to make any rotation work
+- [ ] tp entities with box
+
+## consider
+
+- [ ] is viewing / grabbable indicator
 - [ ] make rotations stable using non-rounded bounding boxes
 - [ ] auto undo changes in size
-- [ ] tp entities with box
 - [ ] magic select (smart flood fill)
 - [ ] ignore air on all edits
 
@@ -65,6 +67,7 @@
 
 ## done
 
+- [x] create box doesnt have undo
 - [x] kill @e fix
 - [x] you can drag the menu entities
 - [x] test undo other players work
