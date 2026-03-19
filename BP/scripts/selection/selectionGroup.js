@@ -191,6 +191,21 @@ export class SelectionGroup {
         return false
     }
 
+    /**
+     * @param {Selection} selection
+     * @returns {number}
+     */
+    getSelectionIndex(selection) {
+        if (!selection.isOwned) return false
+
+        for (let i = 0; i < this.selections.length; i++) {
+            const ownedSelection = this.selections[i]
+            if (ownedSelection.id === selection.id) return i
+        }
+
+        return -1
+    }
+
     /** @param {number} */
     removeSelection(index) {
         const selection = this.selections[index]

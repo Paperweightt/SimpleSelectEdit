@@ -1,6 +1,7 @@
 import { world } from "@minecraft/server"
 import { registerEdit } from "../registry.js"
 import { Selection } from "../../selection/selection.js"
+import { SelectionGroup } from "../../selection/selectionGroup.js"
 
 registerEdit("create", {
     async run(ctx) {
@@ -22,6 +23,23 @@ registerEdit("create", {
         const metrics = {
             blocks: 0,
             ticks: 0,
+        }
+
+        if (ctx.selection.isOwned) {
+            for (const group of SelectionGroup.getAll()) {
+                const index = group.getSelectionIndex(ctx.selection)
+                if (index !== -1) {
+                    group.removeSelection(index)
+
+                    if (group.selections.length > 0) {
+                        group.reloadArrowLocations()
+                        group.reloadCoreLocation()
+                        group.updateOriginalLocations()
+                    }
+
+                    break
+                }
+            }
         }
 
         ctx.selection.remove()
