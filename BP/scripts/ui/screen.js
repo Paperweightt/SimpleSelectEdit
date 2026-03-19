@@ -26,7 +26,7 @@ export class Screen {
     }
 
     pixelUpdates = {}
-    /** @type {Object.<string,Panel>}*/
+    /** @type {Record.<string,Panel>}*/
     panels = {}
     /** @type {Panel[]}*/
     panelUpdateSet = new Set()

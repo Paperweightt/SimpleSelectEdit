@@ -33,7 +33,7 @@ SelectItem.events.releaseUse.subscribe((data) => {
 
 export class Arrow {
     /**
-     * @type {Object<number,Arrow>}
+     * @type {Record<number,Arrow>}
      */
     static list = {}
 
