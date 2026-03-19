@@ -6,6 +6,7 @@ import { Particle } from "../utils/particle"
 import { Selection } from "./selection"
 import { SelectItem } from "../items/selector/selectItem"
 import { PlayerUtils } from "../utils/player"
+import { Edit } from "../edit/index.js"
 
 SelectItem.events.startUse.subscribe({
     priority: (data) => {
@@ -121,7 +122,14 @@ class SelectionCreator {
 
         this.remove()
 
-        return new Selection(minLocation, size, this.dimension)
+        const selection = new Selection(minLocation, size, this.dimension)
+
+        Edit.playerRunAndSave(this.player.id, "create", {
+            selection: selection,
+            dimension: this.dimension,
+        })
+
+        return selection
     }
 
     /**
