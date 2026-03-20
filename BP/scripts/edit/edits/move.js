@@ -154,6 +154,7 @@ registerEdit("move", {
 
                         const block = await ctx.getBlock(location)
 
+                        metrics.blocks++
                         block.setPermutation(originalPermutations[i++])
                     }
                 }

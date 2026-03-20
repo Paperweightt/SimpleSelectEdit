@@ -357,7 +357,6 @@ export class SelectionGroup {
         arrow.events.onRelease.subscribe(async (data) => {
             const { editor, location, prevLocation } = data
             if (editor.id !== this.player.id) return
-            let result
 
             const diff = Vector.subtract(location, prevLocation).round()
 
@@ -371,23 +370,27 @@ export class SelectionGroup {
             }
 
             if (mode === "move") {
-                result = await Edit.playerRunAndSave(this.player.id, this.editMode, {
-                    dimension: this.dimension,
-                    vector: diff,
-                    direction: direction,
-                    selections: this.selections,
-                })
+                const result = await Edit.playerRunAndSave(
+                    this.player.id,
+                    this.editMode,
+                    {
+                        dimension: this.dimension,
+                        vector: diff,
+                        direction: direction,
+                        selections: this.selections,
+                    },
+                )
                 if (this.editMode === "duplicate") this.editMode = "move"
+
+                this.player.sendMessage(`${result.metrics.blocks} blocks filled`)
             } else if (mode === "resize") {
-                result = await Edit.playerRunAndSave(this.player.id, "resize", {
+                await Edit.playerRunAndSave(this.player.id, "resize", {
                     dimension: this.dimension,
                     direction: direction,
                     vector: diff,
                     selections: this.selections,
                 })
             }
-
-            this.player.sendMessage(`${result.metrics.blocks} blocks filled`)
 
             mode = undefined
 
