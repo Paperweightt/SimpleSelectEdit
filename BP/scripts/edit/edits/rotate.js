@@ -100,7 +100,6 @@ registerEdit("rotate", {
             for (const location of volume) {
                 const block = await ctx.getBlock(location)
                 block.setType("minecraft:air")
-                metrics.blocks++
             }
         }
 
@@ -117,13 +116,17 @@ registerEdit("rotate", {
                 if (size.x > size.z) {
                     offset.z -= size.x / 2 - size.z / 2
                     offset.x += size.x / 2 - size.z / 2
+
                     metrics.blocks +=
-                        size.y * (size.x ** 2 + (size.x - size.z) * 2 * size.z)
+                        size.y * (size.z ** 2 + (size.x - size.z) * 2 * size.z)
+
+                    world.sendMessage(metrics.blocks + "")
                 } else {
                     offset.x -= size.z / 2 - size.x / 2
                     offset.z += size.z / 2 - size.x / 2
+
                     metrics.blocks +=
-                        size.y * (size.z ** 2 + (size.z - size.x) * 2 * size.x)
+                        size.y * (size.x ** 2 + (size.z - size.x) * 2 * size.x)
                 }
 
                 size.x = selection.size.z
@@ -253,7 +256,6 @@ registerEdit("rotate", {
             for (const location of volume) {
                 const block = await ctx.getBlock(location)
                 block.setType("minecraft:air")
-                metrics.blocks++
             }
         }
 
@@ -295,12 +297,12 @@ registerEdit("rotate", {
                     offset.z -= selection.size.x / 2 - selection.size.z / 2
                     offset.x += selection.size.x / 2 - selection.size.z / 2
                     metrics.blocks +=
-                        size.y * (size.x ** 2 + (size.x - size.z) * 2 * size.z)
+                        size.y * (size.z ** 2 + (size.x - size.z) * 2 * size.z)
                 } else {
                     offset.x -= selection.size.z / 2 - selection.size.x / 2
                     offset.z += selection.size.z / 2 - selection.size.x / 2
                     metrics.blocks +=
-                        size.y * (size.z ** 2 + (size.z - size.x) * 2 * size.x)
+                        size.y * (size.x ** 2 + (size.z - size.x) * 2 * size.x)
                 }
 
                 let temp = selection.size.x
