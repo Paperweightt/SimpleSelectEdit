@@ -41,18 +41,23 @@ SelectItem.events.click.subscribe({
             return
         }
 
-        if (player.customIsShifting) {
-            group = SelectionGroup.get(player.id) || new SelectionGroup(player, dimension)
-        } else {
-            group = new SelectionGroup(player, dimension)
-        }
+        if (
+            !selection.isOwned ||
+            SelectionGroup.get(player.id)?.hasSelection(selection)
+        ) {
+            if (player.customIsShifting) {
+                group =
+                    SelectionGroup.get(player.id) || new SelectionGroup(player, dimension)
+            } else {
+                group = new SelectionGroup(player, dimension)
+            }
 
-        if (!rayResult) {
-            group.remove()
-            return
+            if (!rayResult) {
+                group.remove()
+            } else {
+                group.toggleSelection(selection)
+            }
         }
-
-        group.toggleSelection(selection)
     },
 })
 
@@ -172,7 +177,7 @@ export class SelectionGroup {
      * @param {Selection} selection
      */
     addSelection(selection) {
-        selection.lineRGB = Color.playerOklab(this.player, 0.15, 0.9)
+        selection.lineRGB = Color.playerOklab(this.player, 0.16, 0.88)
         this.selections.push(selection)
         selection.isOwned = true
     }
