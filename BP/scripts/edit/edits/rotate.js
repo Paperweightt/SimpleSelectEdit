@@ -119,8 +119,6 @@ registerEdit("rotate", {
 
                     metrics.blocks +=
                         size.y * (size.z ** 2 + (size.x - size.z) * 2 * size.z)
-
-                    world.sendMessage(metrics.blocks + "")
                 } else {
                     offset.x -= size.z / 2 - size.x / 2
                     offset.z += size.z / 2 - size.x / 2
@@ -271,7 +269,6 @@ registerEdit("rotate", {
 
                 if (indexToBlock[j]) permutation = indexToBlock[j]
                 if (permutation && permutation !== "undefined") {
-                    metrics.blocks++
                     block.setPermutation(permutation)
                 }
                 j++
@@ -287,8 +284,6 @@ registerEdit("rotate", {
                 .divide(2)
                 .add(selection.location)
 
-            this.metrics += size.x * size.y * size.z
-
             if (
                 selection.size.x !== selection.size.z &&
                 (ctx.rotation === 90 || ctx.rotation === 270)
@@ -296,11 +291,13 @@ registerEdit("rotate", {
                 if (selection.size.x > selection.size.z) {
                     offset.z -= selection.size.x / 2 - selection.size.z / 2
                     offset.x += selection.size.x / 2 - selection.size.z / 2
+
                     metrics.blocks +=
                         size.y * (size.z ** 2 + (size.x - size.z) * 2 * size.z)
                 } else {
                     offset.x -= selection.size.z / 2 - selection.size.x / 2
                     offset.z += selection.size.z / 2 - selection.size.x / 2
+
                     metrics.blocks +=
                         size.y * (size.x ** 2 + (size.z - size.x) * 2 * size.x)
                 }

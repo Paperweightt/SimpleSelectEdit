@@ -20,9 +20,7 @@ world.afterEvents.itemUse.subscribe(async (data) => {
             group.updateOriginalLocations()
         }
 
-        if (blocks > 1000) {
-            source.sendMessage(blocks + " blocks filled")
-        }
+        source.sendMessage(blocks + " blocks filled")
     } else {
         new UndoMenu(source).mainMenu()
     }
