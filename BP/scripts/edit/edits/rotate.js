@@ -117,9 +117,13 @@ registerEdit("rotate", {
                 if (size.x > size.z) {
                     offset.z -= size.x / 2 - size.z / 2
                     offset.x += size.x / 2 - size.z / 2
+                    metrics.blocks +=
+                        size.y * (size.x ** 2 + (size.x - size.z) * 2 * size.z)
                 } else {
                     offset.x -= size.z / 2 - size.x / 2
                     offset.z += size.z / 2 - size.x / 2
+                    metrics.blocks +=
+                        size.y * (size.z ** 2 + (size.z - size.x) * 2 * size.x)
                 }
 
                 size.x = selection.size.z
@@ -127,6 +131,8 @@ registerEdit("rotate", {
 
                 start.add(offset)
                 selection.size.round()
+            } else {
+                metrics.blocks += size.x * size.y * size.z
             }
 
             start
@@ -279,6 +285,8 @@ registerEdit("rotate", {
                 .divide(2)
                 .add(selection.location)
 
+            this.metrics += size.x * size.y * size.z
+
             if (
                 selection.size.x !== selection.size.z &&
                 (ctx.rotation === 90 || ctx.rotation === 270)
@@ -286,9 +294,13 @@ registerEdit("rotate", {
                 if (selection.size.x > selection.size.z) {
                     offset.z -= selection.size.x / 2 - selection.size.z / 2
                     offset.x += selection.size.x / 2 - selection.size.z / 2
+                    metrics.blocks +=
+                        size.y * (size.x ** 2 + (size.x - size.z) * 2 * size.z)
                 } else {
                     offset.x -= selection.size.z / 2 - selection.size.x / 2
                     offset.z += selection.size.z / 2 - selection.size.x / 2
+                    metrics.blocks +=
+                        size.y * (size.z ** 2 + (size.z - size.x) * 2 * size.x)
                 }
 
                 let temp = selection.size.x
@@ -298,6 +310,8 @@ registerEdit("rotate", {
 
                 selection.location.add(offset)
                 selection.size.round()
+            } else {
+                metrics.blocks += size.x * size.y * size.z
             }
 
             selection.location
