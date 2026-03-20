@@ -281,7 +281,7 @@ export class SelectionGroup {
             this.reloadCoreLocation()
         })
 
-        core.events.onRelease.subscribe((data) => {
+        core.events.onRelease.subscribe(async (data) => {
             const { editor, location, prevLocation } = data
             if (editor.id !== this.player.id) return
 
@@ -293,11 +293,13 @@ export class SelectionGroup {
 
             if (Vector.equals(diff, new Vector(0))) return
 
-            Edit.playerRunAndSave(this.player.id, this.editMode, {
+            const result = await Edit.playerRunAndSave(this.player.id, this.editMode, {
                 dimension: this.dimension,
                 vector: diff.round(),
                 selections: this.selections,
             })
+
+            this.player.sendMessage(`${result.metrics.blocks} blocks filled`)
 
             if (this.editMode === "duplicate") this.editMode = "move"
 
@@ -352,9 +354,10 @@ export class SelectionGroup {
             this.reloadCoreLocation()
         })
 
-        arrow.events.onRelease.subscribe((data) => {
+        arrow.events.onRelease.subscribe(async (data) => {
             const { editor, location, prevLocation } = data
             if (editor.id !== this.player.id) return
+            let result
 
             const diff = Vector.subtract(location, prevLocation).round()
 
@@ -368,7 +371,7 @@ export class SelectionGroup {
             }
 
             if (mode === "move") {
-                Edit.playerRunAndSave(this.player.id, this.editMode, {
+                result = await Edit.playerRunAndSave(this.player.id, this.editMode, {
                     dimension: this.dimension,
                     vector: diff,
                     direction: direction,
@@ -376,13 +379,15 @@ export class SelectionGroup {
                 })
                 if (this.editMode === "duplicate") this.editMode = "move"
             } else if (mode === "resize") {
-                Edit.playerRunAndSave(this.player.id, "resize", {
+                result = await Edit.playerRunAndSave(this.player.id, "resize", {
                     dimension: this.dimension,
                     direction: direction,
                     vector: diff,
                     selections: this.selections,
                 })
             }
+
+            this.player.sendMessage(`${result.metrics.blocks} blocks filled`)
 
             mode = undefined
 

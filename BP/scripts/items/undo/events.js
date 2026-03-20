@@ -21,7 +21,7 @@ world.afterEvents.itemUse.subscribe(async (data) => {
         }
 
         if (blocks > 1000) {
-            player.sendMessage(blocks + " blocks filled")
+            source.sendMessage(blocks + " blocks filled")
         }
     } else {
         new UndoMenu(source).mainMenu()

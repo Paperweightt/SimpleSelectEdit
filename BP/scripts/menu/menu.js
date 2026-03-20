@@ -343,16 +343,18 @@ export class Menu {
             return button
         }
 
-        addButton("Apply", () => {
+        addButton("Apply", async () => {
             const group = this.getSelectionGroup()
 
             if (!group) return
 
-            Edit.playerRunAndSave(this.player.id, "fill", {
+            const result = await Edit.playerRunAndSave(this.player.id, "fill", {
                 blocks: this.db.fill.blocks,
                 selections: group.selections,
                 dimension: this.dimension,
             })
+
+            this.player.sendMessage(`${result.metrics.blocks} blocks filled`)
         })
 
         const inputButton = addButton("Input", ({ player }) => {
@@ -424,11 +426,13 @@ export class Menu {
             const group = this.getSelectionGroup()
             if (!group) return
 
-            await Edit.playerRunAndSave(this.player.id, "rotate", {
+            const result = await Edit.playerRunAndSave(this.player.id, "rotate", {
                 selections: group.selections,
                 dimension: this.dimension,
                 rotation: 90,
             })
+
+            this.player.sendMessage(`${result.metrics.blocks} blocks filled`)
 
             group.reloadArrowLocations()
             group.reloadCoreLocation()
@@ -439,36 +443,42 @@ export class Menu {
             const group = this.getSelectionGroup()
             if (!group) return
 
-            await Edit.playerRunAndSave(this.player.id, "rotate", {
+            const result = await Edit.playerRunAndSave(this.player.id, "rotate", {
                 selections: group.selections,
                 dimension: this.dimension,
                 rotation: 270,
             })
+
+            this.player.sendMessage(`${result.metrics.blocks} blocks filled`)
 
             group.reloadArrowLocations()
             group.reloadCoreLocation()
             group.updateOriginalLocations()
         })
 
-        addButton("Flip X", () => {
+        addButton("Flip X", async () => {
             const group = this.getSelectionGroup()
             if (!group) return
 
-            Edit.playerRunAndSave(this.player.id, "flip", {
+            const result = await Edit.playerRunAndSave(this.player.id, "flip", {
                 selections: group.selections,
                 dimension: this.dimension,
                 flip: "x",
             })
+
+            this.player.sendMessage(`${result.metrics.blocks} blocks filled`)
         })
-        addButton("Flip Z", () => {
+        addButton("Flip Z", async () => {
             const group = this.getSelectionGroup()
             if (!group) return
 
-            Edit.playerRunAndSave(this.player.id, "flip", {
+            const result = await Edit.playerRunAndSave(this.player.id, "flip", {
                 selections: group.selections,
                 dimension: this.dimension,
                 flip: "z",
             })
+
+            this.player.sendMessage(`${result.metrics.blocks} blocks filled`)
         })
 
         this.update()

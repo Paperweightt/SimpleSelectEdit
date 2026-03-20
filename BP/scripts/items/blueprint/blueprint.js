@@ -71,18 +71,20 @@ export class Blueprint extends ItemStack {
      * @param {import("@minecraft/server").Player} player
      * @param {Vector} offest
      */
-    static place(itemStack, player, offset) {
+    static async place(itemStack, player, offset) {
         const propertyId = PACK_ID + ":blocks"
         const encodedPermutations = JSON.parse(
             itemStack.getDynamicProperty(propertyId) || "{}",
         )
 
-        Edit.playerRunAndSave(player.id, "placeBlueprint", {
+        const runResult = await Edit.playerRunAndSave(player.id, "placeBlueprint", {
             encodedPermutations: encodedPermutations,
             dimension: player.dimension,
             selections: this.parseSelections(itemStack),
             location: offset,
         })
+
+        player.sendMessage(`${runResult.metrics.blocks} blocks filled`)
     }
 
     /**

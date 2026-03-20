@@ -65,6 +65,7 @@ export class Color {
         state = (state * 16807) % 2147483647
         state = (state * 16807) % 2147483647
         state = (state * 16807) % 2147483647
+        state = (state * 16807) % 2147483647
 
         return (state - 1) / 2147483646
     }

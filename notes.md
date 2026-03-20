@@ -45,12 +45,14 @@
 
 ## implement later
 
+- [ ] box colors
 - [ ] nice rotation animation + interactable rotate entities
 - [ ] use shearing to make any rotation work
 - [ ] tp entities with box
 
 ## consider
 
+- [ ] remove delete button from menu
 - [ ] is viewing / grabbable indicator
 - [ ] make rotations stable using non-rounded bounding boxes
 - [ ] auto undo changes in size
