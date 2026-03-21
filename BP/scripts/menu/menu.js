@@ -493,7 +493,7 @@ export class Menu {
 
     addMoreOptions() {
         const panel = new StackElement("vertical")
-        const width = 52
+        const width = 35
 
         this.setTitle("Options")
         this.tabManager.addElement(panel)
@@ -504,6 +504,7 @@ export class Menu {
         panel.addElement(colorButton)
 
         colorButton.addOnClick(() => {
+            this.previousMenus.push(["addMoreOptions"])
             this.addColorOptions()
         })
 
@@ -669,7 +670,6 @@ export class Menu {
 
         this.setTitle("Color")
         this.tabManager.removeElementsAfter(this.miscPanel)
-        this.previousMenus.push(["addMoreOptions"])
         this.tabManager.addElement(verticalStack)
         this.db.currentMenu = ["addColorOptions"]
         this.item.save()
