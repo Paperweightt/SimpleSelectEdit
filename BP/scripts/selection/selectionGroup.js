@@ -34,7 +34,7 @@ SelectItem.events.click.subscribe({
             SelectionGroup.get(player.id)?.hasSelection(selection) &&
             !player.customIsShifting
         ) {
-            const viewDirection = Vector.multiply(player.getViewDirection(), 2.85)
+            const viewDirection = Vector.multiply(player.getViewDirection(), 4)
             const location = Vector.add(player.getHeadLocation(), viewDirection)
 
             new Menu(player, location, dimension)
