@@ -192,9 +192,9 @@ export class Menu {
     }
 
     initScreen() {
-        const r = this.player.getDynamicProperty("textColorr") ?? 255
-        const g = this.player.getDynamicProperty("textColorg") ?? 255
-        const b = this.player.getDynamicProperty("textColorb") ?? 255
+        const r = this.player.getDynamicProperty("textColorr") ?? 150
+        const g = this.player.getDynamicProperty("textColorg") ?? 150
+        const b = this.player.getDynamicProperty("textColorb") ?? 150
 
         this.screen = new Screen(
             this.location,
@@ -667,6 +667,7 @@ export class Menu {
         const width = 53
         const panel = "textColor"
 
+        this.setTitle("Color")
         this.tabManager.removeElementsAfter(this.miscPanel)
         this.previousMenus.push(["addMoreOptions"])
         this.tabManager.addElement(verticalStack)
