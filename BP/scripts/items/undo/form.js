@@ -117,11 +117,13 @@ export class UndoMenu {
             .body(JSON.stringify(data, null, 2))
             .button("Confirm")
 
+        const player = world.getEntity(playerIds.id)
+
         form.show(this.player).then(async (response) => {
             if (response.canceled) return
 
             for (let i = 0; i < undos; i++) {
-                await Edit.playerUndoRecent(playerIds.id)
+                const result = await Edit.playerUndoRecent(playerIds.id)
 
                 const group = SelectionGroup.get(playerIds.id)
 
@@ -129,6 +131,10 @@ export class UndoMenu {
                     group.reloadArrowLocations()
                     group.reloadCoreLocation()
                     group.updateOriginalLocations()
+                }
+
+                if (player && result.blocks !== 0) {
+                    source.sendMessage(result.blocks + " blocks filled")
                 }
 
                 await system.waitTicks(UndoMenu.DELAY)
