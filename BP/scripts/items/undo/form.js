@@ -117,8 +117,6 @@ export class UndoMenu {
             .body(JSON.stringify(data, null, 2))
             .button("Confirm")
 
-        const player = world.getEntity(playerIds.id)
-
         form.show(this.player).then(async (response) => {
             if (response.canceled) return
 
@@ -133,8 +131,8 @@ export class UndoMenu {
                     group.updateOriginalLocations()
                 }
 
-                if (player && result.blocks !== 0) {
-                    source.sendMessage(result.blocks + " blocks filled")
+                if (result.blocks !== 0) {
+                    this.player.sendMessage(result.blocks + " blocks filled")
                 }
 
                 await system.waitTicks(UndoMenu.DELAY)
