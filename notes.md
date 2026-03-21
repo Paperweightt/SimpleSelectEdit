@@ -35,7 +35,6 @@
 ## major bugs
 
 - [ ] structure max size causes issue with rotation and flip with large inputs
-- [ ] select owned box causes error
 
 ## minor bugs
 
@@ -51,6 +50,7 @@
 - [ ] nice rotation animation + interactable rotate entities
 - [ ] use shearing to make any rotation work
 - [ ] tp entities with box
+- [ ] organize undo history by date
 
 ## consider
 
@@ -70,6 +70,7 @@
 
 ## done
 
+- [x] select owned box causes error
 - [x] undo create selection bugs out with owned selections
 - [x] blueprint item
 - [x] create box doesnt have undo
