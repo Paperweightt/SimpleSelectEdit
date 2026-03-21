@@ -35,6 +35,7 @@
 ## major bugs
 
 - [ ] structure max size causes issue with rotation and flip with large inputs
+- [ ] select owned box causes error
 
 ## minor bugs
 
@@ -45,6 +46,7 @@
 
 ## implement later
 
+- [ ] clamp out ugly colors / re-randomize
 - [ ] box colors
 - [ ] nice rotation animation + interactable rotate entities
 - [ ] use shearing to make any rotation work
