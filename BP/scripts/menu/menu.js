@@ -283,24 +283,29 @@ export class Menu {
             panel.addElement(button)
         }
 
-        addButtonWithUi("Transform", "addTransforms")
-        addButtonWithUi("Replace", "addFillOptions")
         addButton("Duplicate", () => {
             const group = this.getSelectionGroup()
             if (!group) return
             group.editMode = "duplicate"
             this.remove()
         })
-        addButton("Delete", () => {
-            const group = this.getSelectionGroup()
 
-            if (!group) return
+        addButtonWithUi("Transform", "addTransforms")
 
-            group.removeSelections()
-            group.remove()
+        // addButton("Delete", () => {
+        //     const group = this.getSelectionGroup()
+        //
+        //     if (!group) return
+        //
+        //     group.removeSelections()
+        //     group.remove()
+        //
+        //     this.remove()
+        // })
 
-            this.remove()
-        })
+        //TODO: set this back to replace once its done
+        addButtonWithUi("Fill", "addFillOptions")
+
         addButton("Save As", () => {
             const group = this.getSelectionGroup()
 
@@ -321,6 +326,7 @@ export class Menu {
                 this.remove()
             })
         })
+
         addButtonWithUi("Options", "addMoreOptions")
 
         this.update()
@@ -330,7 +336,8 @@ export class Menu {
         const panel = new StackElement("vertical")
         const width = 38
 
-        this.setTitle("Replace")
+        //TODO: set this back to replace once its done
+        this.setTitle("Fill")
         this.tabManager.addElement(panel)
         this.db.currentMenu = ["addFillOptions"]
         this.item.save()
