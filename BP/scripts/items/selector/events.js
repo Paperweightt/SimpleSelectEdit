@@ -5,6 +5,8 @@ import { Screen } from "../../ui/screen.js"
 import { Vector } from "../../utils/vector.js"
 import { PlayerUtils } from "../../utils/player.js"
 
+/** @import * as Types from "./types.js" */
+
 world.afterEvents.itemUse.subscribe(async (data) => {
     const { source, itemStack } = data
 
@@ -111,10 +113,12 @@ world.afterEvents.entitySpawn.subscribe((data) => {
 })
 
 export class SelectorEvents {
-    /** @type {MinPriorityEvent<SelectorClickData>} */
+    /** @type {MinPriorityEvent<Types.SelectorClickData>} */
     static click = new MinPriorityEvent()
-    /** @type {Event<SelectorReleaseData>} */
+    /** @type {Event<Types.SelectorReleaseData>} */
     static releaseUse = new Event()
-    /** @type {MinPriorityEvent<SelectorStartUseData>} */
+    /** @type {MinPriorityEvent<Types.SelectorStartUseData>} */
     static startUse = new MinPriorityEvent()
+    /** @type {Event<Types.SelectorPunchData>} */
+    static punch = new Event()
 }
