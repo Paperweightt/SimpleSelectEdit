@@ -363,7 +363,8 @@ export class ItemDisplay {
 
             if (typeId.endsWith("wall")) return this.animations.wall
             if (typeId.includes("pane")) return this.animations.glass_pane
-            if (typeId.endsWith("head") || typeId.endsWith("skull")) return this.animations.head
+            if (typeId.endsWith("head") || typeId.endsWith("skull"))
+                return this.animations.head
             if (typeId.endsWith("rail")) return this.animations.item
 
             if (typeId.endsWith("carpet") && !typeId.endsWith("moss_carpet"))
@@ -385,10 +386,13 @@ export class ItemDisplay {
             if (typeId.endsWith("lantern")) return this.animations.item
             if (typeId.endsWith("_bars")) return this.animations.item
             if (typeId.endsWith("_chain")) return this.animations.item
-            if (typeId.endsWith("copper_golem_statue")) return this.animations.copper_golem_statue
+            if (typeId.endsWith("copper_golem_statue"))
+                return this.animations.copper_golem_statue
         } else if (typeId.startsWith(PACK_ID + ":")) {
-            if (item.typeId === PACK_ID + ":schematic_engraver") return this.animations.block
-            if (item.typeId === PACK_ID + ":recipe_processor") return this.animations.block
+            if (item.typeId === PACK_ID + ":schematic_engraver")
+                return this.animations.block
+            if (item.typeId === PACK_ID + ":recipe_processor")
+                return this.animations.block
             if (BlockTypes.get(item.typeId)) return this.animations.custom_block
         }
 
@@ -444,8 +448,12 @@ export class ItemDisplay {
         if (item?.typeId !== this._item?.typeId) {
             this.change = true
         } else {
-            const newEnchantable = item?.getComponent("enchantable")?.getEnchantments().length
-            const oldEnchantable = this._item?.getComponent("enchantable")?.getEnchantments().length
+            const newEnchantable = item
+                ?.getComponent("enchantable")
+                ?.getEnchantments().length
+            const oldEnchantable = this._item
+                ?.getComponent("enchantable")
+                ?.getEnchantments().length
 
             if (!newEnchantable !== !oldEnchantable) {
                 this.change = true
@@ -515,7 +523,27 @@ export class ItemDisplay {
 
     spawnEntity() {
         if (this.entity?.isValid) return
-        this.entity = this.dimension.spawnEntity(ItemDisplay.entityTypeId, this.location)
+
+        const { min, max } = this.dimension.heightRange
+
+        if (this.location.y < min || this.location.y > max) {
+            const spawnLocation = this.location.copy()
+
+            spawnLocation.y = Math.min(this.location.y, max)
+            spawnLocation.y = Math.max(this.location.y, min)
+
+            this.entity = this.dimension.spawnEntity(
+                ItemDisplay.entityTypeId,
+                spawnLocation,
+            )
+            this.entity.teleport(this.location)
+        } else {
+            this.entity = this.dimension.spawnEntity(
+                ItemDisplay.entityTypeId,
+                this.location,
+            )
+        }
+
         DeathOnReload.addEntity(this.entity)
     }
 
