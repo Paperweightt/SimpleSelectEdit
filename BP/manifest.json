@@ -3,7 +3,7 @@
     "header": {
         "name": "Paper Vectors",
         "version": [1, 15, 0],
-        "description": "$desc",
+        "description": "Select, move, rotate, mirror, undo, and more",
         "uuid": "74d3c280-93c4-4605-9f22-c6199b4122da",
         "min_engine_version": [1, 21, 121]
     },
