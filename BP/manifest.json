@@ -2,7 +2,7 @@
     "format_version": 2,
     "header": {
         "name": "Paper Vectors",
-        "version": [1, 0, 1],
+        "version": [1, 15, 0],
         "description": "$desc",
         "uuid": "74d3c280-93c4-4605-9f22-c6199b4122da",
         "min_engine_version": [1, 21, 121]
@@ -23,12 +23,12 @@
     ],
     "dependencies": [
         {
-            "version": [1, 0, 0],
+            "version": [1, 15, 0],
             "uuid": "bef9df01-909c-420d-aaf5-92344f3e7c72"
         },
         {
             "module_name": "@minecraft/server",
-            "version": "2.4.0"
+            "version": "2.5.0"
         },
         {
             "module_name": "@minecraft/server-ui",

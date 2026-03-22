@@ -4,7 +4,7 @@
         "name": "Paper Vectors",
         "description": "$desc",
         "uuid": "bef9df01-909c-420d-aaf5-92344f3e7c72",
-        "version": [1, 14, 1],
+        "version": [1, 15, 0],
         "min_engine_version": [1, 12, 1]
     },
     "modules": [
@@ -16,7 +16,7 @@
     ],
     "dependencies": [
         {
-            "version": [1, 0, 0],
+            "version": [1, 15, 0],
             "uuid": "74d3c280-93c4-4605-9f22-c6199b4122da"
         }
     ]
