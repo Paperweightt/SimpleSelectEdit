@@ -1,5 +1,12 @@
 import { MolangVariableMap } from "@minecraft/server"
 import { Vector } from "./vector"
+import { Create } from "./create"
+
+/**
+ * @typedef {Object} Mesh
+ * @property {Array<[number, number, number]>} points
+ * @property {Array<number[]>} faces
+ */
 
 export class Particle {
     static defaultRGBA = {
@@ -17,6 +24,8 @@ export class Particle {
      * @param {number} [lifetime=0.11]
      * @param {number} [width=0.05]
      * @param {import("@minecraft/server").RGBA} [rgba]
+     * @param {{y:0,p:0,r:0}} rotation
+     * @param {Vector} pivot
      */
     static line(
         particle,
@@ -26,7 +35,15 @@ export class Particle {
         lifetime = 0.11,
         width = 0.05,
         rgb = Particle.defaultRGBA,
+        rotation = { y: 0, p: 0, r: 0 },
+        pivot = new Vector(0),
     ) {
+        if (rotation.y !== 0 || rotation.p !== 0 || rotation.r !== 0) {
+            const iPivot = Vector.add(pivot, 0.5)
+            start = Vector.rotate(start.subtract(iPivot), rotation).add(iPivot)
+            end = Vector.rotate(end.subtract(iPivot), rotation).add(iPivot)
+        }
+
         const diff = Vector.subtract(start, end)
         const middle = Vector.divide(diff, 2).add(end)
         const direction = Vector.normalize(diff)
@@ -53,6 +70,8 @@ export class Particle {
      * @param {number} [lifetime=0.11]
      * @param {number} [width=0.05]
      * @param {import("@minecraft/server").RGBA} [rgba]
+     * @param {{y:0,p:0,r:0}} [rotation]
+     * @param {Vector} [pivot]
      */
     static boxEdges(
         particle,
@@ -62,12 +81,24 @@ export class Particle {
         lifetime = 0.11,
         width = 0.05,
         rgba = this.defaultRGBA,
+        rotation = { y: 0, p: 0, r: 0 },
+        pivot = new Vector(0),
     ) {
         const line = (start, offset) => {
             start.add(location)
             offset.add(start)
             try {
-                this.line(particle, start, offset, dimension, lifetime, width, rgba)
+                this.line(
+                    particle,
+                    start,
+                    offset,
+                    dimension,
+                    lifetime,
+                    width,
+                    rgba,
+                    rotation,
+                    pivot,
+                )
             } catch (error) {}
         }
 
@@ -161,5 +192,48 @@ export class Particle {
 
         face(new Vector(0, 0, -zFight), new Vector(size.x, size.y, 0))
         face(new Vector(0, 0, size.z + zFight), new Vector(size.x, size.y, 0))
+    }
+
+    /**
+     * @param {string} particle
+     * @param {Mesh} mesh
+     * @param {import("@minecraft/server").Dimension} dimension
+     * @param {number} [lifetime=0.11]
+     * @param {number} [width=0.05]
+     * @param {import("@minecraft/server").RGBA} [rgba]
+     */
+    static meshEdges(particle, mesh, dimension, lifetime, width, rgba) {
+        const line = (start, end) => {
+            try {
+                this.line(particle, start, end, dimension, lifetime, width, rgba)
+            } catch (error) {}
+        }
+
+        for (const face of mesh.faces) {
+            const points = face
+                .map((index) => mesh.points[index])
+                .map((point) => new Vector(point[0], point[1], point[2]))
+
+            if (points.length === 2) {
+                line(points[0], points[1])
+                return
+            }
+
+            if (points.length === 3) {
+                line(points[0], points[1])
+                line(points[0], points[2])
+                line(points[2], points[1])
+            }
+
+            if (points.length > 3) {
+                const sortedPoints = Create.sortConvexPoints(points)
+
+                for (let i = 0; i < points.length - 2; i++) {
+                    line(sortedPoints[0], sortedPoints[i + 1])
+                }
+
+                line(sortedPoints[0], sortedPoints[sortedPoints.length - 1])
+            }
+        }
     }
 }
