@@ -2,6 +2,7 @@
     "format_version": "1.8.0",
     "render_controllers": {
         "controller.render.panel": {
+            "filter_lighting": true,
             "arrays": {
                 "geometries": {
                     "Array.geo": [

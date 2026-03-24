@@ -1,0 +1,33 @@
+{
+    "format_version": "1.10.0",
+    "minecraft:client_entity": {
+        "description": {
+            "identifier": "sse:rotate_gizmo",
+            "materials": {
+                "default": "outline_base", // Must have due to custom material keeping the base on front.
+                "outline": "outline" // For outline.
+            },
+            "textures": {
+                "red": "textures/entity/red",
+                "green": "textures/entity/green",
+                "blue": "textures/entity/blue",
+                "outline": "textures/ui/White" // Outline texture
+            },
+            "geometry": {
+                "default": "geometry.sse.rotate_gizmo", // Base geometry
+                "outline": "geometry.sse.rotate_gizmo_outline" // Outline geometry - Same as base but inflated.
+            },
+            "render_controllers": [
+                "controller.render.sse.entity.arrow",
+                "controller.render.arx.entity.outline" // For outline.
+            ],
+            "animations": {
+                "scale_by_distance": "animation.scale_head",
+                "controller.scale": "controller.animation.scale_by_distance"
+            },
+            "scripts": {
+                "animate": ["controller.scale"]
+            }
+        }
+    }
+}
