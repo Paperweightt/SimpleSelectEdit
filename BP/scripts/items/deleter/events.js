@@ -23,10 +23,18 @@ world.afterEvents.itemUse.subscribe((data) => {
 
         const group = SelectionGroup.get(source.id)
 
-        if (group?.hasSelection(selection)) {
-            if (menu) menu.remove()
-            group.remove()
+        const index = group.getSelectionIndex(selection)
+        if (index !== -1) {
+            group.removeSelection(index)
             selection.remove()
+
+            if (menu) menu.remove()
+
+            if (group.selections.length > 0) {
+                group.reloadArrowLocations()
+                group.reloadCoreLocation()
+                group.updateEntityValues()
+            }
         }
     } else {
         // TODO: test for deletion of already deleted selection
