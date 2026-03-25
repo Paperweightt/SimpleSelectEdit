@@ -94,6 +94,7 @@ export class Selection {
 
     /** @type {import("@minecraft/server").RGB}*/
     lineRGB = Selection.defaultLineRGB
+    rotation = { y: 0, p: 0, r: 0 }
 
     /** @type {boolean}*/
     isOwned = false
@@ -107,6 +108,7 @@ export class Selection {
         this.size = size
         this.location = location
         this.dimension = dimension
+        this.displayLocation = new Vector(location)
         this.id = id ?? Math.floor(Math.random() * 10000000)
 
         Selection.list[this.id] = this
@@ -156,16 +158,27 @@ export class Selection {
         }
     }
 
+    /** @returns {Vector} */
+    getPivot() {
+        return Vector.subtract(this.size, 1).divide(2).add(this.location)
+    }
+
+    getDisplayPivot() {
+        return Vector.subtract(this.size, 1).divide(2).add(this.displayLocation)
+    }
+
     display() {
-        Particle.boxFaces(BLOCK_PARTICLE.BASIC, this.location, this.size, this.dimension)
+        // Particle.boxFaces(BLOCK_PARTICLE.BASIC, this.location, this.size, this.dimension)
         Particle.boxEdges(
             TYPE_IDS.LINE,
-            this.location,
+            this.displayLocation,
             this.size,
             this.dimension,
             0.1,
             0.05,
             this.lineRGB,
+            this.rotation,
+            this.getDisplayPivot(),
         )
     }
 

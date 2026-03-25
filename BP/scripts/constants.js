@@ -10,6 +10,7 @@ export const TYPE_IDS = {
     DELETE_ITEM: PACK_ID + ":deleter",
     UNDO_ITEM: PACK_ID + ":undo",
     BLUEPRINT_ITEM: PACK_ID + ":blueprint",
+    GIZMO: PACK_ID + ":rotate_gizmo",
     TICKING_ENTITY: PACK_ID + ":ticking_area",
     PANEL: PACK_ID + ":panel",
 }
@@ -40,7 +41,7 @@ export const PROPERTIES = {
 }
 
 export const CONFIG = {
-    MAX_SELECTION_DISTANCE: 50,
+    MAX_SELECTION_DISTANCE: 100,
 }
 
 export const PATHS = {}

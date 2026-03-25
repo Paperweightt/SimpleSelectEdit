@@ -8,6 +8,7 @@ import { Edit } from "../edit/index.js"
 import { Vector } from "../utils/vector.js"
 import { Color } from "../utils/color.js"
 import { CONFIG } from "../constants.js"
+import { Gizmo } from "./rotation_gizmo.js"
 
 world.afterEvents.playerLeave.subscribe((data) => {
     SelectionGroup.get(data.playerId)?.remove()
@@ -126,10 +127,10 @@ export class SelectionGroup {
     arrows = {}
     /** @type {Selection[]} */
     selections = []
-
+    /** @type {Record<"x"|"y"|"z",Gizmo>} */
+    gizmos = {}
     /** @type {boolean} */
     isValid = true
-
     /** @type {"move"|"duplicate"} */
     editMode = "move"
 
@@ -159,18 +160,98 @@ export class SelectionGroup {
 
                     this.createArrows()
                     this.createCore()
+                    this.createGizmos()
                 } else {
                     this.addSelection(selection)
-
-                    this.reloadArrowLocations()
-                    this.reloadCoreLocation()
+                    this.reloadEntityLocations()
                 }
             }
         } else {
             this.removeSelection(index)
         }
 
-        this.updateOriginalLocations()
+        this.updateEntityValues()
+    }
+
+    createGizmos() {
+        this.createGizmo("y")
+    }
+
+    reloadGizmosLocation() {
+        for (const gizmo of Object.values(this.gizmos)) {
+            gizmo.teleport(this.getCenter())
+        }
+    }
+
+    /**
+     * @param {"x"|"y"|"z"} direction
+     * @returns {Gizmo}
+     */
+    createGizmo(axis) {
+        const gizmo = new Gizmo(this.getCenter(), this.dimension, axis)
+
+        gizmo.events.onRotate.subscribe((data) => {
+            const { editor, newRotation, prevRotation } = data
+
+            if (editor.id !== this.player.id) return
+
+            const yprRotation = {
+                y: ((newRotation.x - prevRotation.x) * Math.PI) / 180,
+                p: ((newRotation.y - prevRotation.y) * Math.PI) / 180,
+                r: 0,
+            }
+
+            for (const selection of this.selections) {
+                selection.rotation = yprRotation
+
+                const diff = selection
+                    .getPivot()
+                    .subtract(
+                        Vector.rotate(selection.getPivot(), yprRotation, this.getPivot()),
+                    )
+
+                selection.displayLocation = Vector.subtract(selection.location, diff)
+            }
+        })
+
+        gizmo.events.onRelease.subscribe(async (data) => {
+            const { editor, newRotation, prevRotation } = data
+            if (editor.id !== this.player.id) return
+
+            const rotation = {
+                x: (Math.round((newRotation.x - prevRotation.x) / 90) * 90 + 360) % 360,
+                y: (Math.round((newRotation.y - prevRotation.y) / 90) * 90 + 360) % 360,
+            }
+
+            for (const selection of this.selections) {
+                selection.rotation = { y: 0, p: 0, r: 0 }
+                selection.displayLocation = selection.location
+            }
+
+            if (rotation.y === 0) return
+
+            const result = await Edit.playerRunAndSave(this.player.id, "rotate", {
+                dimension: this.dimension,
+                selections: this.selections,
+                rotation: rotation.y,
+            })
+
+            this.snapToGrid()
+            this.reloadEntityLocations()
+            this.updateEntityValues()
+
+            this.player.sendMessage(`${result.metrics.blocks} blocks filled`)
+        })
+
+        this.gizmos[axis] = gizmo
+
+        return gizmo
+    }
+
+    reloadEntityLocations() {
+        this.reloadArrowLocations()
+        this.reloadCoreLocation()
+        this.reloadGizmosLocation()
     }
 
     /**
@@ -223,8 +304,7 @@ export class SelectionGroup {
         if (this.selections.length === 0) {
             this.remove()
         } else {
-            this.reloadArrowLocations()
-            this.reloadCoreLocation()
+            this.reloadEntityLocations()
         }
     }
 
@@ -259,6 +339,13 @@ export class SelectionGroup {
     }
 
     /** @return {Vector} */
+    getPivot() {
+        return Vector.subtract(this.getSize(), 1)
+            .divide(2)
+            .add(this.getMinMax().minLocation)
+    }
+
+    /** @return {Vector} */
     getCenter() {
         const { minLocation, maxLocation } = this.getMinMax()
         return Vector.add(minLocation, maxLocation).divide(2)
@@ -277,8 +364,7 @@ export class SelectionGroup {
             const diff = Vector.subtract(newLocation, prevLocation)
 
             this.moveSelections(diff)
-            this.reloadArrowLocations()
-            this.reloadCoreLocation()
+            this.reloadEntityLocations()
         })
 
         core.events.onRelease.subscribe(async (data) => {
@@ -286,8 +372,7 @@ export class SelectionGroup {
             if (editor.id !== this.player.id) return
 
             this.snapToGrid()
-            this.reloadArrowLocations()
-            this.reloadCoreLocation()
+            this.reloadEntityLocations()
 
             const diff = Vector.subtract(location, prevLocation)
 
@@ -303,7 +388,7 @@ export class SelectionGroup {
 
             if (this.editMode === "duplicate") this.editMode = "move"
 
-            this.updateOriginalLocations()
+            this.updateEntityValues()
         })
 
         this.core = core
@@ -350,8 +435,7 @@ export class SelectionGroup {
                 this.moveSelections(diff, direction)
             }
 
-            this.reloadArrowLocations()
-            this.reloadCoreLocation()
+            this.reloadEntityLocations()
         })
 
         arrow.events.onRelease.subscribe(async (data) => {
@@ -361,8 +445,7 @@ export class SelectionGroup {
             const diff = Vector.subtract(location, prevLocation).round()
 
             this.snapToGrid()
-            this.reloadArrowLocations()
-            this.reloadCoreLocation()
+            this.reloadEntityLocations()
 
             if (new Vector(0).equals(diff)) {
                 mode = undefined
@@ -394,7 +477,7 @@ export class SelectionGroup {
 
             mode = undefined
 
-            this.updateOriginalLocations()
+            this.updateEntityValues()
         })
 
         this.arrows[direction] = arrow
@@ -409,7 +492,7 @@ export class SelectionGroup {
         }
     }
 
-    updateOriginalLocations() {
+    updateEntityValues() {
         for (const arrow of Object.values(this.arrows)) {
             arrow.updateOriginalLocation()
         }
@@ -446,6 +529,7 @@ export class SelectionGroup {
                 const sizeChange = Vector.subtract(selection.size, newSize)
 
                 selection.location.add(sizeChange)
+                selection.displayLocation = selection.location
                 selection.size = newSize
             } else {
                 const newSize = Vector.max(Vector.add(selection.size, diff), minSize)
@@ -476,14 +560,15 @@ export class SelectionGroup {
 
         for (const selection of this.selections) {
             selection.location.add(diff)
+            selection.displayLocation = selection.location
         }
 
         return diff
     }
 
-    reloadArrowLocations(changeOriginal = false) {
+    reloadArrowLocations() {
         for (const [direction, arrow] of Object.entries(this.arrows)) {
-            arrow.teleport(this.getArrowLocation(direction), changeOriginal)
+            arrow.teleport(this.getArrowLocation(direction))
         }
     }
 
@@ -509,6 +594,10 @@ export class SelectionGroup {
     remove() {
         for (const arrow of Object.values(this.arrows)) {
             arrow.remove()
+        }
+
+        for (const gizmo of Object.values(this.gizmos)) {
+            gizmo.remove()
         }
 
         this.core.remove()

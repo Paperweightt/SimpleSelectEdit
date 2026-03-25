@@ -1,8 +1,15 @@
 /**
- * @typedef {Object} ArrowOnMoveData
+ * @typedef {Object} OnMoveData
  * @property {import("@minecraft/server").Player} editor
  * @property {import("../utils/vector.js").Vector} prevLocation
  * @property {import("../utils/vector.js").Vector} newLocation
+ */
+
+/**
+ * @typedef {Object} GizmoOnMoveData
+ * @property {import("@minecraft/server").Player} editor
+ * @property {import("@minecraft/server").Vector2} prevRotation
+ * @property {import("@minecraft/server").Vector2} newRotation
  */
 
 /**
@@ -17,3 +24,5 @@
  * @property {import("@minecraft/server").Player} editor
  * @property {import("../utils/vector.js").Vector} location
  */
+
+export {}
