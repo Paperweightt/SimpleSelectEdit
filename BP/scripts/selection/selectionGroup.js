@@ -469,7 +469,7 @@ export class SelectionGroup {
 
             if (this.arrowMode === "resize") {
                 this.resizeSelections(direction, diff)
-            } else if (this.arrowMode === "move") {
+            } else if (this.arrowMode === "move" || this.arrowMode === "duplicate") {
                 this.moveSelections(diff, direction)
             }
 
@@ -487,7 +487,7 @@ export class SelectionGroup {
 
             if (new Vector(0).equals(diff)) return
 
-            if (this.arrowMode === "move") {
+            if (this.arrowMode === "move" || this.arrowMode === "duplicate") {
                 const result = await Edit.playerRunAndSave(
                     this.player.id,
                     this.arrowMode,

@@ -286,7 +286,7 @@ export class Menu {
         addButton("Duplicate", () => {
             const group = this.getSelectionGroup()
             if (!group) return
-            group.editMode = "duplicate"
+            group.arrowMode = "duplicate"
             this.remove()
         })
 
