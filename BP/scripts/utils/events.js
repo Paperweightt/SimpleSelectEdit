@@ -1,5 +1,3 @@
-import { world } from "@minecraft/server"
-
 /**
  * @template T
  */
