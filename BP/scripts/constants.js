@@ -51,7 +51,7 @@ export const PROPERTIES = {
 }
 
 export const CONFIG = {
-    MAX_SELECTION_DISTANCE: 100,
+    MAX_SELECTION_DISTANCE: 80,
 }
 
 export const PATHS = {}

@@ -1,5 +1,5 @@
 import { Player, system } from "@minecraft/server"
-import { BLOCK_PARTICLE, TYPE_IDS } from "../constants"
+import { BLOCK_PARTICLE, CONFIG, TYPE_IDS } from "../constants"
 import { Vector } from "../utils/vector"
 import { SelectionGroup } from "./selectionGroup"
 import { Particle } from "../utils/particle"
@@ -198,18 +198,23 @@ class SelectionCreator {
         let maxLocation = new Vector()
         const { min, max } = this.dimension.heightRange
 
-        const pointer = this.getPointer().add(this.editLocation)
+        let pointer = this.getPointer().add(this.editLocation)
         const location = new Vector(0.5).add(this.location)
 
         pointer.y = Math.min(Math.max(pointer.y, min), max)
 
-        minLocation.x = Math.min(location.x, pointer.x)
-        minLocation.y = Math.min(location.y, pointer.y)
-        minLocation.z = Math.min(location.z, pointer.z)
+        pointer = Vector.min(
+            new Vector(CONFIG.MAX_SELECTION_DISTANCE).add(this.player.location),
+            pointer,
+        )
 
-        maxLocation.x = Math.max(location.x, pointer.x)
-        maxLocation.y = Math.max(location.y, pointer.y)
-        maxLocation.z = Math.max(location.z, pointer.z)
+        pointer = Vector.max(
+            new Vector(-CONFIG.MAX_SELECTION_DISTANCE).add(this.player.location),
+            pointer,
+        )
+
+        minLocation = Vector.min(location, pointer)
+        maxLocation = Vector.max(location, pointer)
 
         return {
             minLocation: minLocation.floor(),

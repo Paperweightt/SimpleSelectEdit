@@ -335,13 +335,29 @@ export class Menu {
 
             if (!group) return
 
+            const container = this.player.getComponent("inventory").container
+            let hasSpace = false
+
+            for (let i = 0; i < container.size; i++) {
+                const itemStack = container.getItem(i)
+
+                if (!itemStack) {
+                    hasSpace = true
+                    break
+                }
+            }
+
+            if (!hasSpace) {
+                this.player.sendMessage("No space for blueprint in inventory")
+                return
+            }
+
             const form = new ModalFormData()
                 .title("Save to Blueprint")
                 .textField("", "name")
 
             form.show(this.player).then((formData) => {
                 if (formData.canceled) return
-                const container = this.player.getComponent("inventory").container
                 let name = formData.formValues[0] || undefined
                 const itemStack = new Blueprint(group, name)
 

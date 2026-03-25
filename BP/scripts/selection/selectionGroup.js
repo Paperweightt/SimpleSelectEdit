@@ -419,7 +419,7 @@ export class SelectionGroup {
 
             if (Vector.equals(diff, new Vector(0))) return
 
-            const result = await Edit.playerRunAndSave(this.player.id, this.arrowMode, {
+            const result = await Edit.playerRunAndSave(this.player.id, "move", {
                 dimension: this.dimension,
                 vector: diff.round(),
                 selections: this.selections,

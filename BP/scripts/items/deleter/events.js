@@ -3,6 +3,7 @@ import { SelectionGroup } from "../../selection/selectionGroup"
 import { TYPE_IDS } from "../../constants"
 import { world } from "@minecraft/server"
 import { ActionFormData } from "@minecraft/server-ui"
+import { Menu } from "../../menu/menu"
 
 world.afterEvents.itemUse.subscribe((data) => {
     const { source, itemStack } = data
@@ -10,6 +11,7 @@ world.afterEvents.itemUse.subscribe((data) => {
     if (itemStack.typeId !== TYPE_IDS.DELETE_ITEM) return
 
     const selection = Selection.getPlayerViewBox(source)?.selection
+    const menu = Menu.get(source.id)
 
     if (!source.customIsShifting) {
         if (!selection) return
@@ -22,6 +24,7 @@ world.afterEvents.itemUse.subscribe((data) => {
         const group = SelectionGroup.get(source.id)
 
         if (group?.hasSelection(selection)) {
+            if (menu) menu.remove()
             group.remove()
             selection.remove()
         }
