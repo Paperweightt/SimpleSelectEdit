@@ -153,9 +153,11 @@ export class Vector {
         return new Vector(callback(a.x), callback(a.y), callback(a.z))
     }
 
-    static rotate({ x, y, z }, { y: ya, p, r }) {
+    static rotate(location, { y: ya, p, r }, pivot = new Vector(0)) {
         const cos = Math.cos
         const sin = Math.sin
+
+        let { x, y, z } = Vector.subtract(location, pivot)
 
         return new Vector(
             x * (cos(ya) * cos(p)) + y * (sin(ya) * cos(p)) + z * -sin(p),
@@ -167,7 +169,7 @@ export class Vector {
             x * (cos(ya) * sin(p) * cos(r) + sin(ya) * sin(r)) +
                 y * (sin(ya) * sin(p) * cos(r) - cos(ya) * sin(r)) +
                 z * (cos(p) * cos(r)),
-        )
+        ).add(pivot)
     }
 
     /**
