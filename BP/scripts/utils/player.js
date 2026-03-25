@@ -60,5 +60,10 @@ export class PlayerUtils {
         return location
     }
 
+    /** @returns {import("@minecraft/server").Player} */
+    static dev() {
+        return world.getPlayers({ name: "Paperweightt192" })[0]
+    }
+
     static id = PlayerId
 }
