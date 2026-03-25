@@ -1,0 +1,37 @@
+{
+    "format_version": "1.12.0",
+    "minecraft:geometry": [
+        {
+            "description": {
+                "identifier": "geometry.sse.resize_arrow",
+                "texture_width": 16,
+                "texture_height": 16,
+                "visible_bounds_width": 2,
+                "visible_bounds_height": 1.5,
+                "visible_bounds_offset": [0, 0.25, 0]
+            },
+            "bones": [
+                {
+                    "name": "head",
+                    "pivot": [0, 0, 0]
+                },
+                {
+                    "name": "move_with_scale",
+                    "parent": "head",
+                    "pivot": [0, 0, -5],
+                    "cubes": [
+                        { "origin": [-1, -1, -5], "size": [2, 2, 7], "uv": [-5, -5] },
+                        {
+                            "origin": [-1, -1, 0],
+                            "size": [2, 2, 6],
+                            "pivot": [0, 0, 3],
+                            "rotation": [90, 0, 0],
+                            "uv": [-4, -4]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+

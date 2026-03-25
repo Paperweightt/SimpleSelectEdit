@@ -1,16 +1,13 @@
 {
     "format_version": "1.10.0",
     "render_controllers": {
-        "controller.render.sse.entity.arrow": {
+        "controller.render.sse.entity.gizmo": {
             "filter_lighting": true,
-            "geometry": "Array.geo[query.property('sse:mode')]",
+            "geometry": "Geometry.default",
             "textures": ["Array.axis[query.property('sse:axis')]"],
             "arrays": {
                 "textures": {
                     "Array.axis": ["Texture.red", "Texture.green", "Texture.blue"]
-                },
-                "geometries": {
-                    "Array.geo": ["Geometry.arrow", "Geometry.resize"]
                 }
             },
             "ignore_lighting": true,

@@ -18,7 +18,7 @@
                 "outline": "geometry.sse.rotate_gizmo_outline" // Outline geometry - Same as base but inflated.
             },
             "render_controllers": [
-                "controller.render.sse.entity.arrow",
+                "controller.render.sse.entity.gizmo",
                 "controller.render.arx.entity.outline" // For outline.
             ],
             "animations": {

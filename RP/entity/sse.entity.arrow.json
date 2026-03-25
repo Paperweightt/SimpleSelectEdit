@@ -14,12 +14,14 @@
                 "outline": "textures/ui/White" // Outline texture
             },
             "geometry": {
-                "default": "geometry.sse.arrow", // Base geometry
-                "outline": "geometry.sse.arrow_outline" // Outline geometry - Same as base but inflated.
+                "arrow": "geometry.sse.arrow", // Base geometry
+                "arrow_outline": "geometry.sse.arrow_outline", // Outline geometry - Same as base but inflated.
+                "resize": "geometry.sse.resize_arrow",
+                "resize_outline": "geometry.sse.resize_arrow_outline"
             },
             "render_controllers": [
                 "controller.render.sse.entity.arrow",
-                "controller.render.arx.entity.outline" // For outline.
+                "controller.render.sse.entity.arrow_outline" // For outline.
             ],
             "animations": {
                 "scale_by_distance": "animation.scale_head",

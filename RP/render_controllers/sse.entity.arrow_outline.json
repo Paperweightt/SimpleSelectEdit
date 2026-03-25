@@ -1,0 +1,21 @@
+{
+    "format_version": "1.10.0",
+    "render_controllers": {
+        "controller.render.sse.entity.arrow_outline": {
+            "geometry": "array.geo[query.property('sse:mode')]",
+            "textures": ["texture.outline"],
+            "ignore_lighting": true,
+            "materials": [
+                {
+                    "*": "material.outline"
+                }
+            ],
+            "arrays": {
+                "geometries": {
+                    "Array.geo": ["Geometry.arrow_outline", "Geometry.resize_outline"]
+                }
+            }
+        }
+    }
+}
+

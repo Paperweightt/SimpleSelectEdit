@@ -24,6 +24,12 @@
                     "client_sync": true,
                     "default": 1,
                     "range": [0, 2]
+                },
+                "sse:mode": {
+                    "type": "int",
+                    "client_sync": true,
+                    "default": 1,
+                    "range": [0, 1]
                 }
             }
         },
