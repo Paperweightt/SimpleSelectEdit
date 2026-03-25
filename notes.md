@@ -30,34 +30,39 @@
 
 ## test
 
-- [ ] dimension with undo
+- [ ] custom block display with item display entity
 
 ## major bugs
 
 - [ ] structure max size causes issue with rotation and flip with large inputs
+- [ ] reload interrupt undo doesnt remove ticking area
 
 ## minor bugs
 
+- [ ] group creation works while looking the opposite direction in 3rd person
+- [ ] save as with full player inventory
+- [ ] mob head display in fill
 - [ ] selection creator doesnt have a bounding box
 - [ ] player interactable entities priority with other player's interactable entities not organized
 
 ## implement
 
+- [ ] punch to switch between rotate, move, resize
+
 ## implement later
 
-- [ ] clamp out ugly colors / re-randomize
-- [ ] box colors
-- [ ] nice rotation animation + interactable rotate entities
+- [ ] snapping during iteractions before save after a little bit
+- [ ] water and lava fill
+- [ ] clear button for fill
 - [ ] use shearing to make any rotation work
 - [ ] tp entities with box
 - [ ] organize undo history by date
 
 ## consider
 
-- [ ] remove delete button from menu
+- [ ] clamp out ugly colors / re-randomize
 - [ ] is viewing / grabbable indicator
 - [ ] make rotations stable using non-rounded bounding boxes
-- [ ] auto undo changes in size
 - [ ] magic select (smart flood fill)
 - [ ] ignore air on all edits
 
@@ -70,6 +75,10 @@
 
 ## done
 
+- [x] nice rotation animation + interactable rotate entities
+- [x] item display below world
+- [x] remove delete button from menu
+- [x] 7 ui
 - [x] select owned box causes error
 - [x] undo create selection bugs out with owned selections
 - [x] blueprint item
