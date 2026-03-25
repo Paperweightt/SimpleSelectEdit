@@ -1,6 +1,6 @@
 import { StackElement, ButtonElement, TextElement } from "../ui/screenElements.js"
 import { BlockButtonElement, BlockIntElement, KeyIntElement } from "./customElements.js"
-import { system, BlockTypes, ItemStack, world } from "@minecraft/server"
+import { system, BlockTypes, ItemStack } from "@minecraft/server"
 import { ModalFormData } from "@minecraft/server-ui"
 import { SelectionGroup } from "../selection/selectionGroup.js"
 import { Vector } from "../utils/vector.js"
@@ -192,9 +192,9 @@ export class Menu {
     }
 
     initScreen() {
-        const r = this.player.getDynamicProperty("textColorr") ?? 150
-        const g = this.player.getDynamicProperty("textColorg") ?? 150
-        const b = this.player.getDynamicProperty("textColorb") ?? 150
+        const r = this.player.getDynamicProperty("textColorr") ?? 255
+        const g = this.player.getDynamicProperty("textColorg") ?? 255
+        const b = this.player.getDynamicProperty("textColorb") ?? 255
 
         this.screen = new Screen(
             this.location,
@@ -290,7 +290,31 @@ export class Menu {
             this.remove()
         })
 
-        addButtonWithUi("Transform", "addTransforms")
+        addButton("Flip X", async () => {
+            const group = this.getSelectionGroup()
+            if (!group) return
+
+            const result = await Edit.playerRunAndSave(this.player.id, "flip", {
+                selections: group.selections,
+                dimension: this.dimension,
+                flip: "x",
+            })
+
+            this.player.sendMessage(`${result.metrics.blocks} blocks filled`)
+        })
+
+        addButton("Flip Z", async () => {
+            const group = this.getSelectionGroup()
+            if (!group) return
+
+            const result = await Edit.playerRunAndSave(this.player.id, "flip", {
+                selections: group.selections,
+                dimension: this.dimension,
+                flip: "z",
+            })
+
+            this.player.sendMessage(`${result.metrics.blocks} blocks filled`)
+        })
 
         // addButton("Delete", () => {
         //     const group = this.getSelectionGroup()
@@ -312,7 +336,7 @@ export class Menu {
             if (!group) return
 
             const form = new ModalFormData()
-                .title("Save to Structure")
+                .title("Save to Blueprint")
                 .textField("", "name")
 
             form.show(this.player).then((formData) => {
@@ -410,83 +434,6 @@ export class Menu {
             this.update()
         }
         addInputs()
-
-        this.update()
-    }
-
-    addTransforms() {
-        const panel = new StackElement("vertical")
-        const width = 64
-
-        this.setTitle("Transform")
-        this.tabManager.addElement(panel)
-        this.db.currentMenu = ["addTransforms"]
-        this.item.save()
-
-        const addButton = (name, callback) => {
-            const button = new ButtonElement(width, BUTTON_HEIGHT, name)
-            button.addOnClick(callback)
-            panel.addElement(button)
-        }
-
-        addButton("Rotate 90°", async () => {
-            const group = this.getSelectionGroup()
-            if (!group) return
-
-            const result = await Edit.playerRunAndSave(this.player.id, "rotate", {
-                selections: group.selections,
-                dimension: this.dimension,
-                rotation: 90,
-            })
-
-            this.player.sendMessage(`${result.metrics.blocks} blocks filled`)
-
-            group.reloadArrowLocations()
-            group.reloadCoreLocation()
-            group.updateOriginalLocations()
-        })
-
-        addButton("Rotate -90°", async () => {
-            const group = this.getSelectionGroup()
-            if (!group) return
-
-            const result = await Edit.playerRunAndSave(this.player.id, "rotate", {
-                selections: group.selections,
-                dimension: this.dimension,
-                rotation: 270,
-            })
-
-            this.player.sendMessage(`${result.metrics.blocks} blocks filled`)
-
-            group.reloadArrowLocations()
-            group.reloadCoreLocation()
-            group.updateOriginalLocations()
-        })
-
-        addButton("Flip X", async () => {
-            const group = this.getSelectionGroup()
-            if (!group) return
-
-            const result = await Edit.playerRunAndSave(this.player.id, "flip", {
-                selections: group.selections,
-                dimension: this.dimension,
-                flip: "x",
-            })
-
-            this.player.sendMessage(`${result.metrics.blocks} blocks filled`)
-        })
-        addButton("Flip Z", async () => {
-            const group = this.getSelectionGroup()
-            if (!group) return
-
-            const result = await Edit.playerRunAndSave(this.player.id, "flip", {
-                selections: group.selections,
-                dimension: this.dimension,
-                flip: "z",
-            })
-
-            this.player.sendMessage(`${result.metrics.blocks} blocks filled`)
-        })
 
         this.update()
     }
@@ -691,9 +638,9 @@ export class Menu {
             colorButton.addOnClick(() => {
                 this.player.setDynamicProperty(panelColorPartId, colorButton.value)
 
-                const r = this.player.getDynamicProperty(panel + "r") ?? 150
-                const g = this.player.getDynamicProperty(panel + "g") ?? 150
-                const b = this.player.getDynamicProperty(panel + "b") ?? 150
+                const r = this.player.getDynamicProperty(panel + "r") ?? 255
+                const g = this.player.getDynamicProperty(panel + "g") ?? 255
+                const b = this.player.getDynamicProperty(panel + "b") ?? 255
 
                 this.screen.setColor({ r, g, b })
             })
