@@ -2,7 +2,7 @@ import { system } from "@minecraft/server"
 import { Vector } from "../utils/vector.js"
 import { Particle } from "../utils/particle.js"
 import { PlayerUtils } from "../utils/player.js"
-import { BLOCK_PARTICLE, TYPE_IDS } from "../constants.js"
+import { TYPE_IDS } from "../constants.js"
 
 export class Selection {
     /**
@@ -168,7 +168,14 @@ export class Selection {
     }
 
     display() {
-        // Particle.boxFaces(BLOCK_PARTICLE.BASIC, this.location, this.size, this.dimension)
+        // if (this.rotation.p === 0 && this.rotation.y === 0 && this.rotation.r === 0)
+        //     Particle.boxFaces(
+        //         BLOCK_PARTICLE.BASIC,
+        //         this.location,
+        //         this.size,
+        //         this.dimension,
+        //     )
+
         Particle.boxEdges(
             TYPE_IDS.LINE,
             this.displayLocation,

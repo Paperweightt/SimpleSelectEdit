@@ -77,6 +77,15 @@ SelectItem.events.click.subscribe({
     },
 })
 
+SelectItem.events.punch.subscribe((data) => {
+    const { player } = data
+    const group = SelectionGroup.get(player.id)
+
+    if (!group) return
+
+    group.toggleArrowMode()
+})
+
 export class SelectionGroup {
     /**
      * @type {Object<number,SelectionGroup>}
@@ -131,8 +140,30 @@ export class SelectionGroup {
     gizmos = {}
     /** @type {boolean} */
     isValid = true
-    /** @type {"move"|"duplicate"} */
-    editMode = "move"
+    /** @type {"move"|"duplicate"|"resize"} */
+    _arrowMode = "resize"
+
+    get arrowMode() {
+        return this._arrowMode
+    }
+
+    /** @type {"move"|"duplicate"|"resize"} */
+    set arrowMode(string) {
+        let value
+
+        // prettier-ignore
+        switch (string){
+            case "move": value = 0; break;
+            case "duplicate": value = 0; break;
+            case "resize": value = 1; break;
+        }
+
+        for (const arrow of Object.values(this.arrows)) {
+            arrow.entity.setProperty("sse:mode", value)
+        }
+
+        this._arrowMode = string
+    }
 
     /**
      * @param {import("@minecraft/server").Player} player
@@ -144,6 +175,16 @@ export class SelectionGroup {
         this.id = player.id
 
         SelectionGroup.add(this)
+    }
+
+    toggleArrowMode() {
+        if (this.arrowMode === "move") {
+            this.arrowMode = "resize"
+        } else if (this.arrowMode === "resize") {
+            this.arrowMode = "move"
+        } else if (this.arrowMode === "duplicate") {
+            this.arrowMode = "resize"
+        }
     }
 
     /**
@@ -378,7 +419,7 @@ export class SelectionGroup {
 
             if (Vector.equals(diff, new Vector(0))) return
 
-            const result = await Edit.playerRunAndSave(this.player.id, this.editMode, {
+            const result = await Edit.playerRunAndSave(this.player.id, this.arrowMode, {
                 dimension: this.dimension,
                 vector: diff.round(),
                 selections: this.selections,
@@ -386,7 +427,7 @@ export class SelectionGroup {
 
             this.player.sendMessage(`${result.metrics.blocks} blocks filled`)
 
-            if (this.editMode === "duplicate") this.editMode = "move"
+            if (this.arrowMode === "duplicate") this.arrowMode = "move"
 
             this.updateEntityValues()
         })
@@ -423,15 +464,12 @@ export class SelectionGroup {
             const { editor, newLocation, prevLocation } = data
 
             if (editor.id !== this.player.id) return
-            if (!mode) {
-                mode = editor.customIsShifting ? "resize" : "move"
-            }
 
             const diff = Vector.subtract(newLocation, prevLocation)
 
-            if (mode === "resize") {
+            if (this.arrowMode === "resize") {
                 this.resizeSelections(direction, diff)
-            } else if (mode === "move") {
+            } else if (this.arrowMode === "move") {
                 this.moveSelections(diff, direction)
             }
 
@@ -447,15 +485,12 @@ export class SelectionGroup {
             this.snapToGrid()
             this.reloadEntityLocations()
 
-            if (new Vector(0).equals(diff)) {
-                mode = undefined
-                return
-            }
+            if (new Vector(0).equals(diff)) return
 
-            if (mode === "move") {
+            if (this.arrowMode === "move") {
                 const result = await Edit.playerRunAndSave(
                     this.player.id,
-                    this.editMode,
+                    this.arrowMode,
                     {
                         dimension: this.dimension,
                         vector: diff,
@@ -463,10 +498,10 @@ export class SelectionGroup {
                         selections: this.selections,
                     },
                 )
-                if (this.editMode === "duplicate") this.editMode = "move"
+                if (this.arrowMode === "duplicate") this.arrowMode = "move"
 
                 this.player.sendMessage(`${result.metrics.blocks} blocks filled`)
-            } else if (mode === "resize") {
+            } else if (this.arrowMode === "resize") {
                 await Edit.playerRunAndSave(this.player.id, "resize", {
                     dimension: this.dimension,
                     direction: direction,
