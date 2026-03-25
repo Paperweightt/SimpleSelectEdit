@@ -112,6 +112,18 @@ world.afterEvents.entitySpawn.subscribe((data) => {
     })
 })
 
+world.afterEvents.playerSwingStart.subscribe((data) => {
+    const { swingSource, player, heldItemStack } = data
+
+    if (heldItemStack?.typeId !== TYPE_IDS.SELECT_ITEM) return
+    if (swingSource !== "Attack") return
+
+    SelectorEvents.punch.emit({
+        player: player,
+        itemStack: heldItemStack,
+    })
+})
+
 export class SelectorEvents {
     /** @type {MinPriorityEvent<Types.SelectorClickData>} */
     static click = new MinPriorityEvent()
