@@ -34,7 +34,7 @@ registerEdit("create", {
                     if (group.selections.length > 0) {
                         group.reloadArrowLocations()
                         group.reloadCoreLocation()
-                        group.updateOriginalLocations()
+                        group.updateEntityValues()
                     }
 
                     break

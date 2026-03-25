@@ -15,9 +15,8 @@ world.afterEvents.itemUse.subscribe(async (data) => {
         const group = SelectionGroup.get(source.id)
 
         if (group) {
-            group.reloadArrowLocations()
-            group.reloadCoreLocation()
-            group.updateOriginalLocations()
+            group.reloadEntityLocations()
+            group.updateEntityValues()
         }
 
         if (blocks !== 0) source.sendMessage(blocks + " blocks filled")

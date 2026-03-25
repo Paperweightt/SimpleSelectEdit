@@ -128,7 +128,7 @@ export class UndoMenu {
                 if (group) {
                     group.reloadArrowLocations()
                     group.reloadCoreLocation()
-                    group.updateOriginalLocations()
+                    group.updateEntityValues()
                 }
 
                 if (result.blocks !== 0) {
