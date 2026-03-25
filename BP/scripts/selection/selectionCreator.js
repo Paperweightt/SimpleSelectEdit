@@ -152,7 +152,12 @@ class SelectionCreator {
         )
 
         const dir = nViewDirection.normalize()
+
+        if (nViewDirection.x < 0) return
+
         const t = -nPlayerLocation.x / dir.x
+
+        if (t < 0) return
 
         const hitY = nPlayerLocation.y + t * dir.y
         const hitZ = nPlayerLocation.z + t * dir.z
