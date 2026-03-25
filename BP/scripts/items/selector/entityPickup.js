@@ -1,7 +1,7 @@
 import { system } from "@minecraft/server"
 import { Vector } from "../../utils/vector"
 import { SelectItem } from "../selector/selectItem"
-import { TYPE_IDS } from "../../constants"
+import { EXCLUDE_ENTITY_TYPES } from "../../constants"
 import { PlayerUtils } from "../../utils/player"
 
 SelectItem.events.startUse.subscribe({
@@ -10,14 +10,7 @@ SelectItem.events.startUse.subscribe({
 
         const rayResult = player.dimension.getEntitiesFromRay(viewStart, viewDirection, {
             ignoreBlockCollision: true,
-            excludeTypes: [
-                TYPE_IDS.ARROW,
-                TYPE_IDS.CORE,
-                TYPE_IDS.BACK_PANEL,
-                TYPE_IDS.TICKING_ENTITY,
-                TYPE_IDS.ITEM_DISPLAY,
-                TYPE_IDS.PANEL,
-            ],
+            excludeTypes: EXCLUDE_ENTITY_TYPES,
             excludeNames: [player.name],
         })
 
@@ -30,14 +23,7 @@ SelectItem.events.startUse.subscribe({
 
         const rayResult = player.dimension.getEntitiesFromRay(viewStart, viewDirection, {
             ignoreBlockCollision: true,
-            excludeTypes: [
-                TYPE_IDS.ARROW,
-                TYPE_IDS.CORE,
-                TYPE_IDS.BACK_PANEL,
-                TYPE_IDS.TICKING_ENTITY,
-                TYPE_IDS.ITEM_DISPLAY,
-                TYPE_IDS.PANEL,
-            ],
+            excludeTypes: EXCLUDE_ENTITY_TYPES,
             excludeNames: [player.name],
         })
 
@@ -46,9 +32,7 @@ SelectItem.events.startUse.subscribe({
 })
 
 SelectItem.events.releaseUse.subscribe((data) => {
-    const { player } = data
-
-    EntityDrag.removeEditor(player)
+    EntityDrag.removeEditor(data.player)
 })
 
 export class EntityDrag {

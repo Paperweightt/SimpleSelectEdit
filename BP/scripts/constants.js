@@ -15,6 +15,16 @@ export const TYPE_IDS = {
     PANEL: PACK_ID + ":panel",
 }
 
+export const EXCLUDE_ENTITY_TYPES = [
+    TYPE_IDS.ARROW,
+    TYPE_IDS.CORE,
+    TYPE_IDS.BACK_PANEL,
+    TYPE_IDS.TICKING_ENTITY,
+    TYPE_IDS.ITEM_DISPLAY,
+    TYPE_IDS.PANEL,
+    TYPE_IDS.GIZMO,
+]
+
 export const USE_DURATION = {
     SELECT_ITEM: 2_000_000_000,
 }
