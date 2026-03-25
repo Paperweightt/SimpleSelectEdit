@@ -10,16 +10,18 @@
 1. screen
 2. core
 3. arrows
-4. selection
-5. entities
-6. blocks
+4. gizmos
+5. selection
+6. entities
+7. blocks
 
 ## drag
 
 2. core
 3. arrows
-4. entities
-5. blocks
+4. gizmos
+5. entities
+6. blocks
 
 ## click
 

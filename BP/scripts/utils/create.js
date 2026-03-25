@@ -329,7 +329,11 @@ export class Create {
         const sortedPoints = this.sortConvexPoints(points)
 
         for (let i = 0; i < points.length - 2; i++) {
-            yield* this.triangle(sortedPoints[0], sortedPoints[i + 1], sortedPoints[i + 2])
+            yield* this.triangle(
+                sortedPoints[0],
+                sortedPoints[i + 1],
+                sortedPoints[i + 2],
+            )
         }
     }
 
@@ -338,6 +342,20 @@ export class Create {
      * @returns {Iterable<Vector>}
      */
     static *meshToLocations(mesh) {
+        for (const face of mesh.faces) {
+            const points = face
+                .map((index) => mesh.points[index])
+                .map((point) => new Vector(point[0], point[1], point[2]))
+
+            yield* this.convexPlane(points)
+        }
+    }
+
+    /**
+     * @param {Mesh} mesh
+     * @returns {Iterable<Vector>}
+     */
+    static *meshToLines(mesh) {
         for (const face of mesh.faces) {
             const points = face
                 .map((index) => mesh.points[index])
@@ -379,7 +397,9 @@ export class Create {
 
         for (let y = yMin; y < yMax; y++) {
             yield* this.convexPlane(
-                lines.filter(([a, b]) => a.y <= y && b.y > y).map(([a, b]) => getXZ(a, b, y)),
+                lines
+                    .filter(([a, b]) => a.y <= y && b.y > y)
+                    .map(([a, b]) => getXZ(a, b, y)),
             )
         }
     }
