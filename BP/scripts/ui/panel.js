@@ -8,7 +8,7 @@ export class Panel {
     static HEIGHT = 8
     static ids = 0
     // static SCALE = 1 / 32 // pixel compared to block
-    static FIRST_RUN_TIMEOUT = 2
+    static FIRST_RUN_TIMEOUT = 3
     /** @type {Panel[]} */
     static list = []
     static totalPixels = 105
