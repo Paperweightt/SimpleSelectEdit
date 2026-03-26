@@ -152,9 +152,6 @@ class SelectionCreator {
         )
 
         const dir = nViewDirection.normalize()
-
-        if (nViewDirection.x < 0) return
-
         const t = -nPlayerLocation.x / dir.x
 
         if (t < 0) return
@@ -194,11 +191,21 @@ class SelectionCreator {
      * @returns {{minLocation:Vector,maxLocation:Vector}}
      */
     getStartEnd() {
-        let minLocation = new Vector()
-        let maxLocation = new Vector()
         const { min, max } = this.dimension.heightRange
 
-        let pointer = this.getPointer().add(this.editLocation)
+        let pointer = this.getPointer()
+
+        if (!pointer) {
+            return {
+                minLocation: this._minLocation,
+                maxLocation: this._maxLocation,
+            }
+        }
+
+        this._minLocation = new Vector()
+        this._maxLocation = new Vector()
+
+        pointer.add(this.editLocation)
         const location = new Vector(0.5).add(this.location)
 
         pointer.y = Math.min(Math.max(pointer.y, min), max)
@@ -213,12 +220,12 @@ class SelectionCreator {
             pointer,
         )
 
-        minLocation = Vector.min(location, pointer)
-        maxLocation = Vector.max(location, pointer)
+        this._minLocation = Vector.min(location, pointer).floor()
+        this._maxLocation = Vector.max(location, pointer).ceil()
 
         return {
-            minLocation: minLocation.floor(),
-            maxLocation: maxLocation.ceil(),
+            minLocation: this._minLocation,
+            maxLocation: this._maxLocation,
         }
     }
 }
