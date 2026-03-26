@@ -32,7 +32,7 @@ world.afterEvents.itemUse.subscribe(async (data) => {
 
     source.onRelease = "click"
 
-    const e = 0.05
+    const e = 0.02
     let ticks = 0
     source.dragId = system.runInterval(() => {
         const viewDirection = source.getViewDirection()
