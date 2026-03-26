@@ -48,7 +48,7 @@ registerEdit("rotate", {
             type: "rotate",
             selections: ctx.selections,
             dimension: ctx.dimension,
-            rotation: (360 + ctx.rotation) % 360,
+            rotation: (180 + ctx.rotation) % 360,
             changes: {},
         }
         const metrics = {
