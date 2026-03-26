@@ -394,10 +394,9 @@ export class SelectionGroup {
 
     /** @returns {Core} */
     createCore() {
-        const location = this.getCenter()
-        const core = new Core(location, this.dimension)
+        this.core = new Core(this.getCenter(), this.dimension)
 
-        core.events.onMove.subscribe((data) => {
+        this.core.events.onMove.subscribe((data) => {
             const { editor, newLocation, prevLocation } = data
 
             if (editor.id !== this.player.id) return
@@ -408,7 +407,7 @@ export class SelectionGroup {
             this.reloadEntityLocations()
         })
 
-        core.events.onRelease.subscribe(async (data) => {
+        this.core.events.onRelease.subscribe(async (data) => {
             const { editor, location, prevLocation } = data
             if (editor.id !== this.player.id) return
 
@@ -419,7 +418,13 @@ export class SelectionGroup {
 
             if (Vector.equals(diff, new Vector(0))) return
 
-            const result = await Edit.playerRunAndSave(this.player.id, "move", {
+            let mode
+
+            if (this.arrowMode === "resize") mode = "move"
+            else if (this.arrowMode === "duplicate") mode = "duplicate"
+            else if (this.arrowMode === "move") mode = "move"
+
+            const result = await Edit.playerRunAndSave(this.player.id, mode, {
                 dimension: this.dimension,
                 vector: diff.round(),
                 selections: this.selections,
@@ -431,8 +436,6 @@ export class SelectionGroup {
 
             this.updateEntityValues()
         })
-
-        this.core = core
 
         return this.core
     }
