@@ -1,10 +1,10 @@
 {
     "format_version": 1,
     "header": {
-        "name": "Paper Vectors",
+        "name": "Vectora Editor",
         "description": "Select, move, rotate, mirror, undo, and more",
         "uuid": "bef9df01-909c-420d-aaf5-92344f3e7c72",
-        "version": [1, 15, 0],
+        "version": [1, 17, 0],
         "min_engine_version": [1, 12, 1]
     },
     "modules": [
@@ -16,7 +16,7 @@
     ],
     "dependencies": [
         {
-            "version": [1, 15, 0],
+            "version": [1, 17, 0],
             "uuid": "74d3c280-93c4-4605-9f22-c6199b4122da"
         }
     ]
