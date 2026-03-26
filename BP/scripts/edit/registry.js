@@ -1,16 +1,18 @@
+/** @import * as Types from "./types.js" */
+
 export const EditRegistry = new Map()
 
 /**
  * @param {string} name
- * @param {EditDefinition} params
+ * @param {Types.EditDefinition} params
  */
 export function registerEdit(name, params) {
     EditRegistry.set(name, params)
 }
 
 /**
- * @param {EditNames} name
- * @returns {EditDefinition}
+ * @param {Types.EditNames} name
+ * @returns {Types.EditDefinition}
  */
 export function getEdit(name) {
     return EditRegistry.get(name)

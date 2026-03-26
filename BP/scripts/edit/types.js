@@ -1,5 +1,5 @@
 /**
- * @typedef {"move"|"duplicate"|"fill"|"flip"|"resize"|"rotate"} EditNames
+ * @typedef {"move"|"duplicate"|"fill"|"flip"|"resize"|"rotate"|"placeBlueprint"|"create"} EditNames
  */
 
 /**
