@@ -13,7 +13,7 @@ world.afterEvents.itemUse.subscribe(async (data) => {
     const menu = Menu.get(source.id)
 
     if (!source.customIsShifting) {
-        menu.remove()
+        if (menu) menu.remove()
 
         const { blocks } = await Edit.playerUndoRecent(source.id)
         const group = SelectionGroup.get(source.id)
