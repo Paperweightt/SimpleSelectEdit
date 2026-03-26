@@ -41,21 +41,19 @@
 
 ## minor bugs
 
-- [ ] group creation works while looking the opposite direction in 3rd person
-- [ ] save as with full player inventory
 - [ ] mob head display in fill
 - [ ] selection creator doesnt have a bounding box
 - [ ] player interactable entities priority with other player's interactable entities not organized
 
 ## implement
 
-- [ ] punch to switch between rotate, move, resize
+- [ ] grid snapping during iteractions
+- [ ] clear button for fill
 
 ## implement later
 
-- [ ] snapping during iteractions before save after a little bit
+- [ ] sounds (inv no space save as)
 - [ ] water and lava fill
-- [ ] clear button for fill
 - [ ] use shearing to make any rotation work
 - [ ] tp entities with box
 - [ ] organize undo history by date
@@ -70,6 +68,7 @@
 
 ## too much effort / not worth
 
+- [ ] perfectly accurate true pivot rotation
 - [ ] fix panel 2 axis rotation
 - [ ] entity based outline
 - [ ] menu for mobile
@@ -77,6 +76,10 @@
 
 ## done
 
+- [x] delete & undo should close menu
+- [x] save as with full player inventory
+- [x] punch to switch between rotate, move, resize
+- [x] group creation works while looking the opposite direction in 3rd person
 - [x] nice rotation animation + interactable rotate entities
 - [x] item display below world
 - [x] remove delete button from menu
