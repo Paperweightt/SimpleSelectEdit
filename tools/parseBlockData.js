@@ -1,5 +1,20 @@
 import { readFile, writeFile } from "node:fs/promises"
 
+const nameChanges = {
+    bricks: "brick_block",
+    creaking_heart_awake: "",
+    creaking_heart_dormant: "creaking_heart",
+    dried_kelp: "dried_kelp_block",
+    end_stone_bricks: "end_bricks",
+    melon: "melon_block",
+    mushroom_block_inside: "brown_mushroom_block",
+    nether_bricks: "nether_brick",
+    nether_quartz_ore: "quartz_ore",
+    red_nether_bricks: "red_nether_brick",
+    rooted_dirt: "dirt_with_roots",
+    terracotta: "light_gray_terracotta",
+}
+
 async function getBlockData() {
     try {
         const data = await readFile("../generated/_blockdata.json", "utf8")
@@ -45,16 +60,25 @@ for (const value of data) {
         value.name = value.name.slice(0, -6)
     }
 
+    value.name = value.name.toLowerCase().replaceAll(" ", "_")
+
+    if (typeof nameChanges[value.name] === "string") {
+        if (nameChanges[value.name] === "") continue
+        value.name = nameChanges[value.name]
+    }
+
     delete value.rgb
     delete value.texture
     delete value.sides
+
+    value.lab = [+value.lab[0], +value.lab[1], +value.lab[2]]
 
     parsedData.push(value)
 }
 
 writeFile(
-    "../generated/friendBlockColors.js",
+    "../BP/scripts/generated/friendlyBlockColors.js",
     "export const blockData = " + JSON.stringify(parsedData, null, "\t"),
 )
 
-console.log(parsedData)
+console.log(parsedData.length, "blocks")
