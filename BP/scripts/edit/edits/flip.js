@@ -44,7 +44,7 @@ registerEdit("flip", {
             ticks: 0,
         }
         const range = SelectionGroup.getMinMax(ctx.selections)
-        const size = Vector.subtract(range.maxLocation, range.minLocation)
+        const size = Vector.subtract(range.maxLocation, range.minLocation).add(1)
         const groupPivot = Vector.subtract(size, 1).divide(2).add(range.minLocation)
 
         let j = 0
