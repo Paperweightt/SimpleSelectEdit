@@ -364,6 +364,8 @@ export class SelectionGroup {
             maxLocation = Vector.max(maxLocation, selectionMax)
         }
 
+        maxLocation.subtract(1)
+
         return { minLocation, maxLocation }
     }
 
@@ -376,7 +378,7 @@ export class SelectionGroup {
     getSize() {
         const { minLocation, maxLocation } = this.getMinMax()
 
-        return Vector.subtract(maxLocation, minLocation)
+        return Vector.subtract(maxLocation, minLocation).add(1)
     }
 
     /** @return {Vector} */
@@ -389,7 +391,7 @@ export class SelectionGroup {
     /** @return {Vector} */
     getCenter() {
         const { minLocation, maxLocation } = this.getMinMax()
-        return Vector.add(minLocation, maxLocation).divide(2)
+        return Vector.add(minLocation, maxLocation.add(1)).divide(2)
     }
 
     /** @returns {Core} */
@@ -572,6 +574,56 @@ export class SelectionGroup {
             } else {
                 const newSize = Vector.max(Vector.add(selection.size, diff), minSize)
                 selection.size = newSize
+            }
+        }
+
+        return diff
+    }
+
+    /**
+     * @param {import("@minecraft/server").Direction}
+     * @param {Vector} diff
+     * @returns {Vector}
+     */
+    stretchSelections(direction, diff) {
+        const { min: yMin, max: yMax } = this.dimension.heightRange
+        const minSize = new Vector(1)
+        const distanceMax = CONFIG.MAX_SELECTION_DISTANCE
+        const max = new Vector(this.player.location).add(distanceMax).setY(yMax)
+        const min = new Vector(this.player.location).subtract(distanceMax).setY(yMin)
+
+        for (const selection of this.selections) {
+            if (direction === "Down" || direction === "West" || direction === "North") {
+                diff = Vector.max(diff, Vector.subtract(min, selection.location))
+            } else {
+                diff = Vector.min(
+                    diff,
+                    Vector.subtract(max, selection.location).subtract(selection.size),
+                )
+            }
+        }
+        console.log(diff.getString())
+
+        for (const selection of this.selections) {
+            if (direction === "Down" || direction === "West" || direction === "North") {
+                // const newSize = Vector.max(Vector.subtract(selection.size, diff), minSize)
+                // const sizeChange = Vector.subtract(selection.size, newSize)
+                //
+                // selection.location.add(sizeChange)
+                // selection.displayLocation = selection.location
+                // selection.size = newSize
+            } else {
+                const { minLocation, maxLocation } = this.getMinMax()
+                const newSize = Vector.add(this.getSize(), diff)
+                const ratio = Vector.divide(newSize, this.getSize())
+
+                selection.location = Vector.subtract(selection.location, minLocation)
+                    .multiply(ratio)
+                    .add(minLocation)
+
+                selection.size.multiply(ratio)
+
+                selection.displayLocation = selection.location
             }
         }
 
