@@ -30,14 +30,26 @@ world.afterEvents.itemUse.subscribe(async (data) => {
         return
     }
 
+    const container = source.getComponent("inventory").container
     source.onRelease = "click"
 
     const e = 0.02
     let ticks = 0
-    source.dragId = system.runInterval(() => {
+    const dragId = system.runInterval(() => {
+        if (!source.isValid) {
+            system.clearRun(dragId)
+            return
+        }
+
         const viewDirection = source.getViewDirection()
         const diff = Vector.distance(viewDirection, initialViewDirection)
         const velocity = new Vector(source.getVelocity()).abs().coordinateSum()
+        const item = container.getItem(source.selectedSlotIndex)
+
+        if (item.typeId !== TYPE_IDS.SELECT_ITEM) {
+            system.clearRun(dragId)
+            return
+        }
 
         if (diff > e || (velocity > e && ticks > 4)) {
             SelectorEvents.startUse.emit({
@@ -55,6 +67,8 @@ world.afterEvents.itemUse.subscribe(async (data) => {
             system.clearRun(source.dragId)
         }
     })
+
+    source.dragId = dragId
 })
 
 world.afterEvents.itemReleaseUse.subscribe((data) => {
