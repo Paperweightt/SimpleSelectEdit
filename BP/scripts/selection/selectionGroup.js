@@ -140,7 +140,7 @@ export class SelectionGroup {
     gizmos = {}
     /** @type {boolean} */
     isValid = true
-    /** @type {"move"|"duplicate"|"resize"} */
+    /** @type {"move"|"duplicate"|"resize"|"stretch"} */
     _arrowMode = "resize"
 
     get arrowMode() {
@@ -156,6 +156,7 @@ export class SelectionGroup {
             case "move": value = 0; break;
             case "duplicate": value = 0; break;
             case "resize": value = 1; break;
+            case "stretch": value = 2; break;
         }
 
         for (const arrow of Object.values(this.arrows)) {
@@ -179,9 +180,11 @@ export class SelectionGroup {
 
     toggleArrowMode() {
         if (this.arrowMode === "move") {
-            this.arrowMode = "resize"
+            this.arrowMode = "stretch"
         } else if (this.arrowMode === "resize") {
             this.arrowMode = "move"
+        } else if (this.arrowMode === "stretch") {
+            this.arrowMode = "resize"
         } else if (this.arrowMode === "duplicate") {
             this.arrowMode = "resize"
         }
@@ -552,9 +555,6 @@ export class SelectionGroup {
         const max = new Vector(this.player.location).add(distanceMax).setY(yMax)
         const min = new Vector(this.player.location).subtract(distanceMax).setY(yMin)
 
-        this.stretchSelections(direction, diff)
-        return
-
         for (const selection of this.selections) {
             if (direction === "Down" || direction === "West" || direction === "North") {
                 diff = Vector.max(diff, Vector.subtract(min, selection.location))
@@ -590,7 +590,6 @@ export class SelectionGroup {
      */
     stretchSelections(direction, diff) {
         const { min: yMin, max: yMax } = this.dimension.heightRange
-        const minSize = new Vector(1)
         const distanceMax = CONFIG.MAX_SELECTION_DISTANCE
         const max = new Vector(this.player.location).add(distanceMax).setY(yMax)
         const min = new Vector(this.player.location).subtract(distanceMax).setY(yMin)

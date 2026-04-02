@@ -17,7 +17,9 @@
                 "arrow": "geometry.sse.arrow", // Base geometry
                 "arrow_outline": "geometry.sse.arrow_outline", // Outline geometry - Same as base but inflated.
                 "resize": "geometry.sse.resize_arrow",
-                "resize_outline": "geometry.sse.resize_arrow_outline"
+                "resize_outline": "geometry.sse.resize_arrow_outline",
+                "stretch": "geometry.sse.stretch_arrow",
+                "stretch_outline": "geometry.sse.stretch_arrow_outline"
             },
             "render_controllers": [
                 "controller.render.sse.entity.arrow",

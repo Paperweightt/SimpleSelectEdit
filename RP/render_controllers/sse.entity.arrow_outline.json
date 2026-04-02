@@ -12,10 +12,13 @@
             ],
             "arrays": {
                 "geometries": {
-                    "Array.geo": ["Geometry.arrow_outline", "Geometry.resize_outline"]
+                    "Array.geo": [
+                        "Geometry.arrow_outline",
+                        "Geometry.resize_outline",
+                        "Geometry.stretch_outline"
+                    ]
                 }
             }
         }
     }
 }
-

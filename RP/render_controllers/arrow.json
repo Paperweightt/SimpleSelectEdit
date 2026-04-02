@@ -10,7 +10,7 @@
                     "Array.axis": ["Texture.red", "Texture.green", "Texture.blue"]
                 },
                 "geometries": {
-                    "Array.geo": ["Geometry.arrow", "Geometry.resize"]
+                    "Array.geo": ["Geometry.arrow", "Geometry.resize", "Geometry.stretch"]
                 }
             },
             "ignore_lighting": true,
