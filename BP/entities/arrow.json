@@ -29,16 +29,12 @@
                     "type": "int",
                     "client_sync": true,
                     "default": 1,
-                    "range": [0, 1]
+                    "range": [0, 2]
                 }
             }
         },
         "components": {
             "minecraft:dimension_bound": {},
-            "minecraft:pushable": {
-                "is_pushable": false,
-                "is_pushable_by_piston": false
-            },
             "minecraft:physics": {
                 "has_gravity": false,
                 "has_collision": false
