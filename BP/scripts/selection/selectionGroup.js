@@ -552,6 +552,9 @@ export class SelectionGroup {
         const max = new Vector(this.player.location).add(distanceMax).setY(yMax)
         const min = new Vector(this.player.location).subtract(distanceMax).setY(yMin)
 
+        this.stretchSelections(direction, diff)
+        return
+
         for (const selection of this.selections) {
             if (direction === "Down" || direction === "West" || direction === "North") {
                 diff = Vector.max(diff, Vector.subtract(min, selection.location))
@@ -602,20 +605,26 @@ export class SelectionGroup {
                 )
             }
         }
-        console.log(diff.getString())
+
+        const size = this.getSize()
+        const minLocation = this.getMinMax().minLocation
+        console.log("diff", diff.getString())
 
         for (const selection of this.selections) {
             if (direction === "Down" || direction === "West" || direction === "North") {
-                // const newSize = Vector.max(Vector.subtract(selection.size, diff), minSize)
-                // const sizeChange = Vector.subtract(selection.size, newSize)
-                //
-                // selection.location.add(sizeChange)
-                // selection.displayLocation = selection.location
-                // selection.size = newSize
+                const newMinLocation = Vector.add(minLocation, diff)
+                const newSize = Vector.multiply(diff, -1).add(size)
+                const ratio = Vector.divide(newSize, size)
+
+                selection.location = Vector.subtract(selection.location, minLocation)
+                    .multiply(ratio)
+                    .add(newMinLocation)
+
+                selection.size.multiply(ratio)
+                selection.displayLocation = selection.location
             } else {
-                const { minLocation, maxLocation } = this.getMinMax()
-                const newSize = Vector.add(this.getSize(), diff)
-                const ratio = Vector.divide(newSize, this.getSize())
+                const newSize = Vector.add(size, diff)
+                const ratio = Vector.divide(newSize, size)
 
                 selection.location = Vector.subtract(selection.location, minLocation)
                     .multiply(ratio)
