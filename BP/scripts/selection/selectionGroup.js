@@ -423,11 +423,7 @@ export class SelectionGroup {
 
             if (Vector.equals(diff, new Vector(0))) return
 
-            let mode
-
-            if (this.arrowMode === "resize") mode = "move"
-            else if (this.arrowMode === "duplicate") mode = "duplicate"
-            else if (this.arrowMode === "move") mode = "move"
+            const mode = this.arrowMode === "duplicate" ? "duplicate" : "move"
 
             const result = await Edit.playerRunAndSave(this.player.id, mode, {
                 dimension: this.dimension,
@@ -466,7 +462,6 @@ export class SelectionGroup {
         const location = this.getArrowLocation(direction)
         const rotation = SelectionGroup.directionToRotation[direction]
         const arrow = new Arrow(location, this.dimension, rotation)
-        let mode
 
         arrow.events.onMove.subscribe((data) => {
             const { editor, newLocation, prevLocation } = data
@@ -475,10 +470,12 @@ export class SelectionGroup {
 
             const diff = Vector.subtract(newLocation, prevLocation)
 
-            if (this.arrowMode === "resize") {
-                this.resizeSelections(direction, diff)
-            } else if (this.arrowMode === "move" || this.arrowMode === "duplicate") {
-                this.moveSelections(diff, direction)
+            // prettier-ignore
+            switch (this.arrowMode) {
+                case "resize": this.resizeSelections(direction, diff); break;
+                case "move": this.moveSelections(diff); break;
+                case "duplicate": this.moveSelections(diff); break;
+                case "stretch": this.stretchSelections(direction, diff); break;
             }
 
             this.reloadEntityLocations()
@@ -495,30 +492,18 @@ export class SelectionGroup {
 
             if (new Vector(0).equals(diff)) return
 
-            if (this.arrowMode === "move" || this.arrowMode === "duplicate") {
-                const result = await Edit.playerRunAndSave(
-                    this.player.id,
-                    this.arrowMode,
-                    {
-                        dimension: this.dimension,
-                        vector: diff,
-                        direction: direction,
-                        selections: this.selections,
-                    },
-                )
-                if (this.arrowMode === "duplicate") this.arrowMode = "move"
+            const result = await Edit.playerRunAndSave(this.id, this.arrowMode, {
+                dimension: this.dimension,
+                direction: direction,
+                vector: diff,
+                selections: this.selections,
+            })
 
+            if (result.metrics.blocks) {
                 this.player.sendMessage(`${result.metrics.blocks} blocks filled`)
-            } else if (this.arrowMode === "resize") {
-                await Edit.playerRunAndSave(this.player.id, "resize", {
-                    dimension: this.dimension,
-                    direction: direction,
-                    vector: diff,
-                    selections: this.selections,
-                })
             }
 
-            mode = undefined
+            if (this.arrowMode === "duplicate") this.arrowMode = "move"
 
             this.updateEntityValues()
         })
@@ -593,26 +578,30 @@ export class SelectionGroup {
         const distanceMax = CONFIG.MAX_SELECTION_DISTANCE
         const max = new Vector(this.player.location).add(distanceMax).setY(yMax)
         const min = new Vector(this.player.location).subtract(distanceMax).setY(yMin)
+        const minSize = new Vector(1)
 
         for (const selection of this.selections) {
             if (direction === "Down" || direction === "West" || direction === "North") {
                 diff = Vector.max(diff, Vector.subtract(min, selection.location))
+                diff = Vector.min(diff, Vector.subtract(selection.size, minSize))
             } else {
                 diff = Vector.min(
                     diff,
                     Vector.subtract(max, selection.location).subtract(selection.size),
                 )
+
+                diff = Vector.max(diff, Vector.subtract(minSize, selection.size))
             }
         }
 
         const size = this.getSize()
         const minLocation = this.getMinMax().minLocation
-        console.log("diff", diff.getString())
+        // console.log("diff", diff.getString())
 
         for (const selection of this.selections) {
             if (direction === "Down" || direction === "West" || direction === "North") {
                 const newMinLocation = Vector.add(minLocation, diff)
-                const newSize = Vector.multiply(diff, -1).add(size)
+                const newSize = Vector.subtract(size, diff)
                 const ratio = Vector.divide(newSize, size)
 
                 selection.location = Vector.subtract(selection.location, minLocation)
