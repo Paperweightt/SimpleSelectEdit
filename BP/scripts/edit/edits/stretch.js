@@ -1,0 +1,172 @@
+import { BlockVolume, world } from "@minecraft/server"
+import { Vector } from "../../utils/vector.js"
+import { registerEdit } from "../registry.js"
+import { Selection } from "../../selection/selection.js"
+import { SelectionGroup } from "../../selection/selectionGroup.js"
+import { BlockId } from "../../utils/blockId.js"
+
+registerEdit("stretch", {
+    async run(ctx) {
+        const undoCtx = {
+            type: "stretch",
+            selections: ctx.selections,
+            dimension: ctx.dimension,
+            direction: ctx.direction,
+            vector: ctx.vector,
+            changes: {},
+        }
+        const metrics = {
+            blocks: 0,
+            ticks: 0,
+        }
+        let prevId
+        const addChange = (id) => {
+            if (prevId === id) return
+
+            if (!undoCtx.changes[id]) {
+                undoCtx.changes[id] = [i]
+            } else {
+                undoCtx.changes[id].push(i)
+            }
+
+            prevId = id
+        }
+
+        const direction = ctx.direction
+        const range = SelectionGroup.getMinMax(ctx.selections)
+        const size = Vector.subtract(range.maxLocation, range.minLocation).add(1)
+        let oldSize
+        let oldOffset
+
+        if (direction === "Down" || direction === "West" || direction === "North") {
+            oldSize = Vector.add(size, ctx.vector)
+            oldOffset = Vector.subtract(range.minLocation, ctx.vector)
+        } else {
+            oldSize = Vector.subtract(size, ctx.vector)
+            oldOffset = range.minLocation
+        }
+
+        const ratio = Vector.divide(oldSize, size)
+        const permutationCache = {}
+
+        for (const selection of ctx.selections) {
+            const min = Vector.subtract(selection.location, range.minLocation)
+                .multiply(ratio)
+                .add(oldOffset)
+            const max = Vector.multiply(selection.size, ratio).add(min).subtract(1)
+            const volume = new BlockVolume(min, max).getBlockLocationIterator()
+
+            for (const { x, y, z } of volume) {
+                const block = await ctx.getBlock({ x, y, z })
+                const key = `${x} ${y} ${z}`
+
+                if (!permutationCache[key]) {
+                    permutationCache[key] = block.permutation
+                    block.setType("air")
+                }
+            }
+        }
+
+        for (const selection of ctx.selections) {
+            const max = Vector.add(selection.size, selection.location).subtract(1)
+            const volume = new BlockVolume(
+                selection.location,
+                max,
+            ).getBlockLocationIterator()
+
+            for (const location of volume) {
+                const oldLocation = Vector.subtract(location, range.minLocation)
+                    .multiply(ratio)
+                    .add(oldOffset)
+                    .floor()
+
+                const block = await ctx.getBlock(location)
+                const { x, y, z } = oldLocation
+                const permutation = permutationCache[`${x} ${y} ${z}`]
+
+                try {
+                    block.setPermutation(permutation)
+                } catch (error) {
+                    console.log(`${x} ${y} ${z}`)
+                    throw new Error(error)
+                }
+            }
+        }
+
+        return { undoCtx, metrics }
+    },
+    async undo(ctx) {
+        const metrics = {
+            blocks: 0,
+            ticks: 0,
+        }
+        const indexToBlock = {}
+        let permutation
+
+        for (const [key, values] of Object.entries(ctx.changes)) {
+            let permutation = "undefined"
+
+            if (key !== "undefined") {
+                permutation = BlockId.toPermutation(key)
+            }
+
+            for (const value of values) {
+                indexToBlock[value] = permutation
+            }
+        }
+
+        let i = 0
+        for (const selection of ctx.selections) {
+            for (let x = 0; x < selection.size.x; x++) {
+                for (let y = 0; y < selection.size.y; y++) {
+                    for (let z = 0; z < selection.size.z; z++) {
+                        const location = new Vector(x, y, z).add(selection.location)
+                        const block = await ctx.getBlock(location)
+
+                        if (indexToBlock[i]) permutation = indexToBlock[i]
+                        if (permutation && permutation !== "undefined") {
+                            metrics.blocks++
+                            block.setPermutation(permutation)
+                        }
+                        i++
+                    }
+                }
+            }
+        }
+
+        for (const selection of ctx.selections) {
+            selection.location.subtract(ctx.vector)
+        }
+
+        return metrics
+    },
+    zipUndo(ctx) {
+        const undoCtx = {
+            type: ctx.type,
+            dimensionId: ctx.dimension.id,
+            vector: ctx.vector,
+            changes: ctx.changes,
+        }
+
+        undoCtx.selections = ctx.selections.map((selection) => selection.snapshot())
+
+        return undoCtx
+    },
+    unzipUndo(ctx) {
+        const dimension = world.getDimension(ctx.dimensionId)
+        const undoCtx = {
+            type: ctx.type,
+            dimension: dimension,
+            vector: new Vector(ctx.vector),
+            changes: ctx.changes,
+            selections: ctx.selections.map((snapshot) => {
+                return (
+                    Selection.get(snapshot[0]) ||
+                    Selection.parseSnapshot(snapshot, dimension)
+                )
+            }),
+        }
+
+        return undoCtx
+    },
+})

@@ -596,7 +596,6 @@ export class SelectionGroup {
 
         const size = this.getSize()
         const minLocation = this.getMinMax().minLocation
-        // console.log("diff", diff.getString())
 
         for (const selection of this.selections) {
             if (direction === "Down" || direction === "West" || direction === "North") {
