@@ -75,6 +75,11 @@ SelectItem.events.click.subscribe({
             group = new SelectionGroup(player, dimension)
         }
 
+        Edit.playerRunAndSave(player.id, "create", {
+            selection: selection,
+            dimension: player.dimension,
+        })
+
         group.toggleSelection(selection)
     },
 })
@@ -165,16 +170,15 @@ class SelectionCreator {
         const visited = new Set()
         let locationMin = new Vector(Infinity)
         let locationMax = new Vector(-Infinity)
-        let i = 0
 
         while (queue.length > 0) {
-            if (i++ > 1000) return
-
             const location = queue.shift()
 
             if (visited.has(location.getString())) continue
 
             const block = dimension.getBlock(location)
+
+            if (!block) return
 
             visited.add(location.getString())
 
