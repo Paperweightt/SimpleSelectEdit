@@ -1,4 +1,4 @@
-import { world } from "@minecraft/server"
+import { system, world } from "@minecraft/server"
 import { Menu } from "../menu/menu.js"
 import { Arrow } from "./arrow.js"
 import { Core } from "./core.js"
@@ -7,7 +7,7 @@ import { SelectItem } from "../items/selector/selectItem.js"
 import { Edit } from "../edit/index.js"
 import { Vector } from "../utils/vector.js"
 import { Color } from "../utils/color.js"
-import { CONFIG } from "../constants.js"
+import { CONFIG, TYPE_IDS } from "../constants.js"
 import { Gizmo } from "./rotation_gizmo.js"
 
 world.afterEvents.playerLeave.subscribe((data) => {
@@ -125,6 +125,26 @@ export class SelectionGroup {
         this.list[group.id] = group
     }
 
+    static innit() {
+        system.runInterval(() => {
+            for (const group of this.getAll()) {
+                const player = group.player
+                const container = player.getComponent("inventory").container
+                const item = container.getItem(player.selectedSlotIndex)
+
+                if (item?.typeId !== TYPE_IDS.SELECT_ITEM) {
+                    group.removeEntities()
+                } else if (!group.core) {
+                    group.createArrows()
+                    group.createCore()
+                    group.createGizmos()
+
+                    group.reloadArrowModel()
+                }
+            }
+        })
+    }
+
     /**
      * @param {SelectionGroup} selectionGroup
      */
@@ -179,14 +199,12 @@ export class SelectionGroup {
     }
 
     toggleArrowMode() {
-        if (this.arrowMode === "move") {
-            this.arrowMode = "stretch"
-        } else if (this.arrowMode === "resize") {
-            this.arrowMode = "move"
-        } else if (this.arrowMode === "stretch") {
-            this.arrowMode = "resize"
-        } else if (this.arrowMode === "duplicate") {
-            this.arrowMode = "resize"
+        //prettier-ignore
+        switch(this.arrowMode) {
+            case "move": this.arrowMode = "stretch"; break
+            case "resize": this.arrowMode = "move"; break
+            case "stretch": this.arrowMode = "resize"; break
+            case "duplicate": this.arrowMode = "resize"; break
         }
     }
 
@@ -454,6 +472,10 @@ export class SelectionGroup {
         this.createArrow("Down")
     }
 
+    reloadArrowModel() {
+        this.arrowMode = this.arrowMode
+    }
+
     /**
      * @param {import("@minecraft/server").Direction} direction
      * @returns {Arrow}
@@ -675,9 +697,11 @@ export class SelectionGroup {
         for (const box of this.selections) {
             box.remove()
         }
+
+        this.selections = []
     }
 
-    remove() {
+    removeEntities() {
         for (const arrow of Object.values(this.arrows)) {
             arrow.remove()
         }
@@ -686,7 +710,15 @@ export class SelectionGroup {
             gizmo.remove()
         }
 
-        this.core.remove()
+        if (this.core) this.core.remove()
+
+        this.arrows = {}
+        this.gizmos = {}
+        this.core = undefined
+    }
+
+    remove() {
+        this.removeEntities()
 
         for (const box of this.selections) {
             box.lineRGB = Selection.defaultLineRGB
@@ -698,3 +730,5 @@ export class SelectionGroup {
         delete SelectionGroup.list[this.id]
     }
 }
+
+SelectionGroup.innit()
