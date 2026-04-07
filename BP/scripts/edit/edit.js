@@ -8,7 +8,6 @@ import { DeathOnReload } from "../utils/deathOnReload"
 /** @import * as Types from "./types.js"  */
 
 export class Edit {
-    static registry = new Map()
     /** @type {number} */
     static blocksPlaced = 0
     /** @type {number} */
