@@ -157,12 +157,6 @@ registerEdit("stretch", {
         }
 
         const ratio = Vector.divide(oldSize, size)
-
-        console.log("dir", direction)
-        console.log("size", size.coordinateSum() - 2)
-        console.log("oldSize", oldSize.coordinateSum() - 2)
-        console.log("ratio", ratio.coordinateSum() - 2)
-
         const ratioSum = ratio.coordinateSum() - 2
 
         for (const selection of ctx.selections) {
@@ -209,25 +203,6 @@ registerEdit("stretch", {
             }
         }
 
-        // let i = 0
-        // for (const selection of ctx.selections) {
-        //     for (let x = 0; x < selection.size.x; x++) {
-        //         for (let y = 0; y < selection.size.y; y++) {
-        //             for (let z = 0; z < selection.size.z; z++) {
-        //                 const location = new Vector(x, y, z).add(selection.location)
-        //                 const block = await ctx.getBlock(location)
-        //
-        //                 if (indexToBlock[i]) permutation = indexToBlock[i]
-        //                 if (permutation && permutation !== "undefined") {
-        //                     metrics.blocks++
-        //                     block.setPermutation(permutation)
-        //                 }
-        //                 i++
-        //             }
-        //         }
-        //     }
-        // }
-
         return metrics
     },
     zipUndo(ctx) {
@@ -239,8 +214,6 @@ registerEdit("stretch", {
             selections: ctx.selections,
             changes: ctx.changes,
         }
-
-        console.log(JSON.stringify(ctx.changes))
 
         undoCtx.selections = ctx.selections.map((selection) => selection.snapshot())
 
