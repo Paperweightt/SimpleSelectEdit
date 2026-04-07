@@ -44,6 +44,37 @@ SelectItem.events.releaseUse.subscribe((data) => {
     group.toggleSelection(selection)
 })
 
+SelectItem.events.click.subscribe({
+    priority: (data) => {
+        const { blockRaycast, player } = data
+
+        if (!blockRaycast) return Infinity
+        return Vector.distance(player.location, blockRaycast.block.location)
+    },
+    callback: (data) => {
+        const { player, blockRaycast } = data
+        const dimension = player.dimension
+        let group
+
+        if (!blockRaycast) return
+
+        const selection = SelectionCreator.floodGet(
+            blockRaycast.block.location,
+            player.dimension,
+        )
+
+        if (!selection) return
+
+        if (player.customIsShifting) {
+            group = SelectionGroup.get(player.id) || new SelectionGroup(player, dimension)
+        } else {
+            group = new SelectionGroup(player, dimension)
+        }
+
+        group.toggleSelection(selection)
+    },
+})
+
 class SelectionCreator {
     static list = {}
 
@@ -85,6 +116,74 @@ class SelectionCreator {
                 instance.run()
             }
         })
+    }
+
+    static SEARCH_OFFSETS = [
+        // middle
+        [1, 0, 1],
+        [-1, 0, -1],
+        [-1, 0, 1],
+        [1, 0, -1],
+        [0, 0, 1],
+        [0, 0, -1],
+        [-1, 0, 0],
+        [1, 0, 0],
+
+        // top
+        [1, 1, 1],
+        [-1, 1, -1],
+        [-1, 1, 1],
+        [1, 1, -1],
+        [0, 1, 1],
+        [0, 1, -1],
+        [-1, 1, 0],
+        [1, 1, 0],
+        [0, 1, 0],
+
+        // bottom
+        [1, -1, 1],
+        [-1, -1, -1],
+        [-1, -1, 1],
+        [1, -1, -1],
+        [0, -1, 1],
+        [0, -1, -1],
+        [-1, -1, 0],
+        [1, -1, 0],
+        [0, -1, 0],
+    ]
+
+    /**
+     * @param {Vector} location
+     * @returns {Selection}
+     */
+    static floodGet(location, dimension) {
+        const queue = [new Vector(location)]
+        const visited = new Set()
+        let locationMin = new Vector(Infinity)
+        let locationMax = new Vector(-Infinity)
+
+        while (queue.length > 0) {
+            const location = queue.shift()
+            const block = dimension.getBlock(location)
+
+            if (visited.has(location.getString())) continue
+            visited.add(location.getString())
+
+            if (block.isAir) continue
+
+            locationMin = Vector.min(locationMin, location)
+            locationMax = Vector.max(locationMax, location)
+
+            for (const [x, y, z] of this.SEARCH_OFFSETS) {
+                const newLocation = new Vector(x, y, z).add(location)
+
+                queue.push(newLocation)
+            }
+        }
+
+        const size = Vector.subtract(locationMax, locationMin).add(1)
+
+        return new Selection(locationMin, size, dimension)
     }
 
     /**
