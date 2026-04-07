@@ -49,7 +49,11 @@ SelectItem.events.click.subscribe({
         const { blockRaycast, player } = data
 
         if (!blockRaycast) return Infinity
-        return Vector.distance(player.location, blockRaycast.block.location)
+
+        const { faceLocation, block } = blockRaycast
+        const location = Vector.add(block.location, faceLocation)
+
+        return Vector.distance(PlayerUtils.getEyeLocation(player), location) + 0.1
     },
     callback: (data) => {
         const { player, blockRaycast } = data
@@ -154,19 +158,24 @@ class SelectionCreator {
 
     /**
      * @param {Vector} location
-     * @returns {Selection}
+     * @returns {Selection|undefined}
      */
     static floodGet(location, dimension) {
         const queue = [new Vector(location)]
         const visited = new Set()
         let locationMin = new Vector(Infinity)
         let locationMax = new Vector(-Infinity)
+        let i = 0
 
         while (queue.length > 0) {
+            if (i++ > 1000) return
+
             const location = queue.shift()
-            const block = dimension.getBlock(location)
 
             if (visited.has(location.getString())) continue
+
+            const block = dimension.getBlock(location)
+
             visited.add(location.getString())
 
             if (block.isAir) continue
