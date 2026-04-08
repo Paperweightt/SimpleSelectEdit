@@ -134,12 +134,18 @@ export class SelectionGroup {
 
                 if (item?.typeId !== TYPE_IDS.SELECT_ITEM) {
                     group.removeEntities()
-                } else if (!group.core) {
-                    group.createArrows()
-                    group.createCore()
-                    group.createGizmos()
+                } else {
+                    try {
+                        if (!group.core) group.createCore()
+                        if (!group.gizmos.y) group.createGizmos()
 
-                    group.reloadArrowModel()
+                        if (!group.arrows.North) group.createArrow("North")
+                        if (!group.arrows.East) group.createArrow("East")
+                        if (!group.arrows.South) group.createArrow("South")
+                        if (!group.arrows.West) group.createArrow("West")
+                        if (!group.arrows.Up) group.createArrow("Up")
+                        if (!group.arrows.Down) group.createArrow("Down")
+                    } catch (error) {}
                 }
             }
         })
@@ -460,7 +466,7 @@ export class SelectionGroup {
     }
 
     reloadCoreLocation() {
-        this.core.teleport(this.getCenter())
+        if (this.core) this.core.teleport(this.getCenter())
     }
 
     createArrows() {
@@ -547,7 +553,7 @@ export class SelectionGroup {
             arrow.updateOriginalLocation()
         }
 
-        this.core.updateOriginalLocation()
+        if (this.core) this.core.updateOriginalLocation()
     }
 
     /**
