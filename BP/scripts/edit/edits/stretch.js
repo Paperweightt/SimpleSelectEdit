@@ -6,7 +6,7 @@ import { SelectionGroup } from "../../selection/selectionGroup.js"
 import { BlockId } from "../../utils/blockId.js"
 
 registerEdit("stretch", {
-    async run(ctx) {
+    *run(ctx) {
         const undoCtx = {
             type: "stretch",
             selections: ctx.selections,
@@ -63,7 +63,7 @@ registerEdit("stretch", {
             const volume = new BlockVolume(min, max).getBlockLocationIterator()
 
             for (const { x, y, z } of volume) {
-                const block = await ctx.getBlock({ x, y, z })
+                const block = yield ctx.getBlock({ x, y, z })
                 const permutation = block.permutation
                 const key = `${x} ${y} ${z}`
 
@@ -93,7 +93,7 @@ registerEdit("stretch", {
                     .add(oldOffset)
                     .floor()
 
-                const block = await ctx.getBlock(location)
+                const block = yield ctx.getBlock(location)
                 const { x, y, z } = oldLocation
                 const permutation = permutationCache[`${x} ${y} ${z}`]
 
@@ -109,7 +109,7 @@ registerEdit("stretch", {
 
         return { undoCtx, metrics }
     },
-    async undo(ctx) {
+    *undo(ctx) {
         const metrics = {
             blocks: 0,
             ticks: 0,
@@ -136,7 +136,7 @@ registerEdit("stretch", {
         //     const locations = new BlockVolume(min, max).getBlockLocationIterator()
         //
         //     for (const location of locations) {
-        //         const block = await ctx.getBlock(location)
+        //         const block = yield ctx.getBlock(location)
         //
         //         block.setType("minecraft:air")
         //     }
@@ -166,7 +166,7 @@ registerEdit("stretch", {
                 const locations = new BlockVolume(min, max).getBlockLocationIterator()
 
                 for (const location of locations) {
-                    const block = await ctx.getBlock(location)
+                    const block = yield ctx.getBlock(location)
 
                     if (indexToBlock[i]) permutation = indexToBlock[i]
                     if (permutation && permutation !== "undefined") {
@@ -191,7 +191,7 @@ registerEdit("stretch", {
                 const locations = new BlockVolume(min, max).getBlockLocationIterator()
 
                 for (const location of locations) {
-                    const block = await ctx.getBlock(location)
+                    const block = yield ctx.getBlock(location)
 
                     if (indexToBlock[i]) permutation = indexToBlock[i]
                     if (permutation && permutation !== "undefined") {

@@ -65,7 +65,7 @@ registerEdit("fill", {
 
         return { undoCtx, metrics }
     },
-    async undo(ctx) {
+    *undo(ctx) {
         const metrics = {
             blocks: 0,
             ticks: 0,
@@ -92,7 +92,7 @@ registerEdit("fill", {
                 for (let y = 0; y < selection.size.y; y++) {
                     for (let z = 0; z < selection.size.z; z++) {
                         const location = new Vector(x, y, z).add(selection.location)
-                        const block = await ctx.getBlock(location)
+                        const block = yield ctx.getBlock(location)
 
                         if (indexToBlock[i]) permutation = indexToBlock[i]
                         if (permutation && permutation !== "undefined") {

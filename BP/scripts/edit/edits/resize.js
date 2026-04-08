@@ -4,7 +4,7 @@ import { Selection } from "../../selection/selection.js"
 import { Vector } from "../../utils/vector.js"
 
 registerEdit("resize", {
-    async run(ctx) {
+    *run(ctx) {
         const undoCtx = {
             type: "resize",
             selections: ctx.selections,
@@ -21,7 +21,7 @@ registerEdit("resize", {
 
         return { undoCtx, metrics }
     },
-    async undo(ctx) {
+    *undo(ctx) {
         const metrics = {
             blocks: 0,
             ticks: 0,

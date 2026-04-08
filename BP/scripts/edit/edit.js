@@ -262,17 +262,19 @@ export class Edit {
     /**
      * @param {Vector} location
      * @param {import("@minecraft/server").Dimension} dimension
-     * @returns {Promise<import("@minecraft/server").Block>}
+     * @returns {Promise<import("@minecraft/server").Block|import("@minecraft/server").Block>}
      */
-    async getBlock(location) {
+    getBlock(location) {
         location = Vector.floor(location) // must be floored manually
         const block = this.dimension.getBlock(location)
 
         if (block) return block
 
-        await this.addTickingArea(location, this.dimension)
+        return new Promise(async (resolve, reject) => {
+            await this.addTickingArea(location, this.dimension)
 
-        return this.dimension.getBlock(location)
+            resolve(this.dimension.getBlock(location))
+        })
     }
 
     /**

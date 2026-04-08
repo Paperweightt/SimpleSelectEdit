@@ -42,7 +42,7 @@ registerEdit("rotate", {
     /**
      * @param {rotateObject} ctx
      */
-    async run(ctx) {
+    *run(ctx) {
         const structureId = PACK_ID + ":edit_temp"
         const undoCtx = {
             type: "rotate",
@@ -98,7 +98,7 @@ registerEdit("rotate", {
             const volume = new BlockVolume(start, end).getBlockLocationIterator()
 
             for (const location of volume) {
-                const block = await ctx.getBlock(location)
+                const block = yield ctx.getBlock(location)
                 block.setType("minecraft:air")
             }
         }
@@ -144,7 +144,7 @@ registerEdit("rotate", {
             const volume = new BlockVolume(start, end).getBlockLocationIterator()
 
             for (const location of volume) {
-                const block = await ctx.getBlock(location)
+                const block = yield ctx.getBlock(location)
                 const id = BlockId.get(block.permutation)
 
                 addChange(id, j++)
@@ -202,7 +202,7 @@ registerEdit("rotate", {
 
         return { undoCtx, metrics }
     },
-    async undo(ctx) {
+    *undo(ctx) {
         const structureId = PACK_ID + ":edit_temp"
         const metrics = {
             blocks: 0,
@@ -252,7 +252,7 @@ registerEdit("rotate", {
             const volume = new BlockVolume(start, end).getBlockLocationIterator()
 
             for (const location of volume) {
-                const block = await ctx.getBlock(location)
+                const block = yield ctx.getBlock(location)
                 block.setType("minecraft:air")
             }
         }
@@ -265,7 +265,7 @@ registerEdit("rotate", {
             const volume = new BlockVolume(start, end).getBlockLocationIterator()
 
             for (const location of volume) {
-                const block = await ctx.getBlock(location)
+                const block = yield ctx.getBlock(location)
 
                 if (indexToBlock[j]) permutation = indexToBlock[j]
                 if (permutation && permutation !== "undefined") {

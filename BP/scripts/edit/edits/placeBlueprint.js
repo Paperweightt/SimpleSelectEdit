@@ -4,7 +4,7 @@ import { Vector } from "../../utils/vector.js"
 import { world } from "@minecraft/server"
 
 registerEdit("placeBlueprint", {
-    async run(ctx) {
+    *run(ctx) {
         const undoCtx = {
             type: "placeBlueprint",
             selections: ctx.selections,
@@ -54,7 +54,7 @@ registerEdit("placeBlueprint", {
                             .add(selection.location)
                             .add(ctx.location)
                             .round()
-                        const block = await ctx.getBlock(location)
+                        const block = yield ctx.getBlock(location)
 
                         if (indexToBlock[i]) permutation = indexToBlock[i]
 
@@ -76,7 +76,7 @@ registerEdit("placeBlueprint", {
 
         return { undoCtx, metrics }
     },
-    async undo(ctx) {
+    *undo(ctx) {
         const metrics = {
             blocks: 0,
             ticks: 0,
@@ -107,7 +107,7 @@ registerEdit("placeBlueprint", {
                             .add(ctx.location)
                             .round()
 
-                        const block = await ctx.getBlock(location)
+                        const block = yield ctx.getBlock(location)
 
                         if (indexToBlock[i]) permutation = indexToBlock[i]
                         if (permutation && permutation !== "undefined") {
