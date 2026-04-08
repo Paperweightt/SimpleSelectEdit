@@ -1,12 +1,11 @@
 import { PlayerUtils } from "../../utils/player.js"
 import { ActionFormData } from "@minecraft/server-ui"
 import { Edit } from "../../edit/index.js"
-import { world, system } from "@minecraft/server"
+import { world } from "@minecraft/server"
 import { SelectionGroup } from "../../selection/selectionGroup.js"
 
 export class UndoMenu {
     static ENTRIES_PER_PAGE = 100
-    static DELAY = 5
 
     /** @type {import("@minecraft/server").Player} */
     constructor(player) {
@@ -126,16 +125,13 @@ export class UndoMenu {
                 const group = SelectionGroup.get(playerIds.id)
 
                 if (group) {
-                    group.reloadArrowLocations()
-                    group.reloadCoreLocation()
+                    group.reloadEntityLocations()
                     group.updateEntityValues()
                 }
 
                 if (result.blocks !== 0) {
                     this.player.sendMessage(result.blocks + " blocks filled")
                 }
-
-                await system.waitTicks(UndoMenu.DELAY)
             }
         })
     }
