@@ -123,6 +123,8 @@ registerEdit("flip", {
                 Vector.subtract(pivot, flip(pivot, groupPivot, ctx.flip)),
             )
 
+            selection.displayLocation = selection.location
+
             world.structureManager.place(id, ctx.dimension, selection.location, {
                 mirror: ctx.flip.toUpperCase(),
             })
@@ -222,6 +224,7 @@ registerEdit("flip", {
             selection.location.subtract(
                 Vector.subtract(pivot, flip(pivot.copy(), groupPivot, ctx.flip)),
             )
+            selection.displayLocation = selection.location
 
             world.structureManager.place(id, ctx.dimension, selection.location, {
                 mirror: ctx.flip.toUpperCase(),
