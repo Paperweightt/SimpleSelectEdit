@@ -7,6 +7,7 @@ export class JobManager {
     timeoutId
     jobId
     reject
+    previousValue
 
     /**
      * @param {Generator<void,void,void>} iterator
@@ -23,25 +24,35 @@ export class JobManager {
         if (start) this.start()
     }
 
-    *runSession() {
-        const data = this.iterator.next()
+    *runSession(input) {
+        while (true) {
+            const { done, value } = this.iterator.next(input)
 
-        if (data.done) {
-            this.resolve(data.value)
-            return
-        }
+            if (done) {
+                this.resolve(value)
+                return
+            }
 
-        if (this.isPaused) {
-            return
-        }
+            if (this.isPaused) return
 
-        if (!data.value || data.value === 0) {
-            yield
-        } else {
-            this.timeoutId = system.runTimeout(() => {
-                this.jobId = system.runJob(this.runSession())
-            }, data.value)
-            return
+            if (value && typeof value.then === "function") {
+                value
+                    .then((res) => {
+                        console.log(JSON.stringify(res))
+                        this.jobId = system.runJob(this.runSession(res))
+                    })
+                    .catch((err) => this.reject(err))
+                return
+            }
+
+            if (typeof value === "number") {
+                this.timeoutId = system.runTimeout(() => {
+                    this.jobId = system.runJob(this.runSession())
+                }, value)
+                return
+            }
+
+            input = value
         }
     }
 

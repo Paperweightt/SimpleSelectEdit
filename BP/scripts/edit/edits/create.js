@@ -4,7 +4,7 @@ import { Selection } from "../../selection/selection.js"
 import { SelectionGroup } from "../../selection/selectionGroup.js"
 
 registerEdit("create", {
-    async run(ctx) {
+    *run(ctx) {
         const undoCtx = {
             type: "create",
             selection: ctx.selection,
@@ -19,7 +19,7 @@ registerEdit("create", {
 
         return { undoCtx, metrics }
     },
-    async undo(ctx) {
+    *undo(ctx) {
         const metrics = {
             blocks: 0,
             ticks: 0,

@@ -4,6 +4,7 @@ import { Vector } from "../utils/vector"
 import { world, system } from "@minecraft/server"
 import { PACK_ID, TYPE_IDS } from "../constants"
 import { DeathOnReload } from "../utils/deathOnReload"
+import { JobManager } from "../utils/time.js"
 
 /** @import * as Types from "./types.js"  */
 
@@ -44,8 +45,10 @@ export class Edit {
             editCtx.filter = new Filter(ctx.filter.type, ctx.filter.typeIds)
         }
 
+        const job = new JobManager(getEdit(name).run(editCtx))
+
         try {
-            result = await getEdit(name).run(editCtx)
+            result = await job.result()
         } finally {
             edit.removeTickingAreas()
         }
@@ -67,8 +70,10 @@ export class Edit {
             getBlock: edit.getBlock.bind(edit),
         }
 
+        const job = new JobManager(getEdit(name).undo(editCtx))
+
         try {
-            result = await getEdit(name).undo(editCtx)
+            result = await job.result()
         } finally {
             edit.removeTickingAreas()
         }
