@@ -38,7 +38,6 @@ export class JobManager {
             if (value && typeof value.then === "function") {
                 value
                     .then((res) => {
-                        console.log(JSON.stringify(res))
                         this.jobId = system.runJob(this.runSession(res))
                     })
                     .catch((err) => this.reject(err))
@@ -51,6 +50,8 @@ export class JobManager {
                 }, value)
                 return
             }
+
+            yield
 
             input = value
         }
