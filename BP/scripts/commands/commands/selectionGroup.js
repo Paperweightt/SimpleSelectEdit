@@ -93,6 +93,11 @@ Commands.register({
         const size = Vector.subtract(max, min)
         const selection = new Selection(min, size, sourceEntity.dimension)
 
+        Edit.playerRunAndSave(sourceEntity.id, "create", {
+            selection: selection,
+            dimension: sourceEntity.dimension,
+        })
+
         selectionGroup.toggleSelection(selection)
 
         return { status: 0 }
@@ -193,5 +198,30 @@ Commands.register({
 
         sourceEntity.sendMessage(`${blocks} blocks filled`)
         return { status: 0 }
+    },
+})
+
+Commands.register({
+    name: "set",
+    description: "set",
+    mandatoryParameters: [{ name: "tileName", type: CustomCommandParamType.BlockType }],
+    permissionLevel: CommandPermissionLevel.GameDirectors,
+    callback: async (data, blockType) => {
+        const { sourceEntity } = data
+        const group = SelectionGroup.get(sourceEntity.id)
+
+        if (!group) return
+
+        const fillObject = {
+            [blockType.id]: 1,
+        }
+
+        const result = await Edit.playerRunAndSave(sourceEntity.id, "fill", {
+            blocks: fillObject,
+            selections: group.selections,
+            dimension: sourceEntity.dimension,
+        })
+
+        sourceEntity.sendMessage(`${result.metrics.blocks} blocks filled`)
     },
 })
