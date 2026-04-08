@@ -14,8 +14,6 @@ export class Edit {
     /** @type {number} */
     static defaultBlock = "minecraft:smooth_stone"
     /** @type {number} */
-    static blocksPerTick = 500
-    /** @type {number} */
     static seed = 123467
 
     static get edits() {
@@ -270,7 +268,7 @@ export class Edit {
 
         if (block) return block
 
-        return new Promise(async (resolve, reject) => {
+        return new Promise(async (resolve) => {
             await this.addTickingArea(location, this.dimension)
 
             resolve(this.dimension.getBlock(location))
