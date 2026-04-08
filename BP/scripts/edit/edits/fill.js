@@ -43,10 +43,7 @@ registerEdit("fill", {
                 for (let y = 0; y < selection.size.y; y++) {
                     for (let z = 0; z < selection.size.z; z++) {
                         const location = new Vector(x, y, z).add(selection.location)
-
-                        yield
-
-                        const block = ctx.getBlock(location)
+                        const block = yield ctx.getBlock(location)
                         const typeId = lootTable.roll(location) ?? Edit.defaultBlock
 
                         if (block.typeId === typeId) {
