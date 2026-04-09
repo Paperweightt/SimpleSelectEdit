@@ -2,12 +2,14 @@ import { system } from "@minecraft/server"
 
 export class JobManager {
     isPaused = false
+    isValid = true
     promise
     resolve
     timeoutId
     jobId
     reject
     previousValue
+    resumeInput
 
     /**
      * @param {Generator<void,void,void>} iterator
@@ -30,10 +32,14 @@ export class JobManager {
 
             if (done) {
                 this.resolve(value)
+                this.isValid = false
                 return
             }
 
-            if (this.isPaused) return
+            if (this.isPaused) {
+                this.resumeInput = value
+                return
+            }
 
             if (value && typeof value.then === "function") {
                 value
@@ -41,13 +47,6 @@ export class JobManager {
                         this.jobId = system.runJob(this.runSession(res))
                     })
                     .catch((err) => this.reject(err))
-                return
-            }
-
-            if (typeof value === "number") {
-                this.timeoutId = system.runTimeout(() => {
-                    this.jobId = system.runJob(this.runSession())
-                }, value)
                 return
             }
 
@@ -66,13 +65,18 @@ export class JobManager {
     }
 
     resume() {
-        this.isPaused = false
-        system.runJob(this.runSession())
+        if (this.isPaused) {
+            this.isPaused = false
+            system.runJob(this.runSession(this.resumeInput))
+        }
     }
 
     cancel() {
         system.clearJob(this.jobId)
         system.clearRun(this.timeoutId)
+
+        this.isPaused = true
+        this.isValid = false
 
         this.reject()
     }

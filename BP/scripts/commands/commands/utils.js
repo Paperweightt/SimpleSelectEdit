@@ -34,3 +34,29 @@ Commands.register({
         return { status: 0 }
     },
 })
+
+Commands.register({
+    name: "pause",
+    description: "pause",
+    permissionLevel: CommandPermissionLevel.GameDirectors,
+    callback: async (data) => {
+        const { sourceEntity } = data
+
+        if (sourceEntity.job.isValid) sourceEntity.job.pause()
+
+        return { status: 0 }
+    },
+})
+
+Commands.register({
+    name: "resume",
+    description: "resume",
+    permissionLevel: CommandPermissionLevel.GameDirectors,
+    callback: async (data) => {
+        const { sourceEntity } = data
+
+        if (sourceEntity.job.isValid) sourceEntity.job.resume()
+
+        return { status: 0 }
+    },
+})
