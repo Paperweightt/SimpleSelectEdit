@@ -1,6 +1,6 @@
 import { StackElement, ButtonElement, TextElement } from "../ui/screenElements.js"
 import { BlockButtonElement, BlockIntElement, KeyIntElement } from "./customElements.js"
-import { system, BlockTypes, ItemStack } from "@minecraft/server"
+import { system, BlockTypes, ItemStack, BlockVolume } from "@minecraft/server"
 import { ModalFormData } from "@minecraft/server-ui"
 import { SelectionGroup } from "../selection/selectionGroup.js"
 import { Vector } from "../utils/vector.js"
@@ -9,6 +9,7 @@ import { Edit } from "../edit/index.js"
 import { BackPanel } from "./backPanel.js"
 import { SelectItem } from "../items/selector/selectItem.js"
 import { Blueprint } from "../items/blueprint/blueprint.js"
+import { Color } from "../utils/color.js"
 
 // disable clicks while viewing screen
 SelectItem.events.click.subscribe({
@@ -223,25 +224,6 @@ export class Menu {
         closeButton.textElement.update()
         this.miscPanel.addElement(closeButton)
 
-        // const undoButton = new ButtonElement(BUTTON_HEIGHT, BUTTON_HEIGHT, "u")
-        // undoButton.addOnClick(async ({ player }) => {
-        //     const { blocks } = await Edit.playerUndoRecent(player.id)
-        //     const group = this.getSelectionGroup()
-        //
-        //     if (group) {
-        //         group.reloadArrowLocations()
-        //         group.reloadCoreLocation()
-        //         group.updateOriginalLocations()
-        //     }
-        //
-        //     if (blocks > 1000) {
-        //         player.sendMessage(blocks + " blocks filled")
-        //     }
-        // })
-        // undoButton.textElement.offset.y++
-        // undoButton.textElement.update()
-        // this.miscPanel.addElement(undoButton)
-
         const backButton = new ButtonElement(BUTTON_HEIGHT, BUTTON_HEIGHT, "<")
         backButton.addOnClick(() => {
             if (!this.previousMenus.length) return
@@ -316,16 +298,16 @@ export class Menu {
             this.player.sendMessage(`${result.metrics.blocks} blocks filled`)
         })
 
-        // addButton("Delete", () => {
-        //     const group = this.getSelectionGroup()
-        //
-        //     if (!group) return
-        //
-        //     group.removeSelections()
-        //     group.remove()
-        //
-        //     this.remove()
-        // })
+        addButton("Delete", () => {
+            const group = this.getSelectionGroup()
+
+            if (!group) return
+
+            group.removeSelections()
+            group.remove()
+
+            this.remove()
+        })
 
         //TODO: set this back to replace once its done
         addButtonWithUi("Fill", "addFillOptions")
