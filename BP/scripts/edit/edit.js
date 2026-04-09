@@ -11,6 +11,7 @@ import { JobManager } from "../utils/time.js"
 export class Edit {
     /** @type {number} */
     static blocksPlaced = 0
+    static tickingAreaId = PACK_ID + ":setblockarea"
     /** @type {number} */
     static defaultBlock = "minecraft:smooth_stone"
     /** @type {number} */
@@ -77,6 +78,14 @@ export class Edit {
         }
 
         return result
+    }
+
+    static innit() {
+        system.run(() => {
+            if (world.tickingAreaManager.getTickingArea(Edit.tickingAreaId)) {
+                world.tickingAreaManager.removeTickingArea(Edit.tickingAreaId)
+            }
+        })
     }
 
     /**
@@ -288,18 +297,20 @@ export class Edit {
         let releaseLock
         Edit._tickingAreaLock = new Promise((r) => (releaseLock = r))
 
-        const id = PACK_ID + "setblockarea"
-        const { x, y, z } = location
+        world.tickingAreaManager.createTickingArea(Edit.tickingAreaId, {
+            from: location,
+            to: location,
+            dimension: this.dimension,
+        })
 
-        this.dimension.runCommand(`tickingarea add circle ${x} ${y} ${z} 1 ${id}`)
-        await system.waitTicks(2)
+        await system.waitTicks(1)
 
         const entity = this.dimension.spawnEntity(TYPE_IDS.TICKING_ENTITY, location)
         DeathOnReload.addEntity(entity)
 
         this.tickingEntities.push(entity)
 
-        this.dimension.runCommand(`tickingarea remove ${id}`)
+        world.tickingAreaManager.removeTickingArea(Edit.tickingAreaId)
 
         system.runTimeout(() => {
             releaseLock()
@@ -324,3 +335,5 @@ export class Edit {
         return true
     }
 }
+
+Edit.innit()
