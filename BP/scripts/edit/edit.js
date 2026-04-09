@@ -315,7 +315,7 @@ export class Edit {
         system.runTimeout(() => {
             releaseLock()
             this._tickingAreaLock = null
-        }, 2)
+        }, 1)
     }
 
     removeTickingAreas() {
