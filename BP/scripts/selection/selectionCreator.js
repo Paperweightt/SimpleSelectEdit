@@ -50,35 +50,38 @@ SelectItem.events.click.subscribe({
 
         if (!blockRaycast) return Infinity
 
+        const rayResult = Selection.getPlayerViewBox(player)
+
+        if (rayResult) return Infinity
+
         const { faceLocation, block } = blockRaycast
         const location = Vector.add(block.location, faceLocation)
 
         return Vector.distance(PlayerUtils.getEyeLocation(player), location) + 0.1
     },
-    callback: (data) => {
+    callback: async (data) => {
         const { player, blockRaycast } = data
         const dimension = player.dimension
-        let group
+        let group = SelectionGroup.get(player.id)
 
         if (!blockRaycast) return
 
-        const selection = SelectionCreator.floodGet(
+        const selection = await SelectionCreator.floodGet(
+            player,
             blockRaycast.block.location,
             player.dimension,
         )
 
-        if (!selection) return
+        if (!selection) {
+            if (group) group.remove()
+            return
+        }
 
         if (player.customIsShifting) {
-            group = SelectionGroup.get(player.id) || new SelectionGroup(player, dimension)
+            group = group || new SelectionGroup(player, dimension)
         } else {
             group = new SelectionGroup(player, dimension)
         }
-
-        Edit.playerRunAndSave(player.id, "create", {
-            selection: selection,
-            dimension: player.dimension,
-        })
 
         group.toggleSelection(selection)
     },
@@ -127,76 +130,20 @@ class SelectionCreator {
         })
     }
 
-    static SEARCH_OFFSETS = [
-        // middle
-        [1, 0, 1],
-        [-1, 0, -1],
-        [-1, 0, 1],
-        [1, 0, -1],
-        [0, 0, 1],
-        [0, 0, -1],
-        [-1, 0, 0],
-        [1, 0, 0],
-
-        // top
-        [1, 1, 1],
-        [-1, 1, -1],
-        [-1, 1, 1],
-        [1, 1, -1],
-        [0, 1, 1],
-        [0, 1, -1],
-        [-1, 1, 0],
-        [1, 1, 0],
-        [0, 1, 0],
-
-        // bottom
-        [1, -1, 1],
-        [-1, -1, -1],
-        [-1, -1, 1],
-        [1, -1, -1],
-        [0, -1, 1],
-        [0, -1, -1],
-        [-1, -1, 0],
-        [1, -1, 0],
-        [0, -1, 0],
-    ]
-
     /**
+     * @param {import("@minecraft/server").Player} player
      * @param {Vector} location
-     * @returns {Selection|undefined}
+     * @returns {Promise.<Selection|undefined>}
      */
-    static floodGet(location, dimension) {
-        const queue = [new Vector(location)]
-        const visited = new Set()
-        let locationMin = new Vector(Infinity)
-        let locationMax = new Vector(-Infinity)
+    static async floodGet(player, location, dimension) {
+        const selection = new Selection(new Vector(location), new Vector(1), dimension)
 
-        while (queue.length > 0) {
-            const location = queue.shift()
+        await Edit.playerRunAndSave(player.id, "magicSelect", {
+            selection: selection,
+            dimension: dimension,
+        })
 
-            if (visited.has(location.getString())) continue
-
-            const block = dimension.getBlock(location)
-
-            if (!block) return
-
-            visited.add(location.getString())
-
-            if (block.isAir) continue
-
-            locationMin = Vector.min(locationMin, location)
-            locationMax = Vector.max(locationMax, location)
-
-            for (const [x, y, z] of this.SEARCH_OFFSETS) {
-                const newLocation = new Vector(x, y, z).add(location)
-
-                queue.push(newLocation)
-            }
-        }
-
-        const size = Vector.subtract(locationMax, locationMin).add(1)
-
-        return new Selection(locationMin, size, dimension)
+        return selection
     }
 
     /**

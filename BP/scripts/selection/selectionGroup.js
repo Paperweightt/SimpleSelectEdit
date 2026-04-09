@@ -28,6 +28,7 @@ SelectItem.events.click.subscribe({
         const { player } = data
         const dimension = player.dimension
         const rayResult = Selection.getPlayerViewBox(player)
+
         const selection = rayResult.selection
         let group
 
@@ -53,11 +54,7 @@ SelectItem.events.click.subscribe({
                 group = new SelectionGroup(player, dimension)
             }
 
-            if (!rayResult) {
-                group.remove()
-            } else {
-                group.toggleSelection(selection)
-            }
+            group.toggleSelection(selection)
         }
     },
 })
@@ -131,6 +128,8 @@ export class SelectionGroup {
                 const player = group.player
                 const container = player.getComponent("inventory").container
                 const item = container.getItem(player.selectedSlotIndex)
+
+                if (!group.isValid) continue
 
                 if (item?.typeId !== TYPE_IDS.SELECT_ITEM) {
                     group.removeEntities()
