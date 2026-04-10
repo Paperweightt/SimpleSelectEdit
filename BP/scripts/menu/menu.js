@@ -282,7 +282,7 @@ export class Menu {
                 flip: "x",
             })
 
-            this.player.sendMessage(`${result.metrics.blocks} blocks filled`)
+            Edit.log(this.player, result.metrics)
         })
 
         addButton("Flip Z", async () => {
