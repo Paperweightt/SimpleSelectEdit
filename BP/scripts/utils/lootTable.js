@@ -50,6 +50,7 @@ export class LootTable {
      * @returns {any}
      */
     roll(location) {
+        if (this.list.length === 1) return this.list[0].value
         const { x, y, z } = location
         if (!this.sorted) this.sortList()
         if (!this.weighted) this.saveWeight()
