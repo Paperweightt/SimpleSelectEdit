@@ -8,6 +8,7 @@ export class JobManager {
     timeoutId
     jobId
     reject
+    startTime = +new Date()
     previousValue
     resumeInput
 
@@ -31,7 +32,10 @@ export class JobManager {
             const { done, value } = this.iterator.next(input)
 
             if (done) {
-                this.resolve(value)
+                const stop = +new Date()
+                const ticks = Math.round((stop - this.startTime) / 50)
+
+                this.resolve({ value, ticks })
                 this.isValid = false
                 return
             }
@@ -72,8 +76,8 @@ export class JobManager {
     }
 
     cancel() {
-        system.clearJob(this.jobId)
-        system.clearRun(this.timeoutId)
+        if (this.jobId) system.clearJob(this.jobId)
+        if (this.timeoutId) system.clearRun(this.timeoutId)
 
         this.isPaused = true
         this.isValid = false
