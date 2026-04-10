@@ -13,7 +13,6 @@ Commands.register({
     permissionLevel: CommandPermissionLevel.GameDirectors,
     callback: async (data, amount = 1, victim) => {
         const { sourceEntity } = data
-
         const id = victim?.id || sourceEntity.id
 
         for (let i = 0; i < amount; i++) {
@@ -26,9 +25,7 @@ Commands.register({
                 group.updateEntityValues()
             }
 
-            if (result.blocks !== 0) {
-                sourceEntity.sendMessage(result.blocks + " blocks filled")
-            }
+            Edit.log(sourceEntity, result)
         }
 
         return { status: 0 }
@@ -42,7 +39,7 @@ Commands.register({
     callback: async (data) => {
         const { sourceEntity } = data
 
-        if (sourceEntity.job.isValid) sourceEntity.job.pause()
+        if (sourceEntity.job?.isValid) sourceEntity.job.pause()
 
         return { status: 0 }
     },
@@ -55,7 +52,20 @@ Commands.register({
     callback: async (data) => {
         const { sourceEntity } = data
 
-        if (sourceEntity.job.isValid) sourceEntity.job.resume()
+        if (sourceEntity.job?.isValid) sourceEntity.job.resume()
+
+        return { status: 0 }
+    },
+})
+
+Commands.register({
+    name: "cancel",
+    description: "cancel",
+    permissionLevel: CommandPermissionLevel.GameDirectors,
+    callback: async (data) => {
+        const { sourceEntity } = data
+
+        if (sourceEntity.job?.isValid) sourceEntity.job.cancel()
 
         return { status: 0 }
     },

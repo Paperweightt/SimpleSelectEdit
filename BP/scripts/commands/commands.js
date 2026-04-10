@@ -1,7 +1,5 @@
-import { CustomCommandParamType, CommandPermissionLevel, system } from "@minecraft/server"
+import { system } from "@minecraft/server"
 import { PACK_ID } from "../constants.js"
-import { SelectionGroup } from "../selection/selectionGroup.js"
-import { Edit } from "../edit/index.js"
 
 /** @import * as Types from "./types.js" */
 

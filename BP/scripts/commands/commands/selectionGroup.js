@@ -33,7 +33,7 @@ Commands.register({
         selectionGroup.reloadEntityLocations()
         selectionGroup.updateEntityValues()
 
-        sourceEntity.sendMessage(`${result.metrics.blocks} blocks filled`)
+        Edit.log(sourceEntity, result.metrics)
 
         return { status: 0 }
     },
@@ -65,7 +65,7 @@ Commands.register({
         selectionGroup.reloadEntityLocations()
         selectionGroup.updateEntityValues()
 
-        sourceEntity.sendMessage(`${result.metrics.blocks} blocks filled`)
+        Edit.log(sourceEntity, result.metrics)
 
         return { status: 0 }
     },
@@ -123,7 +123,7 @@ Commands.register({
             flip: axis,
         })
 
-        sourceEntity.sendMessage(`${result.metrics.blocks} blocks filled`)
+        Edit.log(sourceEntity, result.metrics)
 
         return { status: 0 }
     },
@@ -196,7 +196,7 @@ Commands.register({
         selectionGroup.reloadEntityLocations()
         selectionGroup.updateEntityValues()
 
-        sourceEntity.sendMessage(`${blocks} blocks filled`)
+        Edit.log(sourceEntity, result.metrics)
         return { status: 0 }
     },
 })
@@ -222,6 +222,6 @@ Commands.register({
             dimension: sourceEntity.dimension,
         })
 
-        sourceEntity.sendMessage(`${result.metrics.blocks} blocks filled`)
+        Edit.log(sourceEntity, result.metrics)
     },
 })
