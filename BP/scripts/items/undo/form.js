@@ -119,6 +119,11 @@ export class UndoMenu {
         form.show(this.player).then(async (response) => {
             if (response.canceled) return
 
+            const metrics = {
+                ticks: 0,
+                blocks: 0,
+            }
+
             for (let i = 0; i < undos; i++) {
                 const result = await Edit.playerUndoRecent(playerIds.id)
 
@@ -129,10 +134,11 @@ export class UndoMenu {
                     group.updateEntityValues()
                 }
 
-                if (result.blocks !== 0) {
-                    this.player.sendMessage(result.blocks + " blocks filled")
-                }
+                metrics.blocks += result.blocks
+                metrics.ticks += result.ticks
             }
+
+            Edit.log(this.player, metrics)
         })
     }
 }
