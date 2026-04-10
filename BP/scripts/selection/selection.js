@@ -1,4 +1,4 @@
-import { system } from "@minecraft/server"
+import { system, BlockVolume } from "@minecraft/server"
 import { Vector } from "../utils/vector.js"
 import { Particle } from "../utils/particle.js"
 import { PlayerUtils } from "../utils/player.js"
@@ -112,6 +112,22 @@ export class Selection {
         this.id = id ?? Math.floor(Math.random() * 10000000)
 
         Selection.list[this.id] = this
+    }
+
+    /**
+     * @returns {import("@minecraft/server").BlockVolume}
+     */
+    getBlockVolume() {
+        const max = Vector.add(this.size, this.location).subtract(1)
+        const volume = new BlockVolume(this.location, max)
+        return volume
+    }
+
+    /**
+     * @returns {import("@minecraft/server").BlockVolume}
+     */
+    getIterator() {
+        return this.getBlockVolume().getBlockLocationIterator()
     }
 
     snapshot() {
