@@ -295,7 +295,7 @@ export class Menu {
                 flip: "z",
             })
 
-            this.player.sendMessage(`${result.metrics.blocks} blocks filled`)
+            Edit.log(this.player, result.metrics)
         })
 
         addButton("Delete", () => {
@@ -383,7 +383,7 @@ export class Menu {
                 dimension: this.dimension,
             })
 
-            this.player.sendMessage(`${result.metrics.blocks} blocks filled`)
+            Edit.log(this.player, result.metrics)
         })
 
         const inputButton = addButton("Input", ({ player }) => {
