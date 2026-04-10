@@ -1,4 +1,4 @@
-import { world } from "@minecraft/server"
+import { BlockPermutation, world } from "@minecraft/server"
 import { LootTable } from "../../utils/lootTable.js"
 import { Vector } from "../../utils/vector.js"
 import { registerEdit } from "../registry.js"
@@ -38,25 +38,21 @@ registerEdit("fill", {
         }
 
         let i = 0
+
         for (const selection of ctx.selections) {
-            for (let x = 0; x < selection.size.x; x++) {
-                for (let y = 0; y < selection.size.y; y++) {
-                    for (let z = 0; z < selection.size.z; z++) {
-                        const location = new Vector(x, y, z).add(selection.location)
-                        const block = yield ctx.getBlock(location)
-                        const typeId = lootTable.roll(location) ?? Edit.defaultBlock
+            for (const location of selection.getIterator()) {
+                const block = yield ctx.getBlock(location)
+                const typeId = lootTable.roll(location) ?? Edit.defaultBlock
 
-                        if (block.typeId === typeId) {
-                            indexChange(undefined)
-                        } else {
-                            indexChange(BlockId.get(block.permutation))
-                            block.setType(typeId)
-                            metrics.blocks++
-                        }
-
-                        i++
-                    }
+                if (block.typeId === typeId) {
+                    indexChange(undefined)
+                } else {
+                    indexChange(BlockId.get(block.permutation))
+                    block.setType(typeId)
+                    metrics.blocks++
                 }
+
+                i++
             }
         }
 
@@ -84,21 +80,18 @@ registerEdit("fill", {
         }
 
         let i = 0
-        for (const selection of ctx.selections) {
-            for (let x = 0; x < selection.size.x; x++) {
-                for (let y = 0; y < selection.size.y; y++) {
-                    for (let z = 0; z < selection.size.z; z++) {
-                        const location = new Vector(x, y, z).add(selection.location)
-                        const block = yield ctx.getBlock(location)
 
-                        if (indexToBlock[i]) permutation = indexToBlock[i]
-                        if (permutation && permutation !== "undefined") {
-                            metrics.blocks++
-                            block.setPermutation(permutation)
-                        }
-                        i++
-                    }
+        for (const selection of ctx.selections) {
+            for (const location of selection.getIterator()) {
+                const block = yield ctx.getBlock(location)
+
+                if (indexToBlock[i]) permutation = indexToBlock[i]
+
+                if (permutation && permutation !== "undefined") {
+                    metrics.blocks++
+                    block.setPermutation(permutation)
                 }
+                i++
             }
         }
 
