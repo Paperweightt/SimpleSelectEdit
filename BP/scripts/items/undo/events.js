@@ -15,7 +15,7 @@ world.afterEvents.itemUse.subscribe(async (data) => {
     if (!source.customIsShifting) {
         if (menu) menu.remove()
 
-        const { blocks } = await Edit.playerUndoRecent(source.id)
+        const result = await Edit.playerUndoRecent(source.id)
         const group = SelectionGroup.get(source.id)
 
         if (group) {
@@ -23,7 +23,7 @@ world.afterEvents.itemUse.subscribe(async (data) => {
             group.updateEntityValues()
         }
 
-        if (blocks !== 0) source.sendMessage(blocks + " blocks filled")
+        Edit.log(source, result)
     } else {
         new UndoMenu(source).mainMenu()
     }
