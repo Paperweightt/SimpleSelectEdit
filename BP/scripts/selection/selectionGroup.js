@@ -307,7 +307,7 @@ export class SelectionGroup {
             this.reloadEntityLocations()
             this.updateEntityValues()
 
-            this.player.sendMessage(`${result.metrics.blocks} blocks filled`)
+            Edit.log(this.player, result.metrics)
         })
 
         this.gizmos[axis] = gizmo
@@ -454,7 +454,7 @@ export class SelectionGroup {
                 selections: this.selections,
             })
 
-            this.player.sendMessage(`${result.metrics.blocks} blocks filled`)
+            Edit.log(this.player, result.metrics)
 
             if (this.arrowMode === "duplicate") this.arrowMode = "move"
 
@@ -489,6 +489,8 @@ export class SelectionGroup {
         const location = this.getArrowLocation(direction)
         const rotation = SelectionGroup.directionToRotation[direction]
         const arrow = new Arrow(location, this.dimension, rotation)
+
+        group.reloadArrowModel()
 
         arrow.events.onMove.subscribe((data) => {
             const { editor, newLocation, prevLocation } = data
@@ -526,9 +528,7 @@ export class SelectionGroup {
                 selections: this.selections,
             })
 
-            if (result.metrics.blocks) {
-                this.player.sendMessage(`${result.metrics.blocks} blocks filled`)
-            }
+            Edit.log(this.player, result.metrics)
 
             if (this.arrowMode === "duplicate") this.arrowMode = "move"
 
