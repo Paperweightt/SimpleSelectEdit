@@ -26,13 +26,21 @@ export class Edit {
     }
 
     /**
+     * @param {import("@minecraft/server").Player} player
+     * @param {Types.EditMetrics} metrics
+     */
+    static log(player, metrics) {
+        if (!metrics.blocks) return
+        player.sendMessage(`${metrics.blocks} blocks filled in ${metrics.ticks} ticks`)
+    }
+
+    /**
      * @param {Types.EditNames} name
      * @param {Types.EditCtx} ctx
-     * @returns {Promise<Types.RunResult>}
+     * @returns {JobManager}
      */
-    static async run(name, ctx) {
+    static createJob(name, ctx) {
         const edit = new Edit(ctx.dimension)
-        let result
 
         const editCtx = {
             ...ctx,
@@ -44,15 +52,7 @@ export class Edit {
             editCtx.filter = new Filter(ctx.filter.type, ctx.filter.typeIds)
         }
 
-        const job = new JobManager(getEdit(name).run(editCtx))
-
-        try {
-            result = await job.result()
-        } finally {
-            edit.removeTickingAreas()
-        }
-
-        return result
+        return new JobManager(getEdit(name).run(editCtx))
     }
 
     /**
@@ -77,7 +77,9 @@ export class Edit {
             edit.removeTickingAreas()
         }
 
-        return result
+        result.value.ticks = result.ticks
+
+        return result.value
     }
 
     static innit() {
@@ -230,9 +232,12 @@ export class Edit {
      * @returns {Promise<{saveId:number,runResult: Types.RunResult}>}
      */
     static async runAndSave(name, ctx) {
-        const runResult = await Edit.run(name, ctx)
+        const job = Edit.createJob(name, ctx)
+        const { value: runResult, ticks } = await job.result()
 
         if (runResult.metrics.fail === true) return { runResult, saveId: -1 }
+
+        runResult.metrics.ticks = ticks
 
         const zippedUndo = Edit.zipUndo(name, runResult.undoCtx)
         const saveId = Edit.saveToHistory(zippedUndo)
@@ -247,7 +252,19 @@ export class Edit {
      * @returns {Promise<Types.RunResult>}
      */
     static async playerRunAndSave(playerId, name, ctx) {
-        const { saveId, runResult } = await this.runAndSave(name, ctx)
+        const job = Edit.createJob(name, ctx)
+
+        const player = world.getEntity(playerId)
+
+        if (player) player.job = job
+
+        const { value: runResult, ticks } = await job.result()
+        runResult.metrics.ticks = ticks
+
+        if (runResult.metrics.fail === true) return { runResult, saveId: -1 }
+
+        const zippedUndo = Edit.zipUndo(name, runResult.undoCtx)
+        const saveId = Edit.saveToHistory(zippedUndo)
 
         Edit.saveToPlayer(playerId, saveId)
 
