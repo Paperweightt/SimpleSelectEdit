@@ -6,7 +6,7 @@ import { Vector } from "../../utils/vector.js"
 
 registerEdit("create", {
     *run(ctx) {
-        const undoCtx = {
+        ctx.undoCtx = {
             type: "create",
             selection: ctx.selection,
             dimension: ctx.dimension,
@@ -18,7 +18,7 @@ registerEdit("create", {
 
         // creation is handled outside
 
-        return { undoCtx, metrics }
+        return metrics
     },
     *undo(ctx) {
         const metrics = {
@@ -68,43 +68,10 @@ registerEdit("create", {
         return undoCtx
     },
 })
-const SEARCH_OFFSETS = [
-    // middle
-    [1, 0, 1],
-    [-1, 0, -1],
-    [-1, 0, 1],
-    [1, 0, -1],
-    [0, 0, 1],
-    [0, 0, -1],
-    [-1, 0, 0],
-    [1, 0, 0],
-
-    // top
-    [1, 1, 1],
-    [-1, 1, -1],
-    [-1, 1, 1],
-    [1, 1, -1],
-    [0, 1, 1],
-    [0, 1, -1],
-    [-1, 1, 0],
-    [1, 1, 0],
-    [0, 1, 0],
-
-    // bottom
-    [1, -1, 1],
-    [-1, -1, -1],
-    [-1, -1, 1],
-    [1, -1, -1],
-    [0, -1, 1],
-    [0, -1, -1],
-    [-1, -1, 0],
-    [1, -1, 0],
-    [0, -1, 0],
-]
 
 registerEdit("magicSelect", {
     *run(ctx) {
-        const undoCtx = {
+        ctx.undoCtx = {
             type: "create",
             selection: ctx.selection,
             dimension: ctx.dimension,
@@ -182,7 +149,7 @@ registerEdit("magicSelect", {
             }
         }
 
-        return { undoCtx, metrics }
+        return metrics
     },
     *undo(ctx) {
         const metrics = {

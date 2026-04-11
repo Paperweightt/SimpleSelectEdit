@@ -36,27 +36,6 @@ export class Edit {
 
     /**
      * @param {Types.EditNames} name
-     * @param {Types.EditCtx} ctx
-     * @returns {JobManager}
-     */
-    static createJob(name, ctx) {
-        const edit = new Edit(ctx.dimension)
-
-        const editCtx = {
-            ...ctx,
-            getBlock: edit.getBlock.bind(edit),
-            locationIsValid: edit.locationIsValid.bind(edit),
-        }
-
-        if (ctx.filter?.type && ctx.filter?.typeIds) {
-            editCtx.filter = new Filter(ctx.filter.type, ctx.filter.typeIds)
-        }
-
-        return new JobManager(getEdit(name).run(editCtx))
-    }
-
-    /**
-     * @param {Types.EditNames} name
      * @returns {Promise<Types.EditMetrics>}
      */
     static async undo(name, ctx) {
@@ -180,18 +159,6 @@ export class Edit {
 
     /**
      * @param {string} playerId
-     * @returns {promise<Types.EditMetrics>}
-     */
-    static async playerUndoRecent(playerId) {
-        const undoCtx = this.playerGetRecentUndo(playerId)
-
-        const editResolve = await this.undo(undoCtx.type, undoCtx)
-
-        return editResolve
-    }
-
-    /**
-     * @param {string} playerId
      * @returns {number[]}
      */
     static getPlayerUndoIds(playerId) {
@@ -227,48 +194,74 @@ export class Edit {
     }
 
     /**
-     * @param {Types.EditNames} name
-     * @param {Types.EditCtx} ctx
-     * @returns {Promise<{saveId:number,runResult: Types.RunResult}>}
+     * @param {string} playerId
+     * @returns {promise<Types.EditMetrics>}
      */
-    static async runAndSave(name, ctx) {
-        const job = Edit.createJob(name, ctx)
-        const { value: runResult, ticks } = await job.result()
+    static async playerUndoRecent(playerId) {
+        const player = world.getEntity(playerId)
 
-        if (runResult.metrics.fail === true) return { runResult, saveId: -1 }
+        if (player?.job.isValid) {
+            await player.job.cancel()
+        }
 
-        runResult.metrics.ticks = ticks
+        const undoCtx = this.playerGetRecentUndo(playerId)
+        const editResolve = await this.undo(undoCtx.type, undoCtx)
 
-        const zippedUndo = Edit.zipUndo(name, runResult.undoCtx)
-        const saveId = Edit.saveToHistory(zippedUndo)
+        console.log(JSON.stringify(editResolve))
 
-        return { runResult, saveId }
+        return editResolve
     }
 
     /**
      * @param {string} playerId
      * @param {Types.EditNames} name
      * @param {Types.EditCtx} ctx
-     * @returns {Promise<Types.RunResult>}
+     * @returns {Promise<Types.EditMetrics|undefined>}
      */
     static async playerRunAndSave(playerId, name, ctx) {
-        const job = Edit.createJob(name, ctx)
+        const edit = new Edit(ctx.dimension)
 
+        const editCtx = {
+            ...ctx,
+            getBlock: edit.getBlock.bind(edit),
+            locationIsValid: edit.locationIsValid.bind(edit),
+            undoCtx: {},
+        }
+
+        const job = new JobManager(getEdit(name).run(editCtx))
         const player = world.getEntity(playerId)
 
         if (player) player.job = job
 
-        const { value: runResult, ticks } = await job.result()
-        runResult.metrics.ticks = ticks
+        return job
+            .result()
+            .then(
+                ({ value: metrics, ticks }) => {
+                    if (metrics.fail === true) return Promise.reject("execution failed")
 
-        if (runResult.metrics.fail === true) return { runResult, saveId: -1 }
+                    metrics.ticks = ticks
 
-        const zippedUndo = Edit.zipUndo(name, runResult.undoCtx)
-        const saveId = Edit.saveToHistory(zippedUndo)
+                    const zippedUndo = Edit.zipUndo(name, editCtx.undoCtx)
+                    const saveId = Edit.saveToHistory(zippedUndo)
 
-        Edit.saveToPlayer(playerId, saveId)
+                    Edit.saveToPlayer(playerId, saveId)
 
-        return runResult
+                    return metrics
+                },
+                () => {
+                    const zippedUndo = Edit.zipUndo(name, editCtx.undoCtx)
+                    const saveId = Edit.saveToHistory(zippedUndo)
+
+                    Edit.saveToPlayer(playerId, saveId)
+
+                    console.log("partial save")
+
+                    return Promise.reject("execution interrupted")
+                },
+            )
+            .finally(() => {
+                edit.removeTickingAreas()
+            })
     }
 
     /**

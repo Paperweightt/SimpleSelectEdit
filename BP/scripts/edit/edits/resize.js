@@ -5,21 +5,19 @@ import { Vector } from "../../utils/vector.js"
 
 registerEdit("resize", {
     *run(ctx) {
-        const undoCtx = {
+        ctx.undoCtx = {
             type: "resize",
             selections: ctx.selections,
             vector: ctx.vector,
             direction: ctx.direction,
             dimension: ctx.dimension,
         }
-        const metrics = {
+        // only pass data to undo since resize occurs constantly as the player drags an arrow
+
+        return {
             blocks: 0,
             ticks: 0,
         }
-
-        // only pass data to undo since resize occurs constantly as the player drags an arrow
-
-        return { undoCtx, metrics }
     },
     *undo(ctx) {
         const metrics = {

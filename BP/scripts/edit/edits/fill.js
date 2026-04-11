@@ -1,4 +1,4 @@
-import { BlockPermutation, world } from "@minecraft/server"
+import { world } from "@minecraft/server"
 import { LootTable } from "../../utils/lootTable.js"
 import { Vector } from "../../utils/vector.js"
 import { registerEdit } from "../registry.js"
@@ -8,11 +8,12 @@ import { Edit } from "../edit.js"
 
 registerEdit("fill", {
     *run(ctx) {
-        const undoCtx = {
+        ctx.undoCtx = {
             type: "fill",
             selections: ctx.selections,
             dimension: ctx.dimension,
             changes: {},
+            blocks: 0,
         }
         const metrics = {
             blocks: 0,
@@ -22,10 +23,10 @@ registerEdit("fill", {
         const indexChange = (id) => {
             if (prevId === id) return
 
-            if (!undoCtx.changes[id]) {
-                undoCtx.changes[id] = [i]
+            if (!ctx.undoCtx.changes[id]) {
+                ctx.undoCtx.changes[id] = [i]
             } else {
-                undoCtx.changes[id].push(i)
+                ctx.undoCtx.changes[id].push(i)
             }
 
             prevId = id
@@ -50,13 +51,14 @@ registerEdit("fill", {
                     indexChange(BlockId.get(block.permutation))
                     block.setType(typeId)
                     metrics.blocks++
+                    ctx.undoCtx.blocks++
                 }
 
                 i++
             }
         }
 
-        return { undoCtx, metrics }
+        return metrics
     },
     *undo(ctx) {
         const metrics = {
@@ -88,10 +90,13 @@ registerEdit("fill", {
                 if (indexToBlock[i]) permutation = indexToBlock[i]
 
                 if (permutation && permutation !== "undefined") {
-                    metrics.blocks++
+                    if (!ctx.blocks--) {
+                        return metrics
+                    }
                     block.setPermutation(permutation)
+                    metrics.blocks++
+                    i++
                 }
-                i++
             }
         }
 
@@ -101,11 +106,13 @@ registerEdit("fill", {
 
         return metrics
     },
+    encodeStep() {},
     zipUndo(ctx) {
         const undoCtx = {
             type: ctx.type,
             dimensionId: ctx.dimension.id,
             changes: ctx.changes,
+            blocks: ctx.blocks,
         }
 
         undoCtx.selections = ctx.selections.map((selection) => selection.snapshot())
@@ -120,6 +127,7 @@ registerEdit("fill", {
             start: new Vector(ctx.start),
             end: new Vector(ctx.end),
             changes: ctx.changes,
+            blocks: ctx.blocks,
             selections: ctx.selections.map((snapshot) => {
                 return (
                     Selection.get(snapshot[0]) ||
