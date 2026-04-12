@@ -297,17 +297,17 @@ export class SelectionGroup {
 
             if (rotation.y === 0) return
 
-            const result = await Edit.playerRunAndSave(this.player.id, "rotate", {
+            Edit.playerRunAndSave(this.player.id, "rotate", {
                 dimension: this.dimension,
                 selections: this.selections,
                 rotation: rotation.y,
+            }).then((metrics) => {
+                this.snapToGrid()
+                this.reloadEntityLocations()
+                this.updateEntityValues()
+
+                Edit.log(this.player, metrics)
             })
-
-            this.snapToGrid()
-            this.reloadEntityLocations()
-            this.updateEntityValues()
-
-            Edit.log(this.player, result.metrics)
         })
 
         this.gizmos[axis] = gizmo
@@ -422,6 +422,7 @@ export class SelectionGroup {
 
     /** @returns {Core} */
     createCore() {
+        const zero = new Vector(0)
         this.core = new Core(this.getCenter(), this.dimension)
 
         this.core.events.onMove.subscribe((data) => {
@@ -430,6 +431,8 @@ export class SelectionGroup {
             if (editor.id !== this.player.id) return
 
             const diff = Vector.subtract(newLocation, prevLocation)
+
+            if (diff.equals(zero)) return
 
             this.moveSelections(diff)
             this.reloadEntityLocations()
@@ -444,21 +447,19 @@ export class SelectionGroup {
 
             const diff = Vector.subtract(location, prevLocation)
 
-            if (Vector.equals(diff, new Vector(0))) return
+            if (diff.equals(zero)) return
 
             const mode = this.arrowMode === "duplicate" ? "duplicate" : "move"
 
-            const result = await Edit.playerRunAndSave(this.player.id, mode, {
+            Edit.playerRunAndSave(this.player.id, mode, {
                 dimension: this.dimension,
                 vector: diff.round(),
                 selections: this.selections,
+            }).then((metrics) => {
+                Edit.log(this.player, metrics)
+                if (this.arrowMode === "duplicate") this.arrowMode = "move"
+                this.updateEntityValues()
             })
-
-            Edit.log(this.player, result.metrics)
-
-            if (this.arrowMode === "duplicate") this.arrowMode = "move"
-
-            this.updateEntityValues()
         })
 
         return this.core
@@ -489,8 +490,9 @@ export class SelectionGroup {
         const location = this.getArrowLocation(direction)
         const rotation = SelectionGroup.directionToRotation[direction]
         const arrow = new Arrow(location, this.dimension, rotation)
+        const zero = new Vector(0)
 
-        group.reloadArrowModel()
+        this.reloadArrowModel()
 
         arrow.events.onMove.subscribe((data) => {
             const { editor, newLocation, prevLocation } = data
@@ -498,6 +500,8 @@ export class SelectionGroup {
             if (editor.id !== this.player.id) return
 
             const diff = Vector.subtract(newLocation, prevLocation)
+
+            if (diff.equals(zero)) return
 
             // prettier-ignore
             switch (this.arrowMode) {
@@ -519,20 +523,18 @@ export class SelectionGroup {
             this.snapToGrid()
             this.reloadEntityLocations()
 
-            if (new Vector(0).equals(diff)) return
+            if (diff.equals(zero)) return
 
-            const result = await Edit.playerRunAndSave(this.id, this.arrowMode, {
+            Edit.playerRunAndSave(this.id, this.arrowMode, {
                 dimension: this.dimension,
                 direction: direction,
                 vector: diff,
                 selections: this.selections,
+            }).then((metrics) => {
+                Edit.log(this.player, metrics)
+                if (this.arrowMode === "duplicate") this.arrowMode = "move"
+                this.updateEntityValues()
             })
-
-            Edit.log(this.player, result.metrics)
-
-            if (this.arrowMode === "duplicate") this.arrowMode = "move"
-
-            this.updateEntityValues()
         })
 
         this.arrows[direction] = arrow
@@ -662,12 +664,13 @@ export class SelectionGroup {
         const distanceMax = CONFIG.MAX_SELECTION_DISTANCE
         const max = new Vector(this.player.location).add(distanceMax).setY(yMax)
         const min = new Vector(this.player.location).subtract(distanceMax).setY(yMin)
+        const axis = Object.entries(diff).find(([_, value]) => value !== 0)[0]
 
         for (const selection of this.selections) {
-            diff = Vector.max(diff, Vector.subtract(min, selection.location))
-            diff = Vector.min(
-                diff,
-                Vector.subtract(max, selection.location).subtract(selection.size),
+            diff[axis] = Math.max(diff[axis], min[axis] - selection.location[axis])
+            diff[axis] = Math.min(
+                diff[axis],
+                max[axis] - selection.location[axis] - selection.size[axis],
             )
         }
 
