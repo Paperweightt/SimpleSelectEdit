@@ -6,74 +6,66 @@ import { BlockId } from "../../utils/blockId.js"
 
 registerEdit("duplicate", {
     *run(ctx) {
-        const undoCtx = {
+        ctx.undoCtx = {
             type: "duplicate",
             selections: ctx.selections,
             dimension: ctx.dimension,
             vector: ctx.vector,
+            blocks: 0,
             changes: {},
         }
         const metrics = {
             blocks: 0,
             ticks: 0,
         }
-        const originalPermutations = []
 
+        let i = 0
         let prevId
         const addChange = (id) => {
             if (prevId === id) return
 
-            if (!undoCtx.changes[id]) {
-                undoCtx.changes[id] = [i]
+            if (!ctx.undoCtx.changes[id]) {
+                ctx.undoCtx.changes[id] = [i]
             } else {
-                undoCtx.changes[id].push(i)
+                ctx.undoCtx.changes[id].push(i)
             }
 
             prevId = id
         }
 
-        for (const selection of ctx.selections) {
-            for (let x = 0; x < selection.size.x; x++) {
-                for (let y = 0; y < selection.size.y; y++) {
-                    for (let z = 0; z < selection.size.z; z++) {
-                        const location = new Vector(x, y, z)
-                            .add(selection.location)
-                            .subtract(ctx.vector)
-                        const block = yield ctx.getBlock(location)
+        const finishedSelections = []
+        const direction = Vector.abs(ctx.vector)
+            .divide(ctx.vector)
+            .map((v) => (isNaN(v) ? 1 : v))
+            .multiply(-1)
 
-                        originalPermutations.push(block.permutation)
-                    }
+        for (const selection of ctx.selections) {
+            let iterator = selection.getIterator(direction)
+
+            setblock: for (const endLocation of iterator) {
+                for (const [start, end] of finishedSelections) {
+                    if (Vector.isBetweenInclusive(endLocation, start, end))
+                        continue setblock
                 }
+
+                const startLocation = Vector.subtract(endLocation, ctx.vector)
+                const block = yield ctx.getBlock(startLocation)
+                const copy = yield ctx.getBlock(endLocation)
+
+                metrics.blocks++
+                ctx.undoCtx.blocks++
+
+                addChange(BlockId.get(copy.permutation))
+                i++
+
+                copy.setPermutation(block.permutation)
             }
+            const { start, end } = selection.getStartEnd()
+
+            finishedSelections.push([start, end])
         }
 
-        let i = 0
-        for (const selection of ctx.selections) {
-            for (let x = 0; x < selection.size.x; x++) {
-                for (let y = 0; y < selection.size.y; y++) {
-                    for (let z = 0; z < selection.size.z; z++) {
-                        const location = new Vector(x, y, z).add(selection.location)
-                        const block = yield ctx.getBlock(location)
-                        const newPermutation = originalPermutations[i]
-                        const newPermutationId = BlockId.get(originalPermutations[i])
-                        let oldPermutationId = BlockId.get(block.permutation)
-
-                        if (newPermutationId === oldPermutationId) {
-                            oldPermutationId = undefined
-                        } else {
-                            block.setPermutation(newPermutation)
-                            metrics.blocks++
-                        }
-
-                        addChange(oldPermutationId)
-
-                        i++
-                    }
-                }
-            }
-        }
-
-        return { undoCtx, metrics }
+        return metrics
     },
     *undo(ctx) {
         const metrics = {
@@ -96,22 +88,42 @@ registerEdit("duplicate", {
         }
 
         let i = 0
-        for (const selection of ctx.selections) {
-            for (let x = 0; x < selection.size.x; x++) {
-                for (let y = 0; y < selection.size.y; y++) {
-                    for (let z = 0; z < selection.size.z; z++) {
-                        const location = new Vector(x, y, z).add(selection.location)
-                        const block = yield ctx.getBlock(location)
+        const finishedSelections = []
+        const direction = Vector.abs(ctx.vector)
+            .divide(ctx.vector)
+            .map((v) => (isNaN(v) ? 1 : v))
+            .multiply(-1)
 
-                        if (indexToBlock[i]) permutation = indexToBlock[i]
-                        if (permutation && permutation !== "undefined") {
-                            metrics.blocks++
-                            block.setPermutation(permutation)
-                        }
-                        i++
-                    }
+        for (const selection of ctx.selections) {
+            const iterator = selection.getIterator(direction)
+
+            setblock: for (const startLocation of iterator) {
+                for (const [start, end] of finishedSelections) {
+                    if (Vector.isBetweenInclusive(startLocation, start, end))
+                        continue setblock
                 }
+
+                const block = yield ctx.getBlock(startLocation)
+
+                if (!ctx.blocks--) {
+                    for (const selection of ctx.selections) {
+                        selection.location.subtract(ctx.vector)
+                        selection.displayLocation = selection.location
+                    }
+                    return metrics
+                }
+
+                if (indexToBlock[i]) permutation = indexToBlock[i]
+
+                block.setPermutation(permutation)
+
+                metrics.blocks++
+
+                i++
             }
+            const { start, end } = selection.getStartEnd()
+
+            finishedSelections.push([start, end])
         }
 
         for (const selection of ctx.selections) {
@@ -125,6 +137,7 @@ registerEdit("duplicate", {
             type: ctx.type,
             dimensionId: ctx.dimension.id,
             vector: ctx.vector,
+            blocks: ctx.blocks,
             changes: ctx.changes,
         }
 
@@ -139,6 +152,7 @@ registerEdit("duplicate", {
             dimension: dimension,
             vector: new Vector(ctx.vector),
             changes: ctx.changes,
+            blocks: ctx.blocks,
             selections: ctx.selections.map((snapshot) => {
                 return (
                     Selection.get(snapshot[0]) ||
