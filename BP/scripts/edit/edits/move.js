@@ -6,96 +6,73 @@ import { BlockId } from "../../utils/blockId.js"
 
 registerEdit("move", {
     *run(ctx) {
-        const undoCtx = {
+        ctx.undoCtx = {
             type: "move",
             selections: ctx.selections,
             dimension: ctx.dimension,
             vector: ctx.vector,
+            blocks: 0,
             changes: {},
         }
         const metrics = {
             blocks: 0,
             ticks: 0,
         }
-        const originalPermutations = []
 
+        let i = 0
         let prevId
         const addChange = (id) => {
             if (prevId === id) return
 
-            if (!undoCtx.changes[id]) {
-                undoCtx.changes[id] = [i]
+            if (!ctx.undoCtx.changes[id]) {
+                ctx.undoCtx.changes[id] = [i]
             } else {
-                undoCtx.changes[id].push(i)
+                ctx.undoCtx.changes[id].push(i)
             }
 
             prevId = id
         }
 
-        for (const selection of ctx.selections) {
-            for (let x = 0; x < selection.size.x; x++) {
-                for (let y = 0; y < selection.size.y; y++) {
-                    for (let z = 0; z < selection.size.z; z++) {
-                        const location = new Vector(x, y, z)
-                            .add(selection.location)
-                            .subtract(ctx.vector)
-                        const block = yield ctx.getBlock(location)
-
-                        originalPermutations.push(block.permutation)
-                    }
-                }
-            }
-        }
+        const finishedSelections = []
+        const direction = Vector.abs(ctx.vector)
+            .divide(ctx.vector)
+            .map((v) => (isNaN(v) ? 1 : v))
+            .multiply(-1)
 
         for (const selection of ctx.selections) {
-            for (let x = 0; x < selection.size.x; x++) {
-                for (let y = 0; y < selection.size.y; y++) {
-                    for (let z = 0; z < selection.size.z; z++) {
-                        const location = new Vector(x, y, z)
-                            .add(selection.location)
-                            .subtract(ctx.vector)
-                        const block = yield ctx.getBlock(location)
-                        block.setType("minecraft:air")
-                        metrics.blocks++
-                    }
+            let iterator = selection.getIterator(direction)
+
+            setblock: for (const endLocation of iterator) {
+                for (const [start, end] of finishedSelections) {
+                    if (Vector.isBetweenInclusive(endLocation, start, end))
+                        continue setblock
                 }
+
+                const startLocation = Vector.subtract(endLocation, ctx.vector)
+                const block = yield ctx.getBlock(startLocation)
+                const copy = yield ctx.getBlock(endLocation)
+
+                metrics.blocks += 2
+                ctx.undoCtx.blocks++
+
+                addChange(BlockId.get(copy.permutation))
+                i++
+
+                copy.setPermutation(block.permutation)
+                block.setType("minecraft:air")
             }
-        }
-        let i = 0
+            const { start, end } = selection.getStartEnd()
 
-        for (const selection of ctx.selections) {
-            for (let x = 0; x < selection.size.x; x++) {
-                for (let y = 0; y < selection.size.y; y++) {
-                    for (let z = 0; z < selection.size.z; z++) {
-                        const location = new Vector(x, y, z).add(selection.location)
-                        const block = yield ctx.getBlock(location)
-                        const newPermutation = originalPermutations[i]
-                        const newPermutationId = BlockId.get(originalPermutations[i])
-                        let oldPermutationId = BlockId.get(block.permutation)
-
-                        if (newPermutationId === oldPermutationId) {
-                            oldPermutationId = undefined
-                        } else {
-                            block.setPermutation(newPermutation)
-                            metrics.blocks++
-                        }
-
-                        addChange(oldPermutationId)
-
-                        i++
-                    }
-                }
-            }
+            finishedSelections.push([start, end])
         }
 
-        return { undoCtx, metrics }
+        return metrics
     },
     *undo(ctx) {
         const metrics = {
             blocks: 0,
             ticks: 0,
         }
-        const originalPermutations = []
         const indexToBlock = {}
         let permutation
 
@@ -111,58 +88,51 @@ registerEdit("move", {
             }
         }
 
-        for (const selection of ctx.selections) {
-            for (let x = 0; x < selection.size.x; x++) {
-                for (let y = 0; y < selection.size.y; y++) {
-                    for (let z = 0; z < selection.size.z; z++) {
-                        const location = new Vector(x, y, z).add(selection.location)
-                        const block = yield ctx.getBlock(location)
-
-                        originalPermutations.push(block.permutation)
-                    }
-                }
-            }
-        }
-
-        let j = 0
-        for (const selection of ctx.selections) {
-            for (let x = 0; x < selection.size.x; x++) {
-                for (let y = 0; y < selection.size.y; y++) {
-                    for (let z = 0; z < selection.size.z; z++) {
-                        const location = new Vector(x, y, z).add(selection.location)
-                        const block = yield ctx.getBlock(location)
-
-                        if (indexToBlock[j]) permutation = indexToBlock[j]
-                        if (permutation && permutation !== "undefined") {
-                            metrics.blocks++
-                            block.setPermutation(permutation)
-                        }
-                        j++
-                    }
-                }
-            }
-        }
-
         let i = 0
+        const finishedSelections = []
+        const direction = Vector.abs(ctx.vector)
+            .divide(ctx.vector)
+            .map((v) => (isNaN(v) ? 1 : v))
+            .multiply(-1)
+
         for (const selection of ctx.selections) {
-            for (let x = 0; x < selection.size.x; x++) {
-                for (let y = 0; y < selection.size.y; y++) {
-                    for (let z = 0; z < selection.size.z; z++) {
-                        const location = new Vector(x, y, z)
-                            .add(selection.location)
-                            .subtract(ctx.vector)
+            const iterator = selection.getIterator(direction)
 
-                        const block = yield ctx.getBlock(location)
-
-                        metrics.blocks++
-                        block.setPermutation(originalPermutations[i++])
-                    }
+            setblock: for (const startLocation of iterator) {
+                for (const [start, end] of finishedSelections) {
+                    if (Vector.isBetweenInclusive(startLocation, start, end))
+                        continue setblock
                 }
+
+                const endLocation = Vector.subtract(startLocation, ctx.vector)
+                const block = yield ctx.getBlock(startLocation)
+                const copy = yield ctx.getBlock(endLocation)
+
+                if (!ctx.blocks--) {
+                    for (const selection of ctx.selections) {
+                        selection.location.subtract(ctx.vector)
+                        selection.displayLocation = selection.location
+                    }
+                    return metrics
+                }
+
+                if (indexToBlock[i]) permutation = indexToBlock[i]
+
+                copy.setPermutation(block.permutation)
+                block.setPermutation(permutation)
+
+                metrics.blocks += 2
+
+                i++
             }
+            const { start, end } = selection.getStartEnd()
+
+            finishedSelections.push([start, end])
         }
 
         for (const selection of ctx.selections) {
             selection.location.subtract(ctx.vector)
+            selection.displayLocation = selection.location
         }
 
         return metrics
@@ -173,6 +143,7 @@ registerEdit("move", {
             dimensionId: ctx.dimension.id,
             vector: ctx.vector,
             changes: ctx.changes,
+            blocks: ctx.blocks,
         }
 
         undoCtx.selections = ctx.selections.map((selection) => selection.snapshot())
@@ -186,6 +157,7 @@ registerEdit("move", {
             dimension: dimension,
             vector: new Vector(ctx.vector),
             changes: ctx.changes,
+            blocks: ctx.blocks,
             selections: ctx.selections.map((snapshot) => {
                 return (
                     Selection.get(snapshot[0]) ||
