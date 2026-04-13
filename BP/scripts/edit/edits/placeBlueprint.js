@@ -5,11 +5,12 @@ import { world } from "@minecraft/server"
 
 registerEdit("placeBlueprint", {
     *run(ctx) {
-        const undoCtx = {
+        ctx.undoCtx = {
             type: "placeBlueprint",
             selections: ctx.selections,
             location: ctx.location,
             dimension: ctx.dimension,
+            blocks: 0,
             changes: {},
         }
         const metrics = {
@@ -25,10 +26,10 @@ registerEdit("placeBlueprint", {
         const indexChange = (id) => {
             if (prevId === id) return
 
-            if (!undoCtx.changes[id]) {
-                undoCtx.changes[id] = [i]
+            if (!ctx.undoCtx.changes[id]) {
+                ctx.undoCtx.changes[id] = [i]
             } else {
-                undoCtx.changes[id].push(i)
+                ctx.undoCtx.changes[id].push(i)
             }
 
             prevId = id
@@ -66,6 +67,7 @@ registerEdit("placeBlueprint", {
 
                         if (permutation && permutation !== "undefined") {
                             metrics.blocks++
+                            ctx.undoCtx.blocks++
                             block.setPermutation(permutation)
                         }
                         i++
@@ -112,6 +114,7 @@ registerEdit("placeBlueprint", {
                         if (indexToBlock[i]) permutation = indexToBlock[i]
                         if (permutation && permutation !== "undefined") {
                             metrics.blocks++
+                            if (!ctx.blocks--) return metrics
                             block.setPermutation(permutation)
                         }
                         i++
@@ -129,6 +132,7 @@ registerEdit("placeBlueprint", {
             selections: ctx.selections,
             location: ctx.location,
             changes: ctx.changes,
+            blocks: ctx.blocks,
         }
 
         return undoCtx
@@ -140,6 +144,7 @@ registerEdit("placeBlueprint", {
             location: new Vector(ctx.location),
             selections: ctx.selections,
             changes: ctx.changes,
+            blocks: ctx.blocks,
         }
 
         return undoCtx
