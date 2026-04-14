@@ -110,6 +110,13 @@ export class Vector {
         return true
     }
 
+    static isBetweenInclusive({ x, y, z }, a, b) {
+        if (!((a.x <= x && x <= b.x) || (a.x >= x && x >= b.x))) return false
+        if (!((a.y <= y && y <= b.y) || (a.y >= y && y >= b.y))) return false
+        if (!((a.z <= z && z <= b.z) || (a.z >= z && z >= b.z))) return false
+        return true
+    }
+
     static multiply(a, b) {
         if (typeof b === "number") return new Vector(a.x * b, a.y * b, a.z * b)
         return new Vector(a.x * b.x, a.y * b.y, a.z * b.z)
@@ -213,6 +220,16 @@ export class Vector {
         if (!((a.y < this.y && this.y < b.y) || (a.y > this.y && this.y > b.y)))
             return false
         if (!((a.z < this.z && this.z < b.z) || (a.z > this.z && this.z > b.z)))
+            return false
+        return true
+    }
+
+    isBetweenInclusive(a, b) {
+        if (!((a.x <= this.x && this.x <= b.x) || (a.x >= this.x && this.x >= b.x)))
+            return false
+        if (!((a.y <= this.y && this.y <= b.y) || (a.y >= this.y && this.y >= b.y)))
+            return false
+        if (!((a.z <= this.z && this.z <= b.z) || (a.z >= this.z && this.z >= b.z)))
             return false
         return true
     }
