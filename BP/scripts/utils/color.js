@@ -6,7 +6,6 @@
  */
 
 export class Color {
-    static blocks = Blocks
     /**
      * @param {import('@minecraft/server').Player} player
      * @param {number} saturation - [[0 - 1]]
