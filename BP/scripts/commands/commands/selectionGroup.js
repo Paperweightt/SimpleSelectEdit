@@ -168,8 +168,10 @@ Commands.register({
 Commands.register({
     name: "copy",
     description: "copy",
-    mandatoryParameters: [{ name: "direction", type: CustomCommandParamType.Location }],
-    optionalParameters: [{ name: "repeats", type: CustomCommandParamType.Integer }],
+    optionalParameters: [
+        { name: "direction", type: CustomCommandParamType.Location },
+        { name: "repeats", type: CustomCommandParamType.Integer },
+    ],
     permissionLevel: CommandPermissionLevel.GameDirectors,
     callback: async (data, direction, repeats = 1) => {
         const { sourceEntity } = data
@@ -177,6 +179,11 @@ Commands.register({
         const metrics = {
             blocks: 0,
             ticks: 0,
+        }
+
+        if (!direction) {
+            selectionGroup.arrowMode = "duplicate"
+            return { status: 0 }
         }
 
         direction = Vector.add(direction, new Vector(-0.5, 0, -0.5))
