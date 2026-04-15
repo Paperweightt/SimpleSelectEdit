@@ -76,7 +76,7 @@ registerEdit("placeBlueprint", {
             }
         }
 
-        return { undoCtx, metrics }
+        return metrics
     },
     *undo(ctx) {
         const metrics = {
