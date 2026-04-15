@@ -132,7 +132,7 @@ Commands.register({
 Commands.register({
     name: "save_as",
     description: "save_as",
-    mandatoryParameters: [{ name: "degrees", type: CustomCommandParamType.String }],
+    mandatoryParameters: [{ name: "name", type: CustomCommandParamType.String }],
     permissionLevel: CommandPermissionLevel.GameDirectors,
     callback: async (data, name) => {
         const { sourceEntity } = data
@@ -174,7 +174,10 @@ Commands.register({
     callback: async (data, direction, repeats = 1) => {
         const { sourceEntity } = data
         const selectionGroup = SelectionGroup.get(sourceEntity.id)
-        let blocks = 0
+        const metrics = {
+            blocks: 0,
+            ticks: 0,
+        }
 
         direction = Vector.add(direction, new Vector(-0.5, 0, -0.5))
 
@@ -189,7 +192,8 @@ Commands.register({
                 vector: direction,
                 selections: selectionGroup.selections,
             })
-            blocks += result.metrics.blocks
+            metrics.blocks += result.blocks
+            metrics.ticks += result.ticks
         }
 
         selectionGroup.snapToGrid()
@@ -216,12 +220,12 @@ Commands.register({
             [blockType.id]: 1,
         }
 
-        const result = await Edit.playerRunAndSave(sourceEntity.id, "fill", {
+        Edit.playerRunAndSave(sourceEntity.id, "fill", {
             blocks: fillObject,
             selections: group.selections,
             dimension: sourceEntity.dimension,
+        }).then((metrics) => {
+            Edit.log(sourceEntity, metrics)
         })
-
-        Edit.log(sourceEntity, result.metrics)
     },
 })
