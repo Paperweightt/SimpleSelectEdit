@@ -126,7 +126,7 @@ export class Selection {
     /**
      * @param {Vector} [direction=new Vector(1)]
      * @param {"xyz"|"xzy"|"yxz"|"yzx"|"zxy"|"zyx"} [order="xyz"]
-     * @returns {import("@minecraft/server").BlockLocationIterator}
+     * @returns {Iterable.<Vector>}
      */
     *getIterator(direction = new Vector(1), order = "xyz") {
         const { start, end } = this.getStartEnd()
@@ -168,6 +168,46 @@ export class Selection {
                 }
             }
         }
+    }
+
+    /**
+     * @param {{y:number,p:number,r:number}} rotation
+     * @param {Vector} pivot
+     */
+    rotate(rotation, pivot) {
+        let min = new Vector(Infinity)
+        let max = new Vector(-Infinity)
+
+        for (let corner of this.getCorners()) {
+            corner = Vector.rotate(corner, rotation, pivot)
+
+            min = Vector.min(corner, min)
+            max = Vector.max(corner, max)
+        }
+
+        min.floor()
+        max.ceil()
+
+        this.location = min
+        this.size = Vector.subtract(max, min).add(1)
+    }
+
+    /**
+     * @returns {Vector[]}
+     */
+    getCorners() {
+        const { start, end } = this.getStartEnd()
+
+        return [
+            start,
+            end,
+            new Vector(start).setX(end.x),
+            new Vector(start).setY(end.y),
+            new Vector(start).setZ(end.z),
+            new Vector(end).setX(start.x),
+            new Vector(end).setY(start.y),
+            new Vector(end).setZ(start.z),
+        ]
     }
 
     snapshot() {
