@@ -151,41 +151,7 @@ registerEdit("magicSelect", {
 
         return metrics
     },
-    *undo(ctx) {
-        const metrics = {
-            blocks: 0,
-            ticks: 0,
-        }
-
-        if (ctx.selection.isOwned) {
-            for (const group of SelectionGroup.getAll()) {
-                const index = group.getSelectionIndex(ctx.selection)
-                if (index !== -1) {
-                    group.removeSelection(index)
-
-                    if (group.selections.length > 0) {
-                        group.reloadArrowLocations()
-                        group.reloadCoreLocation()
-                        group.updateEntityValues()
-                    }
-
-                    break
-                }
-            }
-        }
-
-        ctx.selection.remove()
-
-        return metrics
-    },
-    zipUndo(ctx) {
-        const undoCtx = {
-            type: ctx.type,
-            dimensionId: ctx.dimension.id,
-            snapshot: ctx.selection.snapshot(),
-        }
-
-        return undoCtx
-    },
+    *undo() {},
+    zipUndo() {},
     unzipUndo() {},
 })
