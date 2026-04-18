@@ -185,8 +185,8 @@ export class Selection {
             max = Vector.max(corner, max)
         }
 
-        min.floor()
-        max.ceil()
+        min.round()
+        max.round()
 
         this.location = min
         this.size = Vector.subtract(max, min).add(1)
