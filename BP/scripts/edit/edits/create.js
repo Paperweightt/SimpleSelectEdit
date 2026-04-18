@@ -152,6 +152,14 @@ registerEdit("magicSelect", {
         return metrics
     },
     *undo() {},
-    zipUndo() {},
+    zipUndo(ctx) {
+        const undoCtx = {
+            type: ctx.type,
+            dimensionId: ctx.dimension.id,
+            snapshot: ctx.selection.snapshot(),
+        }
+
+        return undoCtx
+    },
     unzipUndo() {},
 })
