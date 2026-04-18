@@ -45,14 +45,10 @@ registerEdit("fill", {
                 const block = yield ctx.getBlock(location)
                 const typeId = lootTable.roll(location) ?? Edit.defaultBlock
 
-                if (block.typeId === typeId) {
-                    indexChange(undefined)
-                } else {
-                    indexChange(BlockId.get(block.permutation))
-                    block.setType(typeId)
-                    metrics.blocks++
-                    ctx.undoCtx.blocks++
-                }
+                indexChange(BlockId.get(block.permutation))
+                block.setType(typeId)
+                metrics.blocks++
+                ctx.undoCtx.blocks++
 
                 i++
             }
@@ -70,11 +66,7 @@ registerEdit("fill", {
         let permutation
 
         for (const [key, values] of Object.entries(ctx.changes)) {
-            let permutation = "undefined"
-
-            if (key !== "undefined") {
-                permutation = BlockId.toPermutation(key)
-            }
+            const permutation = BlockId.toPermutation(key)
 
             for (const value of values) {
                 indexToBlock[value] = permutation
@@ -89,14 +81,10 @@ registerEdit("fill", {
 
                 if (indexToBlock[i]) permutation = indexToBlock[i]
 
-                if (permutation && permutation !== "undefined") {
-                    if (!ctx.blocks--) {
-                        return metrics
-                    }
-                    block.setPermutation(permutation)
-                    metrics.blocks++
-                    i++
-                }
+                if (!ctx.blocks--) return metrics
+                block.setPermutation(permutation)
+                metrics.blocks++
+                i++
             }
         }
 
