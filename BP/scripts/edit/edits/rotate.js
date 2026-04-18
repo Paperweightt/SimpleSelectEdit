@@ -196,8 +196,6 @@ registerEdit("rotate", {
         }
         undoCtx.selections = ctx.selections.map((selection) => selection.snapshot())
 
-        console.log(JSON.stringify(undoCtx.lossedData))
-
         return undoCtx
     },
     unzipUndo(ctx) {
