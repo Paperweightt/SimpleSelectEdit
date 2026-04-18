@@ -147,7 +147,7 @@ export class Selection {
                 }
             },
             z: function* () {
-                if (direction.y === 1) {
+                if (direction.z === 1) {
                     for (let z = start.z; z <= end.z; z++) yield z
                 } else {
                     for (let z = end.z; z >= start.z; z--) yield z
