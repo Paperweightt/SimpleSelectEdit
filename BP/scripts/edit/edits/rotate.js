@@ -1,37 +1,10 @@
-import { world, BlockVolume } from "@minecraft/server"
-import { BlockId } from "../../utils/blockId.js"
+import { BlockVolume, world } from "@minecraft/server"
 import { Vector } from "../../utils/vector.js"
 import { registerEdit } from "../registry.js"
 import { Selection } from "../../selection/selection.js"
-import { PACK_ID } from "../../constants.js"
 import { SelectionGroup } from "../../selection/selectionGroup.js"
-
-/**
- * @param {Vector} location
- * @param {Vector} pivot
- * @param {0 | 90 | 180 | 270} rotation
- * @returns {Vector}
- */
-function rotate(location, pivot, rotation) {
-    location.subtract(pivot)
-
-    switch (rotation) {
-        case 90:
-            location.setAxisOrder("zyx")
-            location.x *= -1
-            break
-        case 180:
-            location.x *= -1
-            location.z *= -1
-            break
-        case 270:
-            location.setAxisOrder("zyx")
-            location.z *= -1
-            break
-    }
-
-    return location.add(pivot)
-}
+import { rotateY } from "../../utils/blockRotation.js"
+import { BlockId } from "../../utils/blockId.js"
 
 registerEdit("rotate", {
     /**
@@ -43,13 +16,14 @@ registerEdit("rotate", {
      * @param {rotateObject} ctx
      */
     *run(ctx) {
-        const structureId = PACK_ID + ":edit_temp"
-        const undoCtx = {
+        ctx.undoCtx = {
             type: "rotate",
             selections: ctx.selections,
             dimension: ctx.dimension,
-            rotation: (180 + ctx.rotation) % 360,
+            rotation: ctx.rotation,
             changes: {},
+            startEnds: [],
+            lossedData: {},
         }
         const metrics = {
             blocks: 0,
@@ -57,164 +31,112 @@ registerEdit("rotate", {
         }
         const range = SelectionGroup.getMinMax(ctx.selections)
         const size = Vector.subtract(range.maxLocation, range.minLocation).add(1)
-        const groupPivot = Vector.subtract(size, 1).divide(2).add(range.minLocation)
+        const pivot = Vector.subtract(size, 1).divide(2).add(range.minLocation)
+        const blockRotationY = Math.round(((ctx.rotation.p / Math.PI) * 180) / 90) * 90
+        const dontClearLocations = []
+
+        ctx.undoCtx.pivot = pivot
 
         let prevId
-        let j = 0
+        let i = 0
         const addChange = (id, i) => {
             if (prevId === id) return
 
-            if (!undoCtx.changes[id]) {
-                undoCtx.changes[id] = [i]
+            if (!ctx.undoCtx.changes[id]) {
+                ctx.undoCtx.changes[id] = [i]
             } else {
-                undoCtx.changes[id].push(i)
+                ctx.undoCtx.changes[id].push(i)
             }
 
             prevId = id
         }
 
-        // delete structures
-        for (let i = 0; i < ctx.selections.length; i++) {
-            const id = structureId + "_" + i
-            world.structureManager.delete(id)
+        const locationIsBetweenStartEnds = (location) => {
+            for (const { start, end } of ctx.undoCtx.startEnds) {
+                if (!Vector.isBetweenInclusive(location, start, end)) return false
+            }
+            return true
         }
 
-        // create structures
-        for (let i = 0; i < ctx.selections.length; i++) {
-            const selection = ctx.selections[i]
-            const start = selection.location
-            const end = Vector.add(selection.location, selection.size).subtract(1)
-            const id = structureId + "_" + i
+        const inverseRotation = {
+            y: -ctx.rotation.y,
+            p: -ctx.rotation.p,
+            r: -ctx.rotation.r,
+        }
 
-            world.structureManager.createFromWorld(id, ctx.dimension, start, end, {
-                includeEntities: false,
-                saveMode: "Memory",
-            })
+        /** @typedef {Record.<string,import("@minecraft/server").BlockPermutation>} */
+        const blocks = {}
+
+        for (const selection of ctx.selections) {
+            for (const location of selection.getIterator()) {
+                const block = yield ctx.getBlock(location)
+                blocks[location.getString()] = rotateY(block.permutation, blockRotationY)
+            }
+            ctx.undoCtx.startEnds.push(selection.getStartEnd())
         }
 
         for (const selection of ctx.selections) {
-            const start = selection.location
-            const end = Vector.add(selection.location, selection.size).subtract(1)
-            const volume = new BlockVolume(start, end).getBlockLocationIterator()
-
-            for (const location of volume) {
-                const block = yield ctx.getBlock(location)
-                block.setType("minecraft:air")
-            }
+            selection.rotate(ctx.rotation, pivot)
+            selection.displayLocation = selection.location
         }
 
-        for (let i = 0; i < ctx.selections.length; i++) {
-            const selection = ctx.selections[i]
-            const offset = new Vector(0)
-            const pivot = Vector.subtract(selection.size, 1)
-                .divide(2)
-                .add(selection.location)
-            const start = selection.location.copy()
-            const size = selection.size.copy()
+        for (const selection of ctx.selections) {
+            for (const location of selection.getIterator()) {
+                const block = yield ctx.getBlock(location)
+                const sourceLocation = Vector.rotate(
+                    location,
+                    inverseRotation,
+                    pivot,
+                ).round()
 
-            if (size.x !== size.z && (ctx.rotation === 90 || ctx.rotation === 270)) {
-                if (size.x > size.z) {
-                    offset.z -= size.x / 2 - size.z / 2
-                    offset.x += size.x / 2 - size.z / 2
+                const sourcePermutation = blocks[sourceLocation.getString()]
 
-                    metrics.blocks +=
-                        size.y * (size.z ** 2 + (size.x - size.z) * 2 * size.z)
-                } else {
-                    offset.x -= size.z / 2 - size.x / 2
-                    offset.z += size.z / 2 - size.x / 2
-
-                    metrics.blocks +=
-                        size.y * (size.x ** 2 + (size.z - size.x) * 2 * size.x)
+                if (sourcePermutation || locationIsBetweenStartEnds(location)) {
+                    addChange(BlockId.get(block.permutation), i++)
                 }
 
-                size.x = selection.size.z
-                size.z = selection.size.x
-
-                start.add(offset)
-                selection.size.round()
-            } else {
-                metrics.blocks += size.x * size.y * size.z
-            }
-
-            start
-                .subtract(pivot.subtract(rotate(pivot.copy(), groupPivot, ctx.rotation)))
-                .ceil()
-
-            const end = Vector.add(start, size).subtract(1)
-            const volume = new BlockVolume(start, end).getBlockLocationIterator()
-
-            for (const location of volume) {
-                const block = yield ctx.getBlock(location)
-                const id = BlockId.get(block.permutation)
-
-                addChange(id, j++)
-            }
-        }
-        // rotate structures
-        for (let i = 0; i < ctx.selections.length; i++) {
-            const selection = ctx.selections[i]
-            const id = structureId + "_" + i
-            const offset = new Vector(0)
-            const pivot = Vector.subtract(selection.size, 1)
-                .divide(2)
-                .add(selection.location)
-
-            if (
-                selection.size.x !== selection.size.z &&
-                (ctx.rotation === 90 || ctx.rotation === 270)
-            ) {
-                if (selection.size.x > selection.size.z) {
-                    offset.z -= selection.size.x / 2 - selection.size.z / 2
-                    offset.x += selection.size.x / 2 - selection.size.z / 2
-                } else {
-                    offset.x -= selection.size.z / 2 - selection.size.x / 2
-                    offset.z += selection.size.z / 2 - selection.size.x / 2
+                if (sourcePermutation) {
+                    dontClearLocations.push(location)
+                    block.setPermutation(sourcePermutation)
                 }
-
-                let temp = selection.size.x
-
-                selection.size.x = selection.size.z
-                selection.size.z = temp
-
-                selection.location.add(offset)
-                selection.size.round()
             }
-
-            selection.location
-                .subtract(
-                    Vector.subtract(
-                        pivot,
-                        rotate(pivot.copy(), groupPivot, ctx.rotation),
-                    ),
-                )
-                .ceil()
-
-            world.structureManager.place(id, ctx.dimension, selection.location, {
-                rotation: ctx.rotation === 0 ? "None" : "Rotate" + ctx.rotation,
-            })
         }
 
-        // delete structures
-        for (let i = 0; i < ctx.selections.length; i++) {
-            const id = structureId + "_" + i
-            world.structureManager.delete(id)
+        for (const location of dontClearLocations) {
+            delete blocks[location.getString()]
         }
 
-        return { undoCtx, metrics }
+        for (const locationString of Object.keys(blocks)) {
+            const [x, y, z] = locationString.split(" ").map((v) => +v)
+            const block = yield ctx.getBlock({ x, y, z })
+
+            block.setType("minecraft:air")
+        }
+
+        return metrics
     },
     *undo(ctx) {
-        const structureId = PACK_ID + ":edit_temp"
         const metrics = {
             blocks: 0,
             ticks: 0,
         }
 
-        const range = SelectionGroup.getMinMax(ctx.selections)
-        const size = Vector.subtract(range.maxLocation, range.minLocation).add(1)
-        const groupPivot = Vector.subtract(size, 1).divide(2).add(range.minLocation)
-        const indexToBlock = {}
-        let permutation
+        const locationIsBetweenStartEnds = (location) => {
+            for (const { start, end } of ctx.startEnds) {
+                if (!Vector.isBetweenInclusive(location, start, end)) return false
+            }
+            return true
+        }
 
+        const inverseRotation = {
+            y: -ctx.rotation.y,
+            p: -ctx.rotation.p,
+            r: -ctx.rotation.r,
+        }
+
+        const indexToBlock = {}
+        let i = 0
+        let permutation
         for (const [key, values] of Object.entries(ctx.changes)) {
             let permutation = "undefined"
 
@@ -227,110 +149,38 @@ registerEdit("rotate", {
             }
         }
 
-        // delete structures
-        for (let i = 0; i < ctx.selections.length; i++) {
-            const id = structureId + "_" + i
-            world.structureManager.delete(id)
-        }
-
-        // create structures
-        for (let i = 0; i < ctx.selections.length; i++) {
-            const selection = ctx.selections[i]
-            const start = selection.location
-            const end = Vector.add(selection.location, selection.size).subtract(1)
-            const id = structureId + "_" + i
-
-            world.structureManager.createFromWorld(id, ctx.dimension, start, end, {
-                includeEntities: false,
-                saveMode: "Memory",
-            })
-        }
-
         for (const selection of ctx.selections) {
-            const start = selection.location
-            const end = Vector.add(selection.location, selection.size).subtract(1)
-            const volume = new BlockVolume(start, end).getBlockLocationIterator()
-
-            for (const location of volume) {
+            for (const location of selection.getIterator()) {
                 const block = yield ctx.getBlock(location)
-                block.setType("minecraft:air")
-            }
-        }
+                const sourceLocation = Vector.rotate(
+                    location,
+                    inverseRotation,
+                    ctx.pivot,
+                ).round()
 
-        let j = 0
-        for (let i = 0; i < ctx.selections.length; i++) {
-            const selection = ctx.selections[i]
-            const start = selection.location
-            const end = Vector.add(selection.location, selection.size).subtract(1)
-            const volume = new BlockVolume(start, end).getBlockLocationIterator()
+                if (
+                    locationIsBetweenStartEnds(sourceLocation) ||
+                    locationIsBetweenStartEnds(location)
+                ) {
+                    if (indexToBlock[i]) permutation = indexToBlock[i]
 
-            for (const location of volume) {
-                const block = yield ctx.getBlock(location)
-
-                if (indexToBlock[j]) permutation = indexToBlock[j]
-                if (permutation && permutation !== "undefined") {
-                    block.setPermutation(permutation)
+                    if (permutation && permutation !== "undefined") {
+                        block.setPermutation(permutation)
+                        metrics.blocks++
+                        i++
+                    }
                 }
-                j++
             }
         }
 
-        // rotate structures
         for (let i = 0; i < ctx.selections.length; i++) {
+            const { start, end } = ctx.startEnds[i]
+            const size = Vector.subtract(end, start).add(1)
             const selection = ctx.selections[i]
-            const id = structureId + "_" + i
-            const offset = new Vector(0)
-            const pivot = Vector.subtract(selection.size, 1)
-                .divide(2)
-                .add(selection.location)
 
-            if (
-                selection.size.x !== selection.size.z &&
-                (ctx.rotation === 90 || ctx.rotation === 270)
-            ) {
-                if (selection.size.x > selection.size.z) {
-                    offset.z -= selection.size.x / 2 - selection.size.z / 2
-                    offset.x += selection.size.x / 2 - selection.size.z / 2
-
-                    metrics.blocks +=
-                        size.y * (size.z ** 2 + (size.x - size.z) * 2 * size.z)
-                } else {
-                    offset.x -= selection.size.z / 2 - selection.size.x / 2
-                    offset.z += selection.size.z / 2 - selection.size.x / 2
-
-                    metrics.blocks +=
-                        size.y * (size.x ** 2 + (size.z - size.x) * 2 * size.x)
-                }
-
-                let temp = selection.size.x
-
-                selection.size.x = selection.size.z
-                selection.size.z = temp
-
-                selection.location.add(offset)
-                selection.size.round()
-            } else {
-                metrics.blocks += size.x * size.y * size.z
-            }
-
-            selection.location
-                .subtract(
-                    Vector.subtract(
-                        pivot,
-                        rotate(pivot.copy(), groupPivot, ctx.rotation),
-                    ),
-                )
-                .floor()
-
-            world.structureManager.place(id, ctx.dimension, selection.location, {
-                rotation: ctx.rotation === 0 ? "None" : "Rotate" + ctx.rotation,
-            })
-        }
-
-        // delete structures
-        for (let i = 0; i < ctx.selections.length; i++) {
-            const id = structureId + "_" + i
-            world.structureManager.delete(id)
+            selection.location = start
+            selection.displayLocation = selection.location
+            selection.size = size
         }
 
         return metrics
@@ -341,18 +191,25 @@ registerEdit("rotate", {
             dimensionId: ctx.dimension.id,
             rotation: ctx.rotation,
             changes: ctx.changes,
+            pivot: ctx.pivot,
+            startEnds: ctx.startEnds,
         }
         undoCtx.selections = ctx.selections.map((selection) => selection.snapshot())
+
+        console.log(JSON.stringify(undoCtx.lossedData))
 
         return undoCtx
     },
     unzipUndo(ctx) {
         const dimension = world.getDimension(ctx.dimensionId)
+        console.log(JSON.stringify(ctx.startEnds))
         const undoCtx = {
             type: ctx.type,
             dimension: dimension,
             rotation: ctx.rotation,
+            pivot: ctx.pivot,
             changes: ctx.changes,
+            startEnds: ctx.startEnds,
             selections: ctx.selections.map((snapshot) => {
                 return (
                     Selection.get(snapshot[0]) ||

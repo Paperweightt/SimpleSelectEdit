@@ -286,13 +286,19 @@ export class SelectionGroup {
             if (editor.id !== this.player.id) return
 
             const rotation = {
-                x: (Math.round((newRotation.x - prevRotation.x) / 90) * 90 + 360) % 360,
-                y: (Math.round((newRotation.y - prevRotation.y) / 90) * 90 + 360) % 360,
+                x: newRotation.x - prevRotation.x,
+                y: newRotation.y - prevRotation.y,
+            }
+
+            const yprRotation = {
+                y: 0,
+                p: ((newRotation.y - prevRotation.y) * Math.PI) / 180,
+                r: 0,
             }
 
             for (const selection of this.selections) {
                 selection.rotation = { y: 0, p: 0, r: 0 }
-                selection.displayLocation = selection.location
+                // selection.displayLocation = selection.location
             }
 
             if (rotation.y === 0) return
@@ -300,7 +306,7 @@ export class SelectionGroup {
             Edit.playerRunAndSave(this.player.id, "rotate", {
                 dimension: this.dimension,
                 selections: this.selections,
-                rotation: rotation.y,
+                rotation: yprRotation,
             }).then((metrics) => {
                 this.snapToGrid()
                 this.reloadEntityLocations()
@@ -545,6 +551,7 @@ export class SelectionGroup {
     snapToGrid() {
         for (const selection of this.selections) {
             selection.location.round()
+            selection.displayLocation = selection.location
             selection.size.round()
         }
     }
