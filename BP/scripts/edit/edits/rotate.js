@@ -1,4 +1,4 @@
-import { BlockVolume, world } from "@minecraft/server"
+import { world } from "@minecraft/server"
 import { Vector } from "../../utils/vector.js"
 import { registerEdit } from "../registry.js"
 import { Selection } from "../../selection/selection.js"
@@ -7,14 +7,6 @@ import { rotateY } from "../../utils/blockRotation.js"
 import { BlockId } from "../../utils/blockId.js"
 
 registerEdit("rotate", {
-    /**
-     * @typedef {object} rotateObject
-     * @property {import("../../selection/selection.js").Selection[]} selections
-     */
-
-    /**
-     * @param {rotateObject} ctx
-     */
     *run(ctx) {
         ctx.undoCtx = {
             type: "rotate",
