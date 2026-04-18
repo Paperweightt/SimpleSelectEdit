@@ -1,4 +1,4 @@
-import { world } from "@minecraft/server"
+import { BlockVolume, world } from "@minecraft/server"
 import { Vector } from "../../utils/vector.js"
 import { registerEdit } from "../registry.js"
 import { Selection } from "../../selection/selection.js"
@@ -43,6 +43,29 @@ registerEdit("rotate", {
             prevId = id
         }
 
+        function getRotationIterator(selection, rotation, pivot) {
+            let min = new Vector(Infinity)
+            let max = new Vector(-Infinity)
+
+            for (let corner of selection.getCorners()) {
+                corner = Vector.rotate(corner, rotation, pivot)
+
+                min = Vector.min(corner, min)
+                max = Vector.max(corner, max)
+            }
+
+            min = Vector.min(selection.location, min)
+            max = Vector.max(
+                Vector.add(selection.location, selection.size).subtract(1),
+                max,
+            )
+
+            min.round()
+            max.round()
+
+            return new BlockVolume(min, max).getBlockLocationIterator()
+        }
+
         const locationIsBetweenStartEnds = (location) => {
             for (const { start, end } of ctx.undoCtx.startEnds) {
                 if (!Vector.isBetweenInclusive(location, start, end)) return false
@@ -68,12 +91,7 @@ registerEdit("rotate", {
         }
 
         for (const selection of ctx.selections) {
-            selection.rotate(ctx.rotation, pivot)
-            selection.displayLocation = selection.location
-        }
-
-        for (const selection of ctx.selections) {
-            for (const location of selection.getIterator()) {
+            for (const location of getRotationIterator(selection, ctx.rotation, pivot)) {
                 const block = yield ctx.getBlock(location)
                 const sourceLocation = Vector.rotate(
                     location,
@@ -94,8 +112,14 @@ registerEdit("rotate", {
             }
         }
 
+        for (const selection of ctx.selections) {
+            selection.rotate(ctx.rotation, pivot)
+            selection.displayLocation = selection.location
+        }
+
         for (const location of dontClearLocations) {
-            delete blocks[location.getString()]
+            const { x, y, z } = location
+            delete blocks[`${x} ${y} ${z}`]
         }
 
         for (const locationString of Object.keys(blocks)) {
@@ -120,6 +144,29 @@ registerEdit("rotate", {
             return true
         }
 
+        function getRotationIterator(selection, rotation, pivot) {
+            let min = new Vector(Infinity)
+            let max = new Vector(-Infinity)
+
+            for (let corner of selection.getCorners()) {
+                corner = Vector.rotate(corner, rotation, pivot)
+
+                min = Vector.min(corner, min)
+                max = Vector.max(corner, max)
+            }
+
+            min = Vector.min(selection.location, min)
+            max = Vector.max(
+                Vector.add(selection.location, selection.size).subtract(1),
+                max,
+            )
+
+            min.round()
+            max.round()
+
+            return new BlockVolume(min, max).getBlockLocationIterator()
+        }
+
         const inverseRotation = {
             y: -ctx.rotation.y,
             p: -ctx.rotation.p,
@@ -142,7 +189,11 @@ registerEdit("rotate", {
         }
 
         for (const selection of ctx.selections) {
-            for (const location of selection.getIterator()) {
+            for (const location of getRotationIterator(
+                selection,
+                inverseRotation,
+                ctx.pivot,
+            )) {
                 const block = yield ctx.getBlock(location)
                 const sourceLocation = Vector.rotate(
                     location,
