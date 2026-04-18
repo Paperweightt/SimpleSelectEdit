@@ -93,7 +93,6 @@ registerEdit("move", {
         const direction = Vector.abs(ctx.vector)
             .divide(ctx.vector)
             .map((v) => (isNaN(v) ? 1 : v))
-            .multiply(-1)
 
         for (const selection of ctx.selections) {
             const iterator = selection.getIterator(direction)
