@@ -1,12 +1,13 @@
 import { getEdit } from "./registry"
-import { Filter } from "../utils/filter"
 import { Vector } from "../utils/vector"
-import { world, system } from "@minecraft/server"
+import { world, system, Player } from "@minecraft/server"
 import { PACK_ID, TYPE_IDS } from "../constants"
 import { DeathOnReload } from "../utils/deathOnReload"
 import { JobManager } from "../utils/time.js"
 
 /** @import * as Types from "./types.js"  */
+
+Player.prototype.job = {}
 
 export class Edit {
     /** @type {number} */
@@ -31,7 +32,13 @@ export class Edit {
      */
     static log(player, metrics) {
         if (!metrics.blocks) return
-        player.sendMessage(`${metrics.blocks} blocks filled in ${metrics.ticks} ticks`)
+        if (metrics.ticks === 1) {
+            player.sendMessage(`${metrics.blocks} blocks filled`)
+        } else {
+            player.sendMessage(
+                `${metrics.blocks} blocks filled in ${metrics.ticks} ticks`,
+            )
+        }
     }
 
     /**
@@ -207,8 +214,6 @@ export class Edit {
         const undoCtx = this.playerGetRecentUndo(playerId)
         const editResolve = await this.undo(undoCtx.type, undoCtx)
 
-        console.log(JSON.stringify(editResolve))
-
         return editResolve
     }
 
@@ -253,8 +258,6 @@ export class Edit {
                     const saveId = Edit.saveToHistory(zippedUndo)
 
                     Edit.saveToPlayer(playerId, saveId)
-
-                    console.log("partial save")
 
                     return Promise.reject("execution interrupted")
                 },
@@ -313,7 +316,7 @@ export class Edit {
             dimension: this.dimension,
         })
 
-        await system.waitTicks(1)
+        await system.waitTicks(2)
 
         const entity = this.dimension.spawnEntity(TYPE_IDS.TICKING_ENTITY, location)
         DeathOnReload.addEntity(entity)
@@ -325,7 +328,7 @@ export class Edit {
         system.runTimeout(() => {
             releaseLock()
             this._tickingAreaLock = null
-        }, 1)
+        }, 2)
     }
 
     removeTickingAreas() {
