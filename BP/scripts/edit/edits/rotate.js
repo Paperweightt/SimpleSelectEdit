@@ -221,7 +221,7 @@ registerEdit("rotate", {
             const size = Vector.subtract(end, start).add(1)
             const selection = ctx.selections[i]
 
-            selection.location = start
+            selection.location = new Vector(start)
             selection.displayLocation = selection.location
             selection.size = size
         }
