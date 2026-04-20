@@ -68,9 +68,9 @@ registerEdit("rotate", {
 
         const locationIsBetweenStartEnds = (location) => {
             for (const { start, end } of ctx.undoCtx.startEnds) {
-                if (!Vector.isBetweenInclusive(location, start, end)) return false
+                if (Vector.isBetweenInclusive(location, start, end)) return true
             }
-            return true
+            return false
         }
 
         const inverseRotation = {
@@ -139,9 +139,9 @@ registerEdit("rotate", {
 
         const locationIsBetweenStartEnds = (location) => {
             for (const { start, end } of ctx.startEnds) {
-                if (!Vector.isBetweenInclusive(location, start, end)) return false
+                if (Vector.isBetweenInclusive(location, start, end)) return true
             }
-            return true
+            return false
         }
 
         function getRotationIterator(selection, rotation, pivot) {
@@ -243,7 +243,6 @@ registerEdit("rotate", {
     },
     unzipUndo(ctx) {
         const dimension = world.getDimension(ctx.dimensionId)
-        console.log(JSON.stringify(ctx.startEnds))
         const undoCtx = {
             type: ctx.type,
             dimension: dimension,
