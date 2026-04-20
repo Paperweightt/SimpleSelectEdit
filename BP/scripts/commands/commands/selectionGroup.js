@@ -113,9 +113,7 @@ Commands.register({
         const { sourceEntity } = data
         const group = SelectionGroup.get(sourceEntity.id)
 
-        if (!["xz", "x", "z", "zx"].some((value) => value === axis)) return { status: 0 }
-
-        if (axis === "zx") axis = "xz"
+        if (!axis.split().every((c) => ["x", "y", "z"].includes(c))) return { status: 0 }
 
         const result = await Edit.playerRunAndSave(sourceEntity.id, "flip", {
             selections: group.selections,
@@ -123,7 +121,7 @@ Commands.register({
             flip: axis,
         })
 
-        Edit.log(sourceEntity, result.metrics)
+        Edit.log(sourceEntity, result)
 
         return { status: 0 }
     },
