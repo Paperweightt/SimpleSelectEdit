@@ -2,7 +2,6 @@ import { world, BlockVolume } from "@minecraft/server"
 import { Vector } from "../../utils/vector.js"
 import { registerEdit } from "../registry.js"
 import { Selection } from "../../selection/selection.js"
-import { PACK_ID } from "../../constants.js"
 import { SelectionGroup } from "../../selection/selectionGroup.js"
 import { BlockId } from "../../utils/blockId.js"
 
@@ -15,24 +14,16 @@ import { BlockId } from "../../utils/blockId.js"
 function flip(location, pivot, flip) {
     const newLocation = Vector.subtract(location, pivot)
 
-    if (flip.includes("z")) newLocation.x *= -1
-    if (flip.includes("x")) newLocation.z *= -1
+    if (flip.includes("x")) newLocation.x *= -1
+    if (flip.includes("y")) newLocation.y *= -1
+    if (flip.includes("z")) newLocation.z *= -1
 
     return newLocation.add(pivot)
 }
 
 registerEdit("flip", {
-    /**
-     * @typedef {object} flipObject
-     * @property {import("../../selection/selection.js").Selection[]} selections
-     */
-
-    /**
-     * @param {flipObject} ctx
-     */
     *run(ctx) {
-        const structureId = PACK_ID + ":edit_temp"
-        const undoCtx = {
+        ctx.undoCtx = {
             type: "flip",
             selections: ctx.selections,
             dimension: ctx.dimension,
@@ -45,107 +36,104 @@ registerEdit("flip", {
         }
         const range = SelectionGroup.getMinMax(ctx.selections)
         const size = Vector.subtract(range.maxLocation, range.minLocation).add(1)
-        const groupPivot = Vector.subtract(size, 1).divide(2).add(range.minLocation)
+        const pivot = Vector.subtract(size, 1).divide(2).add(range.minLocation)
+        const finishedSelections = []
 
-        let j = 0
+        let i = 0
         let prevId
         const addChange = (id, i) => {
             if (prevId === id) return
 
-            if (!undoCtx.changes[id]) {
-                undoCtx.changes[id] = [i]
+            if (!ctx.undoCtx.changes[id]) {
+                ctx.undoCtx.changes[id] = [i]
             } else {
-                undoCtx.changes[id].push(i)
+                ctx.undoCtx.changes[id].push(i)
             }
 
             prevId = id
         }
 
-        // delete structures
-        for (let i = 0; i < ctx.selections.length; i++) {
-            const id = structureId + "_" + i
-            world.structureManager.delete(id)
+        function locationIsBetweenSelections(location) {
+            for (const selection of ctx.selections) {
+                const { start, end } = selection.getStartEnd()
+                if (Vector.isBetweenInclusive(location, start, end)) return true
+            }
+            return false
         }
 
-        // create structures
-        for (let i = 0; i < ctx.selections.length; i++) {
-            const selection = ctx.selections[i]
-            const start = selection.location
-            const end = Vector.add(selection.location, selection.size).subtract(1)
-            const id = structureId + "_" + i
+        function getFlipIterator(selection, pivot) {
+            let { start, end } = selection.getStartEnd()
+            const center = selection.getPivot()
 
-            world.structureManager.createFromWorld(id, ctx.dimension, start, end, {
-                includeEntities: false,
-                saveMode: "Memory",
-            })
+            if (center[ctx.flip] > pivot[ctx.flip]) {
+                ;[start, end] = [flip(end, pivot, ctx.flip), flip(start, pivot, ctx.flip)]
+            }
+
+            if (end[ctx.flip] > pivot[ctx.flip]) {
+                end[ctx.flip] = pivot[ctx.flip]
+            }
+
+            return new BlockVolume(start, end).getBlockLocationIterator()
         }
 
-        // set air
         for (const selection of ctx.selections) {
-            const start = selection.location
-            const end = Vector.add(selection.location, selection.size).subtract(1)
-            const volume = new BlockVolume(start, end).getBlockLocationIterator()
+            const { start, end } = selection.getStartEnd()
+            let iterator = getFlipIterator(selection, pivot)
 
-            for (const location of volume) {
-                const block = yield ctx.getBlock(location)
-                block.setType("minecraft:air")
-                metrics.blocks++
+            setblock: for (const location of iterator) {
+                const mirrorLocation = flip(location, pivot, ctx.flip)
+
+                for (const [start, end] of finishedSelections) {
+                    if (
+                        Vector.isBetweenInclusive(location, start, end) ||
+                        Vector.isBetweenInclusive(mirrorLocation, start, end)
+                    )
+                        continue setblock
+                }
+
+                const startBlock = yield ctx.getBlock(location)
+                const mirrorBlock = yield ctx.getBlock(mirrorLocation)
+                const mirrorPermutation = mirrorBlock.permutation
+                const startPermutation = startBlock.permutation
+
+                metrics.blocks += 2
+                // ctx.undoCtx.blocks++
+
+                if (locationIsBetweenSelections(mirrorBlock)) {
+                    startBlock.setPermutation(mirrorPermutation)
+                } else {
+                    addChange(BlockId.get(mirrorPermutation), i++)
+                    startBlock.setType("minecraft:air")
+                }
+
+                if (locationIsBetweenSelections(location)) {
+                    mirrorBlock.setPermutation(startPermutation)
+                } else {
+                    addChange(BlockId.get(startPermutation), i++)
+                    mirrorBlock.setType("minecraft:air")
+                }
             }
-        }
-
-        // save blocks
-        for (let i = 0; i < ctx.selections.length; i++) {
-            const selection = ctx.selections[i]
-            const start = flip(selection.location, groupPivot, ctx.flip)
-            let end = Vector.add(selection.location, selection.size).subtract(1)
-
-            end = flip(end, groupPivot, ctx.flip)
-
-            const volume = new BlockVolume(start, end).getBlockLocationIterator()
-
-            for (const location of volume) {
-                const block = yield ctx.getBlock(location)
-                const id = BlockId.get(block.permutation)
-
-                addChange(id, j++)
-            }
-        }
-
-        // flip structures
-        for (let i = 0; i < ctx.selections.length; i++) {
-            const selection = ctx.selections[i]
-            const id = structureId + "_" + i
-            const pivot = Vector.subtract(selection.size, 1)
-                .divide(2)
-                .add(selection.location)
 
             selection.location.subtract(
-                Vector.subtract(pivot, flip(pivot, groupPivot, ctx.flip)),
+                selection
+                    .getPivot()
+                    .subtract(flip(selection.getPivot(), pivot, ctx.flip)),
             )
-
             selection.displayLocation = selection.location
 
-            world.structureManager.place(id, ctx.dimension, selection.location, {
-                mirror: ctx.flip.toUpperCase(),
-            })
+            finishedSelections.push([start, end])
         }
 
-        // delete structures
-        for (let i = 0; i < ctx.selections.length; i++) {
-            const id = structureId + "_" + i
-            world.structureManager.delete(id)
-        }
-
-        return { undoCtx, metrics }
+        return metrics
     },
     *undo(ctx) {
-        const structureId = PACK_ID + ":edit_temp"
         const metrics = {
             blocks: 0,
             ticks: 0,
         }
         const indexToBlock = {}
         let permutation
+        let i = 0
 
         for (const [key, values] of Object.entries(ctx.changes)) {
             let permutation = "undefined"
@@ -159,82 +147,85 @@ registerEdit("flip", {
             }
         }
 
-        const range = SelectionGroup.getMinMax(ctx.selections)
-        const size = Vector.subtract(range.maxLocation, range.minLocation)
-        const groupPivot = Vector.subtract(size, 1).divide(2).add(range.minLocation)
-
-        // delete structures
-        for (let i = 0; i < ctx.selections.length; i++) {
-            const id = structureId + "_" + i
-            world.structureManager.delete(id)
+        function locationIsBetweenSelections(location) {
+            for (const selection of ctx.selections) {
+                const { start, end } = selection.getStartEnd()
+                if (Vector.isBetweenInclusive(location, start, end)) return true
+            }
+            return false
         }
 
-        // create structures
-        for (let i = 0; i < ctx.selections.length; i++) {
-            const selection = ctx.selections[i]
-            const start = selection.location
-            const end = Vector.add(selection.location, selection.size).subtract(1)
-            const id = structureId + "_" + i
+        const range = SelectionGroup.getMinMax(ctx.selections)
+        const size = Vector.subtract(range.maxLocation, range.minLocation).add(1)
+        const pivot = Vector.subtract(size, 1).divide(2).add(range.minLocation)
+        const finishedSelections = []
 
-            world.structureManager.createFromWorld(id, ctx.dimension, start, end, {
-                includeEntities: false,
-                saveMode: "Memory",
-            })
+        function getFlipIterator(selection, pivot) {
+            let { start, end } = selection.getStartEnd()
+            const center = selection.getPivot()
+
+            if (center[ctx.flip] > pivot[ctx.flip]) {
+                ;[start, end] = [flip(end, pivot, ctx.flip), flip(start, pivot, ctx.flip)]
+            }
+
+            if (end[ctx.flip] > pivot[ctx.flip]) {
+                end[ctx.flip] = pivot[ctx.flip]
+            }
+
+            return new BlockVolume(start, end).getBlockLocationIterator()
         }
 
         for (const selection of ctx.selections) {
-            const start = selection.location
-            const end = Vector.add(selection.location, selection.size).subtract(1)
-            const volume = new BlockVolume(start, end).getBlockLocationIterator()
+            const { start, end } = selection.getStartEnd()
+            let iterator = getFlipIterator(selection, pivot)
 
-            for (const location of volume) {
-                const block = yield ctx.getBlock(location)
-                block.setType("minecraft:air")
-                metrics.blocks++
-            }
-        }
+            setblock: for (const location of iterator) {
+                const mirrorLocation = flip(location, pivot, ctx.flip)
 
-        let j = 0
-        for (let i = 0; i < ctx.selections.length; i++) {
-            const selection = ctx.selections[i]
-            const start = selection.location
-            const end = Vector.add(selection.location, selection.size).subtract(1)
-            const volume = new BlockVolume(start, end).getBlockLocationIterator()
-
-            for (const location of volume) {
-                const block = yield ctx.getBlock(location)
-
-                if (indexToBlock[j]) permutation = indexToBlock[j]
-                if (permutation && permutation !== "undefined") {
-                    metrics.blocks++
-                    block.setPermutation(permutation)
+                for (const [start, end] of finishedSelections) {
+                    if (
+                        Vector.isBetweenInclusive(location, start, end) ||
+                        Vector.isBetweenInclusive(mirrorLocation, start, end)
+                    )
+                        continue setblock
                 }
-                j++
-            }
-        }
 
-        // flip structures
-        for (let i = 0; i < ctx.selections.length; i++) {
-            const selection = ctx.selections[i]
-            const id = structureId + "_" + i
-            const pivot = Vector.subtract(selection.size, 1)
-                .divide(2)
-                .add(selection.location)
+                const startBlock = yield ctx.getBlock(location)
+                const mirrorBlock = yield ctx.getBlock(mirrorLocation)
+
+                const mirrorPermutation = mirrorBlock.permutation
+                const startPermutation = startBlock.permutation
+
+                metrics.blocks += 2
+                // if (!ctx.blocks--) return metrics
+
+                if (locationIsBetweenSelections(mirrorBlock)) {
+                    startBlock.setPermutation(mirrorPermutation)
+                } else {
+                    if (indexToBlock[i]) permutation = indexToBlock[i]
+                    i++
+
+                    startBlock.setPermutation(permutation)
+                }
+
+                if (locationIsBetweenSelections(location)) {
+                    mirrorBlock.setPermutation(startPermutation)
+                } else {
+                    if (indexToBlock[i]) permutation = indexToBlock[i]
+                    i++
+
+                    mirrorBlock.setPermutation(permutation)
+                }
+            }
 
             selection.location.subtract(
-                Vector.subtract(pivot, flip(pivot.copy(), groupPivot, ctx.flip)),
+                selection
+                    .getPivot()
+                    .subtract(flip(selection.getPivot(), pivot, ctx.flip)),
             )
             selection.displayLocation = selection.location
 
-            world.structureManager.place(id, ctx.dimension, selection.location, {
-                mirror: ctx.flip.toUpperCase(),
-            })
-        }
-
-        // delete structures
-        for (let i = 0; i < ctx.selections.length; i++) {
-            const id = structureId + "_" + i
-            world.structureManager.delete(id)
+            finishedSelections.push([start, end])
         }
 
         return metrics
@@ -245,6 +236,7 @@ registerEdit("flip", {
             dimensionId: ctx.dimension.id,
             flip: ctx.flip,
             changes: ctx.changes,
+            blocks: ctx.blocks,
         }
         undoCtx.selections = ctx.selections.map((selection) => selection.snapshot())
 
@@ -257,6 +249,7 @@ registerEdit("flip", {
             dimension: dimension,
             flip: ctx.flip,
             changes: ctx.changes,
+            blocks: ctx.blocks,
             selections: ctx.selections.map((snapshot) => {
                 return (
                     Selection.get(snapshot[0]) ||
