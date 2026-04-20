@@ -40,8 +40,13 @@ registerEdit("fill", {
 
         let i = 0
 
+        const finishedSelections = []
+
         for (const selection of ctx.selections) {
-            for (const location of selection.getIterator()) {
+            setblock: for (const location of selection.getIterator()) {
+                for (const [start, end] of finishedSelections) {
+                    if (Vector.isBetweenInclusive(location, start, end)) continue setblock
+                }
                 const block = yield ctx.getBlock(location)
                 const typeId = lootTable.roll(location) ?? Edit.defaultBlock
 
@@ -52,6 +57,10 @@ registerEdit("fill", {
 
                 i++
             }
+
+            const { start, end } = selection.getStartEnd()
+
+            finishedSelections.push([start, end])
         }
 
         return metrics
@@ -73,10 +82,15 @@ registerEdit("fill", {
             }
         }
 
+        const finishedSelections = []
+
         let i = 0
 
         for (const selection of ctx.selections) {
-            for (const location of selection.getIterator()) {
+            setblock: for (const location of selection.getIterator()) {
+                for (const [start, end] of finishedSelections) {
+                    if (Vector.isBetweenInclusive(location, start, end)) continue setblock
+                }
                 const block = yield ctx.getBlock(location)
 
                 if (indexToBlock[i]) permutation = indexToBlock[i]
@@ -86,6 +100,10 @@ registerEdit("fill", {
                 metrics.blocks++
                 i++
             }
+
+            const { start, end } = selection.getStartEnd()
+
+            finishedSelections.push([start, end])
         }
 
         for (const selection of ctx.selections) {
@@ -94,7 +112,6 @@ registerEdit("fill", {
 
         return metrics
     },
-    encodeStep() {},
     zipUndo(ctx) {
         const undoCtx = {
             type: ctx.type,
