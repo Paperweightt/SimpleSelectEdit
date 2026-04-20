@@ -269,6 +269,13 @@ export class Selection {
         }
     }
 
+    /**
+     * @returns {Vector}
+     */
+    getCenter() {
+        return Vector.divide(this.size, 2).add(this.location)
+    }
+
     getDisplayPivot() {
         return Vector.subtract(this.size, 1).divide(2).add(this.displayLocation)
     }
