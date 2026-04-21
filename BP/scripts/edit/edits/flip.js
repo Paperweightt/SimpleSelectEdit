@@ -164,12 +164,17 @@ registerEdit("flip", {
             let { start, end } = selection.getStartEnd()
             const center = selection.getPivot()
 
-            if (center[ctx.flip] > pivot[ctx.flip]) {
-                ;[start, end] = [flip(end, pivot, ctx.flip), flip(start, pivot, ctx.flip)]
-            }
+            for (const axis of ctx.flip) {
+                if (center[axis] > pivot[axis]) {
+                    ;[start, end] = [
+                        flip(end, pivot, ctx.flip),
+                        flip(start, pivot, ctx.flip),
+                    ]
+                }
 
-            if (end[ctx.flip] > pivot[ctx.flip]) {
-                end[ctx.flip] = pivot[ctx.flip]
+                if (end[axis] > pivot[axis]) {
+                    end[axis] = pivot[axis]
+                }
             }
 
             return new BlockVolume(start, end).getBlockLocationIterator()

@@ -113,7 +113,9 @@ Commands.register({
         const { sourceEntity } = data
         const group = SelectionGroup.get(sourceEntity.id)
 
-        if (!axis.split().every((c) => ["x", "y", "z"].includes(c))) return { status: 0 }
+        if (!group) return { status: 0 }
+        if (!axis.split("").every((c) => ["x", "y", "z"].includes(c)))
+            return { status: 0 }
 
         const result = await Edit.playerRunAndSave(sourceEntity.id, "flip", {
             selections: group.selections,
