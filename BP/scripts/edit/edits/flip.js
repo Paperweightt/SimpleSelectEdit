@@ -1,4 +1,5 @@
 import { world, BlockVolume } from "@minecraft/server"
+import { Transform } from "../../utils/blockUtils.js"
 import { Vector } from "../../utils/vector.js"
 import { registerEdit } from "../registry.js"
 import { Selection } from "../../selection/selection.js"
@@ -100,14 +101,14 @@ registerEdit("flip", {
                 // ctx.undoCtx.blocks++
 
                 if (locationIsBetweenSelections(mirrorBlock)) {
-                    startBlock.setPermutation(mirrorPermutation)
+                    startBlock.setPermutation(Transform.flip(mirrorPermutation, ctx.flip))
                 } else {
                     addChange(BlockId.get(mirrorPermutation), i++)
                     startBlock.setType("minecraft:air")
                 }
 
                 if (locationIsBetweenSelections(location)) {
-                    mirrorBlock.setPermutation(startPermutation)
+                    mirrorBlock.setPermutation(Transform.flip(startPermutation, ctx.flip))
                 } else {
                     addChange(BlockId.get(startPermutation), i++)
                     mirrorBlock.setType("minecraft:air")
@@ -205,7 +206,7 @@ registerEdit("flip", {
                 // if (!ctx.blocks--) return metrics
 
                 if (locationIsBetweenSelections(mirrorBlock)) {
-                    startBlock.setPermutation(mirrorPermutation)
+                    startBlock.setPermutation(Transform.flip(mirrorPermutation, ctx.flip))
                 } else {
                     if (indexToBlock[i]) permutation = indexToBlock[i]
                     i++
@@ -214,7 +215,7 @@ registerEdit("flip", {
                 }
 
                 if (locationIsBetweenSelections(location)) {
-                    mirrorBlock.setPermutation(startPermutation)
+                    mirrorBlock.setPermutation(Transform.flip(startPermutation, ctx.flip))
                 } else {
                     if (indexToBlock[i]) permutation = indexToBlock[i]
                     i++
