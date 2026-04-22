@@ -34,6 +34,7 @@
             }
         },
         "components": {
+            "minecraft:fire_immune": {},
             "minecraft:physics": {
                 "has_gravity": false,
                 "has_collision": false
@@ -48,7 +49,7 @@
             "minecraft:damage_sensor": {
                 "triggers": [
                     {
-                        "deals_damage": false
+                        "deals_damage": "no"
                     }
                 ]
             }

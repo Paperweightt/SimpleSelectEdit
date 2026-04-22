@@ -67,6 +67,12 @@
                 "g": "query.property('sse:gcolor')/255",
                 "b": "query.property('sse:bcolor')/255",
                 "a": 1
+            },
+            "on_fire_color": {
+                "r": "query.property('sse:rcolor')/255",
+                "g": "query.property('sse:gcolor')/255",
+                "b": "query.property('sse:bcolor')/255",
+                "a": 1
             }
         }
     }
