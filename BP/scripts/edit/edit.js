@@ -10,12 +10,9 @@ import { JobManager } from "../utils/time.js"
 Player.prototype.job = {}
 
 export class Edit {
-    /** @type {number} */
     static blocksPlaced = 0
     static tickingAreaId = PACK_ID + ":setblockarea"
-    /** @type {number} */
     static defaultBlock = "minecraft:smooth_stone"
-    /** @type {number} */
     static seed = 123467
 
     static get edits() {
@@ -32,13 +29,13 @@ export class Edit {
      */
     static log(player, metrics) {
         if (!metrics.blocks) return
-        if (metrics.ticks === 1) {
+
+        if (metrics.ticks < 2) {
             player.sendMessage(`${metrics.blocks} blocks filled`)
-        } else {
-            player.sendMessage(
-                `${metrics.blocks} blocks filled in ${metrics.ticks} ticks`,
-            )
+            return
         }
+
+        player.sendMessage(`${metrics.blocks} blocks filled in ${metrics.ticks} ticks`)
     }
 
     /**
