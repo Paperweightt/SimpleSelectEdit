@@ -29,9 +29,8 @@ Commands.register({
             selection.displayLocation = selection.location
         }
 
-        selectionGroup.snapToGrid()
+        selectionGroup.updateSelections()
         selectionGroup.reloadEntityLocations()
-        selectionGroup.updateEntityValues()
 
         Edit.log(sourceEntity, result.metrics)
 
@@ -61,9 +60,8 @@ Commands.register({
             selections: selectionGroup.selections,
         })
 
-        selectionGroup.snapToGrid()
+        selectionGroup.updateSelections()
         selectionGroup.reloadEntityLocations()
-        selectionGroup.updateEntityValues()
 
         Edit.log(sourceEntity, result.metrics)
 
@@ -114,8 +112,7 @@ Commands.register({
         const group = SelectionGroup.get(sourceEntity.id)
 
         if (!group) return { status: 0 }
-        if (!axis.split("").every((c) => ["x", "y", "z"].includes(c)))
-            return { status: 0 }
+        if (axis !== "x" && axis !== "y" && axis !== "z") return { status: 0 }
 
         const result = await Edit.playerRunAndSave(sourceEntity.id, "flip", {
             selections: group.selections,
@@ -205,7 +202,6 @@ Commands.register({
 
         selectionGroup.snapToGrid()
         selectionGroup.reloadEntityLocations()
-        selectionGroup.updateEntityValues()
 
         Edit.log(sourceEntity, result.metrics)
         return { status: 0 }

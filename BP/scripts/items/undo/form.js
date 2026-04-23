@@ -129,10 +129,7 @@ export class UndoMenu {
 
                 const group = SelectionGroup.get(playerIds.id)
 
-                if (group) {
-                    group.reloadEntityLocations()
-                    group.updateEntityValues()
-                }
+                if (group) group.reloadEntityLocations()
 
                 metrics.blocks += result.blocks
                 metrics.ticks += result.ticks

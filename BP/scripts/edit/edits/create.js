@@ -33,9 +33,7 @@ registerEdit("create", {
                     group.removeSelection(index)
 
                     if (group.selections.length > 0) {
-                        group.reloadArrowLocations()
-                        group.reloadCoreLocation()
-                        group.updateEntityValues()
+                        group.reloadEntityLocations()
                     }
 
                     break
@@ -88,9 +86,8 @@ registerEdit("magicSelect", {
         const updateSelection = () => {
             const size = Vector.subtract(max, min).add(1)
 
-            ctx.selection.location = min
-            ctx.selection.displayLocation = min
-            ctx.selection.size = size
+            ctx.selection.setLocation(min)
+            ctx.selection.setSize(size)
             done = false
         }
         const volumes = [

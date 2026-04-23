@@ -18,10 +18,7 @@ world.afterEvents.itemUse.subscribe(async (data) => {
         const result = await Edit.playerUndoRecent(source.id)
         const group = SelectionGroup.get(source.id)
 
-        if (group) {
-            group.reloadEntityLocations()
-            group.updateEntityValues()
-        }
+        if (group) group.reloadEntityLocations()
 
         Edit.log(source, result)
     } else {

@@ -14,19 +14,23 @@ Commands.register({
     callback: async (data, amount = 1, victim) => {
         const { sourceEntity } = data
         const id = victim?.id || sourceEntity.id
+        const metrics = {
+            blocks: 0,
+            ticks: 0,
+        }
 
         for (let i = 0; i < amount; i++) {
             const result = await Edit.playerUndoRecent(id)
 
             const group = SelectionGroup.get(id)
 
-            if (group) {
-                group.reloadEntityLocations()
-                group.updateEntityValues()
-            }
+            if (group) group.reloadEntityLocations()
 
-            Edit.log(sourceEntity, result)
+            metrics.blocks += result.blocks
+            metrics.ticks += result.ticks
         }
+
+        Edit.log(sourceEntity, metrics)
 
         return { status: 0 }
     },
