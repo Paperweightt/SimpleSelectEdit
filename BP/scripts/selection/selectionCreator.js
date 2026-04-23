@@ -138,10 +138,15 @@ class SelectionCreator {
     static async floodGet(player, location, dimension) {
         const selection = new Selection(new Vector(location), new Vector(1), dimension)
 
-        await Edit.playerRunAndSave(player.id, "magicSelect", {
-            selection: selection,
-            dimension: dimension,
-        })
+        try {
+            await Edit.playerRunAndSave(player.id, "magicSelect", {
+                selection: selection,
+                dimension: dimension,
+            })
+        } catch (error) {
+            selection.remove()
+            return
+        }
 
         return selection
     }

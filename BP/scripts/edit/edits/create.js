@@ -86,6 +86,8 @@ registerEdit("magicSelect", {
         const updateSelection = () => {
             const size = Vector.subtract(max, min).add(1)
 
+            if (!ctx.selection.isValid) return
+
             ctx.selection.setLocation(min)
             ctx.selection.setSize(size)
             done = false
