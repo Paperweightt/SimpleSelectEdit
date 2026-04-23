@@ -89,6 +89,9 @@ const flipFunctions = {
     ["upside_down_bit"]: {
         y: [[true, false]],
     },
+    ["minecraft:vertical_half"]: {
+        y: [["bottom", "top"]],
+    },
 }
 
 const yRotationFunctions = {
