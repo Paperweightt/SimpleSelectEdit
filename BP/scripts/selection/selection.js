@@ -2,7 +2,7 @@ import { system, BlockVolume } from "@minecraft/server"
 import { Vector } from "../utils/vector.js"
 import { Particle } from "../utils/particle.js"
 import { PlayerUtils } from "../utils/player.js"
-import { TYPE_IDS } from "../constants.js"
+import { TYPE_IDS, BLOCK_PARTICLE } from "../constants.js"
 
 export class Selection {
     /**
@@ -63,6 +63,10 @@ export class Selection {
         system.runInterval(() => {
             for (const selection of this.getAll()) {
                 selection.display()
+
+                if (selection.isPreviewUnique()) {
+                    selection.displayPreview()
+                }
             }
         })
     }
@@ -95,9 +99,8 @@ export class Selection {
     /** @type {import("@minecraft/server").RGB}*/
     lineRGB = Selection.defaultLineRGB
     rotation = { y: 0, p: 0, r: 0 }
-
-    /** @type {boolean}*/
     isOwned = false
+    isValid = true
 
     /**
      * @param {Vector} location
@@ -109,9 +112,21 @@ export class Selection {
         this.location = location
         this.dimension = dimension
         this.displayLocation = new Vector(location)
+        this.displaySize = new Vector(size)
         this.id = id ?? Math.floor(Math.random() * 10000000)
 
         Selection.list[this.id] = this
+    }
+
+    /** @returns {boolean} */
+    isPreviewUnique() {
+        if (!this.location.equals(this.displayLocation)) return true
+        if (!this.size.equals(this.displaySize)) return true
+        if (this.rotation.y !== 0) return true
+        if (this.rotation.p !== 0) return true
+        if (this.rotation.r !== 0) return true
+
+        return false
     }
 
     /**
@@ -188,8 +203,8 @@ export class Selection {
         min.round()
         max.round()
 
-        this.location = min
-        this.size = Vector.subtract(max, min).add(1)
+        this.setLocation(min)
+        this.setSize(Vector.subtract(max, min).add(1))
     }
 
     /**
@@ -212,6 +227,16 @@ export class Selection {
 
     snapshot() {
         return [this.id, ...this.size.copy().getList(), ...this.location.copy().getList()]
+    }
+
+    setLocation(location) {
+        this.location = location
+        this.displayLocation = location
+    }
+
+    setSize(size) {
+        this.size = size
+        this.displaySize = size
     }
 
     /**
@@ -269,40 +294,40 @@ export class Selection {
         }
     }
 
-    /**
-     * @returns {Vector}
-     */
-    getCenter() {
-        return Vector.divide(this.size, 2).add(this.location)
-    }
-
     getDisplayPivot() {
         return Vector.subtract(this.size, 1).divide(2).add(this.displayLocation)
     }
 
     display() {
-        // if (this.rotation.p === 0 && this.rotation.y === 0 && this.rotation.r === 0)
-        //     Particle.boxFaces(
-        //         BLOCK_PARTICLE.BASIC,
-        //         this.location,
-        //         this.size,
-        //         this.dimension,
-        //     )
+        Particle.boxFaces(BLOCK_PARTICLE.BASIC, this.location, this.size, this.dimension)
 
         Particle.boxEdges(
             TYPE_IDS.LINE,
-            this.displayLocation,
+            this.location,
             this.size,
             this.dimension,
             0.1,
             0.05,
             this.lineRGB,
+        )
+    }
+
+    displayPreview() {
+        Particle.boxEdges(
+            TYPE_IDS.LINE,
+            this.displayLocation,
+            this.displaySize,
+            this.dimension,
+            0.1,
+            0.05,
+            Selection.defaultLineRGB,
             this.rotation,
             this.getDisplayPivot(),
         )
     }
 
     remove() {
+        this.isValid = false
         delete Selection.list[this.id]
     }
 }
