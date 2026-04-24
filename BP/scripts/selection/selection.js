@@ -186,28 +186,6 @@ export class Selection {
     }
 
     /**
-     * @param {{y:number,p:number,r:number}} rotation
-     * @param {Vector} pivot
-     */
-    rotate(rotation, pivot) {
-        let min = new Vector(Infinity)
-        let max = new Vector(-Infinity)
-
-        for (let corner of this.getCorners()) {
-            corner = Vector.rotate(corner, rotation, pivot)
-
-            min = Vector.min(corner, min)
-            max = Vector.max(corner, max)
-        }
-
-        min.round()
-        max.round()
-
-        this.setLocation(min)
-        this.setSize(Vector.subtract(max, min).add(1))
-    }
-
-    /**
      * @returns {Vector[]}
      */
     getCorners() {
