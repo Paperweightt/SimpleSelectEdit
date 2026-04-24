@@ -20,6 +20,55 @@ export class Vector {
     }
 
     /**
+     * @param {Vector} start
+     * @param {Vector} end
+     * @param {Vector} [direction=new Vector(1)]
+     * @param {"xyz"|"xzy"|"yxz"|"yzx"|"zxy"|"zyx"} [order="xyz"]
+     * @returns {Iterable.<Vector>}
+     */
+    static *iterator(start, end, direction = new Vector(1), order = "xyz") {
+        ;[start, end] = [Vector.min(start, end), Vector.max(start, end)]
+
+        const iterators = {
+            x: function* () {
+                if (direction.x === 1) {
+                    for (let x = start.x; x <= end.x; x++) yield x
+                } else {
+                    for (let x = end.x; x >= start.x; x--) yield x
+                }
+            },
+            y: function* () {
+                if (direction.y === 1) {
+                    for (let y = start.y; y <= end.y; y++) yield y
+                } else {
+                    for (let y = end.y; y >= start.y; y--) yield y
+                }
+            },
+            z: function* () {
+                if (direction.z === 1) {
+                    for (let z = start.z; z <= end.z; z++) yield z
+                } else {
+                    for (let z = end.z; z >= start.z; z--) yield z
+                }
+            },
+        }
+
+        for (const a of iterators[order[0]]()) {
+            for (const b of iterators[order[1]]()) {
+                for (const c of iterators[order[2]]()) {
+                    const location = new Vector()
+
+                    location[order[0]] = a
+                    location[order[1]] = b
+                    location[order[2]] = c
+
+                    yield location
+                }
+            }
+        }
+    }
+
+    /**
      * @param {Vector} a
      * @param {String} string
      */

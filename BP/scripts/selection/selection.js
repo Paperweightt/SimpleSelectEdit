@@ -143,46 +143,10 @@ export class Selection {
      * @param {"xyz"|"xzy"|"yxz"|"yzx"|"zxy"|"zyx"} [order="xyz"]
      * @returns {Iterable.<Vector>}
      */
-    *getIterator(direction = new Vector(1), order = "xyz") {
+    getIterator(direction = new Vector(1), order = "xyz") {
         const { start, end } = this.getStartEnd()
 
-        const iterators = {
-            x: function* () {
-                if (direction.x === 1) {
-                    for (let x = start.x; x <= end.x; x++) yield x
-                } else {
-                    for (let x = end.x; x >= start.x; x--) yield x
-                }
-            },
-            y: function* () {
-                if (direction.y === 1) {
-                    for (let y = start.y; y <= end.y; y++) yield y
-                } else {
-                    for (let y = end.y; y >= start.y; y--) yield y
-                }
-            },
-            z: function* () {
-                if (direction.z === 1) {
-                    for (let z = start.z; z <= end.z; z++) yield z
-                } else {
-                    for (let z = end.z; z >= start.z; z--) yield z
-                }
-            },
-        }
-
-        for (const a of iterators[order[0]]()) {
-            for (const b of iterators[order[1]]()) {
-                for (const c of iterators[order[2]]()) {
-                    const location = new Vector()
-
-                    location[order[0]] = a
-                    location[order[1]] = b
-                    location[order[2]] = c
-
-                    yield location
-                }
-            }
-        }
+        return Vector.iterator(start, end, direction, order)
     }
 
     /**
