@@ -61,8 +61,8 @@ registerEdit("rotate", {
                 max,
             )
 
-            min.round()
-            max.round()
+            min.floor()
+            max.ceil()
 
             return new BlockVolume(min, max).getBlockLocationIterator()
         }
