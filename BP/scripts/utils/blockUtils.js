@@ -92,6 +92,10 @@ const flipFunctions = {
     ["minecraft:vertical_half"]: {
         y: [["bottom", "top"]],
     },
+    ["torch_facing_direction"]: {
+        z: [["north", "south"]],
+        x: [["east", "west"]],
+    },
 }
 
 const yRotationFunctions = {
