@@ -9,10 +9,13 @@ registerEdit("resize", {
             type: "resize",
             selections: ctx.selections,
             vector: ctx.vector,
-            direction: ctx.direction,
             dimension: ctx.dimension,
+            previousData: [],
         }
-        // only pass data to undo since resize occurs constantly as the player drags an arrow
+
+        for (const selection of ctx.selections) {
+            ctx.undoCtx.previousData.push([selection.location, selection.size])
+        }
 
         return {
             blocks: 0,
@@ -25,21 +28,12 @@ registerEdit("resize", {
             ticks: 0,
         }
 
-        for (const selection of ctx.selections) {
-            if (
-                ctx.direction === "Down" ||
-                ctx.direction === "West" ||
-                ctx.direction === "North"
-            ) {
-                const newSize = Vector.add(selection.size, ctx.vector)
-                const sizeChange = Vector.subtract(selection.size, newSize)
+        for (let i = 0; i < ctx.selections.length; i++) {
+            const [location, size] = ctx.previousData[i]
+            const selection = ctx.selections[i]
 
-                selection.location.add(sizeChange)
-                selection.size = newSize
-            } else {
-                const newSize = Vector.subtract(selection.size, ctx.vector)
-                selection.size = newSize
-            }
+            selection.setLocation(new Vector(location))
+            selection.setSize(new Vector(size))
         }
 
         return metrics
@@ -50,6 +44,7 @@ registerEdit("resize", {
             vector: ctx.vector,
             direction: ctx.direction,
             dimensionId: ctx.dimension.id,
+            previousData: ctx.previousData,
         }
         undoCtx.selections = ctx.selections.map((selection) => selection.snapshot())
 
@@ -62,6 +57,7 @@ registerEdit("resize", {
             vector: new Vector(ctx.vector),
             dimension: dimension,
             direction: ctx.direction,
+            previousData: ctx.previousData,
             selections: ctx.selections.map((snapshot) => {
                 return (
                     Selection.get(snapshot[0]) ||
