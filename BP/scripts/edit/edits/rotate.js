@@ -3,7 +3,7 @@ import { Vector } from "../../utils/vector.js"
 import { registerEdit } from "../registry.js"
 import { Selection } from "../../selection/selection.js"
 import { SelectionGroup } from "../../selection/selectionGroup.js"
-import { rotateY } from "../../utils/blockRotation.js"
+import { rotateY } from "../../utils/blockUtils.js"
 import { BlockId } from "../../utils/blockId.js"
 
 registerEdit("rotate", {
@@ -26,6 +26,7 @@ registerEdit("rotate", {
         const pivot = Vector.subtract(size, 1).divide(2).add(range.minLocation)
         const blockRotationY = Math.round(((ctx.rotation.p / Math.PI) * 180) / 90) * 90
         const dontClearLocations = []
+        const newMinMaxs = []
 
         ctx.undoCtx.pivot = pivot
 
@@ -91,6 +92,12 @@ registerEdit("rotate", {
         }
 
         for (const selection of ctx.selections) {
+            let min = new Vector(Infinity)
+            let max = new Vector(-Infinity)
+
+            console.log(JSON.stringify([min, max]))
+            console.log(JSON.stringify([Infinity, max]))
+
             for (const location of getRotationIterator(selection, ctx.rotation, pivot)) {
                 const block = yield ctx.getBlock(location)
                 const sourceLocation = Vector.rotate(
@@ -108,13 +115,26 @@ registerEdit("rotate", {
                 if (sourcePermutation) {
                     dontClearLocations.push(location)
                     block.setPermutation(sourcePermutation)
+
+                    if (sourcePermutation.type.id !== "minecraft:air") {
+                        min = Vector.min(location, min)
+                        max = Vector.max(location, max)
+                    }
                 }
             }
+
+            newMinMaxs.push([min, max])
         }
 
-        for (const selection of ctx.selections) {
-            selection.rotate(ctx.rotation, pivot)
-            selection.displayLocation = selection.location
+        for (let i = 0; i < ctx.selections.length; i++) {
+            const [min, max] = newMinMaxs[i]
+            const size = Vector.subtract(max, min).add(1)
+            const selection = ctx.selections[i]
+
+            console.log("hi")
+
+            selection.setLocation(new Vector(min))
+            selection.setSize(size)
         }
 
         for (const location of dontClearLocations) {
@@ -221,9 +241,8 @@ registerEdit("rotate", {
             const size = Vector.subtract(end, start).add(1)
             const selection = ctx.selections[i]
 
-            selection.location = new Vector(start)
-            selection.displayLocation = selection.location
-            selection.size = size
+            selection.setLocation(new Vector(start))
+            selection.setSize(size)
         }
 
         return metrics
