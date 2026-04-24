@@ -95,9 +95,6 @@ registerEdit("rotate", {
             let min = new Vector(Infinity)
             let max = new Vector(-Infinity)
 
-            console.log(JSON.stringify([min, max]))
-            console.log(JSON.stringify([Infinity, max]))
-
             for (const location of getRotationIterator(selection, ctx.rotation, pivot)) {
                 const block = yield ctx.getBlock(location)
                 const sourceLocation = Vector.rotate(
@@ -130,8 +127,6 @@ registerEdit("rotate", {
             const [min, max] = newMinMaxs[i]
             const size = Vector.subtract(max, min).add(1)
             const selection = ctx.selections[i]
-
-            console.log("hi")
 
             selection.setLocation(new Vector(min))
             selection.setSize(size)
