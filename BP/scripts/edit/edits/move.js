@@ -33,6 +33,12 @@ registerEdit("move", {
             prevId = id
         }
 
+        const isBetweenInclusive = Vector.isBetweenInclusive
+        const getBlockId = BlockId.get
+        const vectorAdd = Vector.add
+        const getBlock = ctx.getBlock
+        const vector = ctx.vector
+
         const finishedSelections = []
         const direction = Vector.abs(ctx.vector)
             .divide(ctx.vector)
@@ -40,22 +46,20 @@ registerEdit("move", {
             .multiply(-1)
 
         for (const selection of ctx.selections) {
-            let iterator = selection.getIterator(direction)
+            const iterator = selection.getIterator(direction)
 
-            setblock: for (const endLocation of iterator) {
+            setblock: for (const location of iterator) {
                 for (const [start, end] of finishedSelections) {
-                    if (Vector.isBetweenInclusive(endLocation, start, end))
-                        continue setblock
+                    if (isBetweenInclusive(location, start, end)) continue setblock
                 }
 
-                const startLocation = Vector.subtract(endLocation, ctx.vector)
-                const block = yield ctx.getBlock(startLocation)
-                const copy = yield ctx.getBlock(endLocation)
+                const block = yield getBlock(location)
+                const copy = yield getBlock(vectorAdd(location, vector))
 
                 metrics.blocks += 2
                 ctx.undoCtx.blocks++
 
-                addChange(BlockId.get(copy.permutation))
+                addChange(getBlockId(copy.permutation))
                 i++
 
                 copy.setPermutation(block.permutation)
@@ -64,6 +68,10 @@ registerEdit("move", {
             const { start, end } = selection.getStartEnd()
 
             finishedSelections.push([start, end])
+        }
+
+        for (const selection of ctx.selections) {
+            selection.setLocation(Vector.add(selection.location, ctx.vector))
         }
 
         return metrics
@@ -130,8 +138,7 @@ registerEdit("move", {
         }
 
         for (const selection of ctx.selections) {
-            selection.location.subtract(ctx.vector)
-            selection.displayLocation = selection.location
+            selection.setLocation(Vector.subtract(selection.location, ctx.vector))
         }
 
         return metrics
