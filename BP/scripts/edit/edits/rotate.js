@@ -113,6 +113,8 @@ registerEdit("rotate", {
                     dontClearLocations.push(location)
                     block.setPermutation(sourcePermutation)
 
+                    metrics.blocks++
+
                     if (sourcePermutation.type.id !== "minecraft:air") {
                         min = Vector.min(location, min)
                         max = Vector.max(location, max)
@@ -141,6 +143,7 @@ registerEdit("rotate", {
             const [x, y, z] = locationString.split(" ").map((v) => +v)
             const block = yield ctx.getBlock({ x, y, z })
 
+            metrics.blocks++
             block.setType("minecraft:air")
         }
 
