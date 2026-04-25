@@ -7,8 +7,8 @@ export class BlockId {
         "active",
         "age",
         "age_bit",
-        "allow_underwater_bit",
-        "attached_bit",
+        // "allow_underwater_bit",
+        // "attached_bit",
         "attachment",
         "bamboo_leaf_size",
         "bamboo_stalk_thickness",
@@ -33,7 +33,7 @@ export class BlockId {
         "color_bit",
         "composter_fill_level",
         "conditional_bit",
-        "coral_color",
+        // "coral_color",
         "coral_direction",
         "coral_fan_direction",
         "coral_hang_type_bit",
@@ -43,10 +43,10 @@ export class BlockId {
         "creaking_heart_state",
         "damage",
         "dead_bit",
-        "deprecated",
+        // "deprecated",
         "direction",
         "dirt_type",
-        "disarmed_bit",
+        // "disarmed_bit",
         "door_hinge_bit",
         "double_plant_type",
         "drag_down",
@@ -75,10 +75,10 @@ export class BlockId {
         "lit",
         "minecraft:block_face",
         "minecraft:cardinal_direction",
-        "minecraft:connection_east",
-        "minecraft:connection_north",
-        "minecraft:connection_south",
-        "minecraft:connection_west",
+        // "minecraft:connection_east",
+        // "minecraft:connection_north",
+        // "minecraft:connection_south",
+        // "minecraft:connection_west",
         "minecraft:corner",
         "minecraft:facing_direction",
         "minecraft:vertical_half",
@@ -97,10 +97,10 @@ export class BlockId {
         "orientation",
         "output_lit_bit",
         "output_subtract_bit",
-        "pale_moss_carpet_side_east",
-        "pale_moss_carpet_side_north",
-        "pale_moss_carpet_side_south",
-        "pale_moss_carpet_side_west",
+        // "pale_moss_carpet_side_east",
+        // "pale_moss_carpet_side_north",
+        // "pale_moss_carpet_side_south",
+        // "pale_moss_carpet_side_west",
         "persistent_bit",
         "pillar_axis",
         "portal_axis",
@@ -124,14 +124,14 @@ export class BlockId {
         "stability",
         "stability_check",
         "stone_brick_type",
-        "stone_slab_type",
-        "stone_slab_type_2",
-        "stone_slab_type_3",
-        "stone_slab_type_4",
-        "stone_type",
-        "stripped_bit",
+        // "stone_slab_type",
+        // "stone_slab_type_2",
+        // "stone_slab_type_3",
+        // "stone_slab_type_4",
+        // "stone_type",
+        // "stripped_bit",
         "structure_block_type",
-        "structure_void_type",
+        // "structure_void_type",
         "suspended_bit",
         "tall_grass_type",
         "tip",
@@ -147,11 +147,11 @@ export class BlockId {
         "upside_down_bit",
         "vault_state",
         "vine_direction_bits",
-        "wall_block_type",
-        "wall_connection_type_east",
-        "wall_connection_type_north",
-        "wall_connection_type_south",
-        "wall_connection_type_west",
+        // "wall_block_type",
+        // "wall_connection_type_east",
+        // "wall_connection_type_north",
+        // "wall_connection_type_south",
+        // "wall_connection_type_west",
         "wall_post_bit",
         "weeping_vines_age",
         "weirdo_direction",
@@ -170,16 +170,13 @@ export class BlockId {
             type = type.substring(10)
         }
 
-        const data = [type]
+        let str = type
 
         for (const [state, value] of Object.entries(states)) {
-            data.push(this.stateToId(state))
-            data.push(value)
+            str += "," + this.stateToId(state) + "," + value
         }
 
-        const str = JSON.stringify(data)
-
-        return str.substring(1, str.length - 1)
+        return str
     }
 
     /**
@@ -188,7 +185,7 @@ export class BlockId {
      */
     static toPermutation(id) {
         if (!id) return undefined
-        const data = JSON.parse(`[${id}]`)
+        const data = id.split(",")
         const type = data[0]
         const states = {}
 
