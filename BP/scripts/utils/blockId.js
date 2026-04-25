@@ -170,13 +170,15 @@ export class BlockId {
             type = type.substring(10)
         }
 
-        let str = type
+        const parts = [type]
 
-        for (const [state, value] of Object.entries(states)) {
-            str += "," + this.stateToId(state) + "," + value
+        for (const state in states) {
+            const value = states[state]
+            if (value === false || value === 0) continue
+            parts.push(this.stateToId(state), value)
         }
 
-        return str
+        return parts.join(",")
     }
 
     /**
@@ -191,7 +193,17 @@ export class BlockId {
 
         for (let i = 1; i < data.length; i += 2) {
             const key = this.idToState(data[i]) || data[i]
-            states[key] = data[i + 1]
+            let value = data[i + 1]
+
+            if (value === "false") {
+                value = false
+            } else if (value === "true") {
+                value = true
+            } else if (Number.isInteger(+value)) {
+                value = +value
+            }
+
+            states[key] = value
         }
 
         return BlockPermutation.resolve(type, states)
