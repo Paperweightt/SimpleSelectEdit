@@ -5,7 +5,6 @@ export class JobManager {
     isValid = true
     promise
     resolve
-    timeoutId
     jobId
     reject
     startTime = +new Date()
@@ -28,24 +27,28 @@ export class JobManager {
     }
 
     *runSession(input) {
-        while (true) {
-            const { done, value } = this.iterator.next(input)
+        const iterator = this.iterator
 
-            if (done) {
-                const stop = +new Date()
+        while (true) {
+            const result = iterator.next(input)
+
+            if (result.done) {
+                const stop = Date.now()
                 const ticks = Math.round((stop - this.startTime) / 50)
 
-                this.resolve({ value, ticks })
+                this.resolve({ value: result.value, ticks })
                 this.isValid = false
                 return
             }
+
+            const value = result.value
 
             if (this.isPaused) {
                 this.resumeInput = value
                 return
             }
 
-            if (value && typeof value.then === "function") {
+            if (value && value.then) {
                 value
                     .then((res) => {
                         this.jobId = system.runJob(this.runSession(res))
@@ -75,17 +78,23 @@ export class JobManager {
         }
     }
 
-    cancel() {
+    async cancel() {
         if (this.jobId) system.clearJob(this.jobId)
-        if (this.timeoutId) system.clearRun(this.timeoutId)
 
         this.isPaused = true
         this.isValid = false
 
-        this.reject()
+        this.reject("execution cancled")
+
+        try {
+            await this.promise
+        } catch (error) {}
     }
 
-    async result() {
+    /**
+     * @returns {Promise<{value:any,ticks:number}>}
+     */
+    result() {
         return this.promise
     }
 }
